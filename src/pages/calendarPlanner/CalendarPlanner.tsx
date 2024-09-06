@@ -15,7 +15,6 @@ const CalendarPlanner = () => {
 	const { data: allCampaigns } = useAllCampaigns();
 
 	const STEPS = {
-		undefined: <Step1 />,
 		1: <Step1 />,
 		2: <Step2 allCampaigns={allCampaigns} currentCampaign={data?.[0]} />,
 		3: <Step3 currentCampaign={data?.[0]} />,
@@ -30,7 +29,9 @@ const CalendarPlanner = () => {
 	return (
 		<ProtectedWrapper>
 			<div className="calendar-planner">
-				<section className="step-container">{STEPS[stage]}</section>
+				<section className="step-container">
+					{stage ? STEPS[stage] : <Step1 />}
+				</section>
 			</div>
 		</ProtectedWrapper>
 	);
