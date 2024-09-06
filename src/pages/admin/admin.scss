@@ -1,0 +1,23 @@
+@import "@/styles/variables.scss";
+@import "@/styles/mixins.scss";
+
+.admin {
+	@include enter-animation;
+	padding-top: 100px;
+
+	.create-rows {
+		margin-top: 50px;
+
+		.row {
+			form {
+				display: grid;
+				grid-template-columns: repeat(6, 1fr);
+				gap: 10px;
+
+				@include mQ(990px) {
+					display: block;
+				}
+			}
+		}
+	}
+}

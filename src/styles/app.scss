@@ -1,0 +1,57 @@
+@import "./variables.scss";
+@import "./mixins.scss";
+
+$n: 100;
+
+.app {
+	@include centered-layout;
+
+	main {
+		padding: 0px 20px;
+
+		.c-card {
+			border-color: #f7f2fd;
+			background-color: #faf7fe;
+			cursor: pointer;
+			transition: all 0.3s;
+			transform: translateY(50px);
+			opacity: 0;
+			animation: stagger-in 500ms ease forwards;
+
+			@for $x from 2 through $n {
+				&:nth-child(#{$x}) {
+					animation-delay: 100ms * ($x - 1);
+				}
+			}
+
+			&.active {
+				background-color: $purple;
+				pointer-events: none;
+			}
+
+			&.chosen {
+				border-color: $purple;
+			}
+
+			&:hover {
+				border-color: $purple;
+			}
+		}
+	}
+
+	a {
+		text-decoration: none;
+	}
+}
+
+@keyframes enter {
+	0% {
+		transform: translateY(-20px);
+		opacity: 0;
+	}
+
+	100% {
+		transform: translateY(0px);
+		opacity: 1;
+	}
+}

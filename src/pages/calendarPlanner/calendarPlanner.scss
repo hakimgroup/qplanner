@@ -1,0 +1,10 @@
+@import "@/styles/variables.scss";
+@import "@/styles/mixins.scss";
+
+.calendar-planner {
+	@include enter-animation;
+
+	.step-container {
+		padding-top: 100px;
+	}
+}

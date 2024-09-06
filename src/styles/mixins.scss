@@ -1,0 +1,21 @@
+@mixin mQ($arg) {
+	@media (max-width: #{$arg}) {
+		@content;
+	}
+}
+
+@mixin centered-layout {
+	margin: 0 auto;
+	max-width: 1400px;
+	width: 100%;
+}
+
+@mixin center-item {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+@mixin enter-animation {
+	animation: enter 0.5s 1;
+}

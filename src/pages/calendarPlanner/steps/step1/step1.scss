@@ -1,0 +1,13 @@
+@import "@/styles/variables.scss";
+@import "@/styles/mixins.scss";
+
+.planner-step-1 {
+	display: flex;
+	justify-content: center;
+	@include enter-animation;
+
+	.ps1-content {
+		max-width: 600px;
+		width: 100%;
+	}
+}
