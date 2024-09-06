@@ -2,6 +2,8 @@ import { supabase } from "@/api/supabase";
 import { LoadingOverlay } from "@mantine/core";
 import { User } from "@supabase/supabase-js";
 import { createContext, useContext, useState, useEffect } from "react";
+import { AppRoutes } from "./shared.models";
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextModel {
 	user: User | null;
@@ -20,6 +22,7 @@ const AuthContext = createContext<AuthContextModel>({
 export const useAuth = () => useContext(AuthContext);
 
 const AuthProvider = ({ children }) => {
+	const navigate = useNavigate();
 	const [user, setUser] = useState<User | null>(null);
 	const [auth, setAuth] = useState(false);
 	const [loading, setLoading] = useState(null);
@@ -53,6 +56,7 @@ const AuthProvider = ({ children }) => {
 					case "SIGNED_OUT":
 						setUser(null);
 						setAuth(false);
+						navigate(AppRoutes.Home);
 						break;
 					case "PASSWORD_RECOVERY":
 						setAuth(false);

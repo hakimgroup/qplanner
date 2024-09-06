@@ -46,13 +46,11 @@ export const useSignin = () => {
 
 export const useSignout = () => {
 	const queryClient = useQueryClient();
-	const navigate = useNavigate();
 
 	return useMutation({
 		mutationFn: () => signout(),
 		onSuccess: () => {
 			queryClient.removeQueries();
-			navigate(AppRoutes.Home);
 		},
 	});
 };
