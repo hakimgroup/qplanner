@@ -55,21 +55,20 @@ const Campaigns = () => {
 			<div className="my-campaigns">
 				<div className="my-campaigns-content">
 					<Text fw={800} c="pink">
-						My Campaigns
+						My Marketing Plans
 					</Text>
 					<Text fz="h1" fw={600} c="dark">
-						My Campaigns Overview |{" "}
+						Marketing Plans Overview |{" "}
 						<Text fz="h1" fw={600} c="blue" span>
 							2025
 						</Text>
 					</Text>
 					<Text size="sm" c="dimmed" maw={600}>
-						Here are all your campaigns! Review your marketing
-						strategies and track the progress of each campaign. You
-						can easily manage and adjust your campaigns to ensure
-						they align with your goals. Stay on top of your
-						marketing efforts and make sure you're set up for
-						success!
+						Here are all your plans! Review your marketing
+						strategies and track the progress of each plan. You can
+						easily manage and adjust your plans to ensure they align
+						with your goals. Stay on top of your marketing efforts
+						and make sure you're set up for success!
 					</Text>
 
 					{data && data.length > 0 ? (

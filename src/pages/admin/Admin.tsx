@@ -7,11 +7,12 @@ import {
 	Table,
 	Box,
 	Badge,
+	Flex,
 } from "@mantine/core";
 import { hasLength, useForm } from "@mantine/form";
 import filtersData from "@/filters.json";
 import "./admin.scss";
-import { IconPlus } from "@tabler/icons-react";
+import { IconExternalLink, IconPlus } from "@tabler/icons-react";
 import {
 	useAddCampaignAdmin,
 	useAllCampaigns,
@@ -23,7 +24,7 @@ const Admin = () => {
 	const { data: allCampaigns } = useAllCampaigns();
 
 	const rows = allCampaigns?.map((el) => (
-		<Table.Tr key={el.campaign_id} style={{ cursor: "pointer" }}>
+		<Table.Tr key={el.campaign_id}>
 			<Table.Td maw={250}>
 				<Text c="blue.9" size="sm" fw={600} fs="italic">
 					{el.campaign_name}
@@ -31,9 +32,12 @@ const Admin = () => {
 			</Table.Td>
 			<Table.Td>{el.campaign_type}</Table.Td>
 			<Table.Td>
-				<a href={el.campaign_link} target="_blank">
-					Campaign Link
-				</a>
+				<Flex align="center">
+					<a href={el.campaign_link} target="_blank">
+						Campaign Link
+					</a>
+					<IconExternalLink size={15} style={{ marginLeft: 5 }} />
+				</Flex>
 			</Table.Td>
 			<Table.Td>
 				{_.head(el.campaign_availability)} -{" "}
