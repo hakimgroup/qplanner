@@ -23,7 +23,6 @@ const Step1 = () => {
 			name: `${user?.user_metadata.first_name} ${user?.user_metadata.last_name}`,
 			practiceName: "",
 			email: user?.email,
-			practiceBuddy: "",
 			strategyName: "",
 		},
 		validate: {
@@ -32,10 +31,6 @@ const Step1 = () => {
 			practiceName: hasLength(
 				{ min: 6 },
 				"Practice name must have 3 or more characters."
-			),
-			practiceBuddy: hasLength(
-				{ min: 6 },
-				"Practice buddy must have 3 or more characters."
 			),
 			strategyName: hasLength(
 				{ min: 1 },
@@ -51,7 +46,6 @@ const Step1 = () => {
 				name: values.name,
 				email: values.email,
 				practiceName: values.practiceName,
-				practiceBuddy: values.practiceBuddy,
 				strategyName: values.strategyName,
 			},
 		});
@@ -67,10 +61,10 @@ const Step1 = () => {
 					Personal Details
 				</Text>
 				<Text size="sm" c="dimmed" maw={600}>
-					To personalize your experience and optimize your campaign
-					strategy, we need a few details from you. Please fill out
-					the form below, and let's get you ready to conquer your
-					campaigns!
+					To personalize your experience and optimize your marketing
+					plan strategy, we need a few details from you. Please fill
+					out the form below, and let's get you ready to conquer your
+					marketing plans!
 				</Text>
 
 				<div className="step-1-content">
@@ -101,15 +95,8 @@ const Step1 = () => {
 							mt="md"
 							variant="filled"
 							{...form.getInputProps("strategyName")}
-							label="Strategy Name"
-							placeholder="Overall campaign strategy name"
-						/>
-
-						<TextInput
-							mt="md"
-							variant="filled"
-							{...form.getInputProps("practiceBuddy")}
-							label="Practice Buddy"
+							label="Marketing Plan Name"
+							placeholder="Overall marketing plan name"
 						/>
 
 						<Button type="submit" mt="xl" loading={loading}>

@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { supabase } from "./supabase";
+import { AppRoutes } from "@/shared/shared.models";
 
 export interface User {
 	email: string;
@@ -46,6 +47,28 @@ export const signin = async (email: string, password: string) => {
 
 export const signout = async () => {
 	const { error } = await supabase.auth.signOut();
+
+	if (error) {
+		toast.error(error.message);
+		throw error;
+	}
+};
+
+export const resetPassword = async ({ email }) => {
+	const url: string = import.meta.env.VITE_APP_BASE_URL;
+
+	const { error } = await supabase.auth.resetPasswordForEmail(email, {
+		redirectTo: `${url}${AppRoutes.Reset}`,
+	});
+
+	if (error) {
+		toast.error(error.message);
+		throw error;
+	}
+};
+
+export const updatePassword = async ({ password }) => {
+	const { error } = await supabase.auth.updateUser({ password });
 
 	if (error) {
 		toast.error(error.message);

@@ -11,6 +11,8 @@ import CalendarPlanner from "./pages/calendarPlanner/CalendarPlanner";
 import Nav from "./components/nav/Nav";
 import Admin from "./pages/admin/Admin";
 import Campaigns from "./pages/campaigns/Campaigns";
+import Forgot from "./pages/auth/Forgot";
+import ResetPassword from "./pages/auth/Reset";
 
 const queryClient = new QueryClient();
 export default function App() {
@@ -28,6 +30,14 @@ export default function App() {
 		{
 			path: AppRoutes.Signup,
 			element: <Signup />,
+		},
+		{
+			path: AppRoutes.Forgot,
+			element: <Forgot />,
+		},
+		{
+			path: AppRoutes.Reset,
+			element: <ResetPassword />,
 		},
 		{
 			path: AppRoutes.Calendar,
@@ -59,6 +69,8 @@ export default function App() {
 						AppRoutes.Home,
 						AppRoutes.Login,
 						AppRoutes.Signup,
+						AppRoutes.Forgot,
+						AppRoutes.Reset,
 					].includes(pathname as AppRoutes) && <Nav />}
 					<main>
 						<Routes>

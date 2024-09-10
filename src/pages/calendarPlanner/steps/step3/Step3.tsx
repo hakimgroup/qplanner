@@ -1,6 +1,6 @@
 import { Button, List, Text } from "@mantine/core";
 import "./step3.scss";
-import { CampaignModel } from "@/api/campaign";
+import { CampaignModel, CampaignPlan } from "@/api/campaign";
 import { useState } from "react";
 import { DatePicker, DatePickerProps } from "@mantine/dates";
 import clsx from "clsx";
@@ -42,6 +42,13 @@ const Step3 = ({ currentCampaign }: Props) => {
 
 		// If no match is found, return false
 		return false;
+	};
+
+	const sortByCampaignPeriodStart = (array: CampaignPlan[]) => {
+		return _.sortBy(array, (item) => {
+			const startDate = _.head(item.campaign_period);
+			return new Date(startDate);
+		});
 	};
 
 	const dayRenderer: DatePickerProps["renderDay"] = (date) => {
@@ -88,7 +95,9 @@ const Step3 = ({ currentCampaign }: Props) => {
 						</Text>
 
 						<List>
-							{currentCampaign?.campaign_plans?.map((cp, i) => (
+							{sortByCampaignPeriodStart(
+								currentCampaign?.campaign_plans
+							)?.map((cp, i) => (
 								<List.Item
 									className="cp-list-item"
 									key={i}

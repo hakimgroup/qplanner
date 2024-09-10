@@ -18,7 +18,6 @@ export interface CampaignModel {
 		name?: string;
 		practiceName?: string;
 		email?: string;
-		practiceBuddy?: string;
 		strategyName?: string;
 	};
 	campaign_plans?: CampaignPlan[];

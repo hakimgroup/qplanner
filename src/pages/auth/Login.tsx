@@ -60,13 +60,13 @@ const Login = () => {
 						label="Password"
 					/>
 
-					{/* <div className="form-right-link">
-						<Link to={`#`}>
+					<div className="form-right-link">
+						<Link to={AppRoutes.Forgot}>
 							<Text size="sm" c="blue">
 								Forgot password?
 							</Text>
 						</Link>
-					</div> */}
+					</div>
 
 					<Button fullWidth type="submit" mt="md" loading={loading}>
 						Login

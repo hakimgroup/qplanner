@@ -33,7 +33,7 @@ const Nav = () => {
 						c={pathname === AppRoutes.MyCampaigns ? "blue" : "dark"}
 						fw={600}
 					>
-						My Campaigns
+						My Marketing Plans
 					</Text>
 				</Link>
 				{user?.user_metadata.isAdmin && (
@@ -54,7 +54,7 @@ const Nav = () => {
 					rightSection={<IconPlus size={14} />}
 					onClick={() => navigate(`${AppRoutes.Calendar}/1`)}
 				>
-					Create New Campaign
+					Create New Marketing Plan
 				</Button>
 				<Button
 					size="sm"

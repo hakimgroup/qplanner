@@ -10,6 +10,9 @@ import {
 	Textarea,
 	Button,
 	MultiSelect,
+	Collapse,
+	Flex,
+	Box,
 } from "@mantine/core";
 import { DatePicker, DatePickerInput } from "@mantine/dates";
 import "./step2.scss";
@@ -17,7 +20,7 @@ import { Fragment, useEffect, useState } from "react";
 import { addMonths, format, lastDayOfMonth } from "date-fns";
 import filtersData from "@/filters.json";
 import { CampaignModel, CampaignPlan, CampaignsModel } from "@/api/campaign";
-import { IconPlus } from "@tabler/icons-react";
+import { IconPlus, IconSelector } from "@tabler/icons-react";
 import { hasLength, useForm } from "@mantine/form";
 import clsx from "clsx";
 import _ from "lodash";
@@ -25,7 +28,7 @@ import { useUpdateCampaign } from "../../campaign.hooks";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "@/shared/shared.models";
-import { useMediaQuery, useScrollIntoView } from "@mantine/hooks";
+import { useMediaQuery, useDisclosure } from "@mantine/hooks";
 
 interface Props {
 	currentCampaign: CampaignModel;
@@ -35,31 +38,29 @@ interface Props {
 let fm = "MMMM do, yyyy";
 
 const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
+	const [topicsOpened, { toggle: toggleTopics }] = useDisclosure(true);
+	const [objectivesOpened, { toggle: toggleObjectives }] =
+		useDisclosure(true);
+
 	//Media queries
-	const isSm = useMediaQuery("(max-width: 980px)");
-	const isXs = useMediaQuery("(max-width: 865px)");
-	const isXxs = useMediaQuery("(max-width: 675px)");
+	const isMd = useMediaQuery("(max-width: 710px)");
+	const isSm = useMediaQuery("(max-width: 500px)");
 
 	const size = () => {
 		switch (true) {
-			case isXxs:
-				return {
-					size: "sm",
-					col: 1,
-				};
-			case isXs:
-				return {
-					size: "md",
-					col: 2,
-				};
 			case isSm:
 				return {
-					size: "sm",
-					col: 3,
+					size: "xs",
+					col: 1,
+				};
+			case isMd:
+				return {
+					size: "xs",
+					col: 2,
 				};
 			default:
 				return {
-					size: "md",
+					size: "xs",
 					col: 3,
 				};
 		}
@@ -180,21 +181,7 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 	};
 
 	const cards = (data: string[]) => {
-		return data.map((item) => (
-			<Checkbox.Card
-				className="c-root"
-				radius="sm"
-				value={item}
-				key={item}
-			>
-				<Group wrap="nowrap" align="flex-start">
-					<Checkbox.Indicator />
-					<div>
-						<Text className="c-label">{item}</Text>
-					</div>
-				</Group>
-			</Checkbox.Card>
-		));
+		return data.map((item) => <Checkbox value={item} label={item} />);
 	};
 
 	const addToPlan = (values: typeof form.values) => {
@@ -229,12 +216,11 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 		});
 	};
 
-	const MobileMultiSelect = ({ label, description, data }) => (
+	const MobileMultiSelect = ({ label, data }) => (
 		<MultiSelect
 			clearable
 			hidePickedOptions
 			label={label}
-			description={description}
 			data={data}
 			value={filters.filter((str) => data.includes(str))}
 			onChange={(s) => handleChange(s, data)}
@@ -333,91 +319,105 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 			</Modal>
 
 			<div className="ps2-content">
-				<Text fw={800} c="pink">
-					STEP 2
-				</Text>
-				<Text fz="h1" fw={600} c="dark">
-					Planning Calendar |{" "}
-					<Text fz="h1" fw={600} c="blue" span>
-						2025
-					</Text>
-				</Text>
-				<Text size="sm" c="dimmed" maw={600}>
-					Explore your calendar and select the perfect dates for your
-					marketing campaigns! Review the available slots, choose the
-					campaigns that align with your goals, and schedule them to
-					maximize your impact throughout the year.
-				</Text>
+				<Flex
+					direction={{ lg: "row", sm: "column", base: "column" }}
+					justify="space-between"
+					align="flex-start"
+				>
+					<Box>
+						<Text fw={800} c="pink">
+							STEP 2
+						</Text>
+						<Text fz="h1" fw={600} c="dark">
+							Planning Calendar |{" "}
+							<Text fz="h1" fw={600} c="blue" span>
+								2025
+							</Text>
+						</Text>
+						<Text size="sm" c="dimmed" maw={600}>
+							Explore your calendar and select the perfect dates
+							for your marketing plans! Review the available
+							slots, choose the plans that align with your goals,
+							and schedule them to maximize your impact throughout
+							the year.
+						</Text>
+					</Box>
+
+					<Button
+						onClick={() => navigate(AppRoutes.MyCampaigns)}
+						mt={20}
+					>
+						View Marketing Plan
+					</Button>
+				</Flex>
 
 				<div className="calendar-picker-group">
-					<DatePicker
-						type="range"
-						size={size().size as any}
-						numberOfColumns={size().col}
-						columnsToScroll={1}
-						minDate={firstDayOfYear}
-						maxDate={lastDayOfYear}
-						value={value}
-						onChange={setValue}
-						onNextMonth={(d) => setCurrentRange(monthsBetween(d))}
-						onPreviousMonth={(d) =>
-							setCurrentRange(monthsBetween(d))
-						}
-					/>
-				</div>
-
-				<div className="campaign-selector">
 					<div className="filters">
-						<Text fz="h2" fw={600} c="blue" mb="xl">
+						<Text fz="h2" fw={600} c="blue">
 							Filters
 						</Text>
 
 						<div className="objectives">
-							<Text fz="h3" fw={500} c="dark" mb="lg">
-								Objectives
-							</Text>
-							<div className="all-objectives">
-								<Checkbox.Group
-									value={filters}
-									onChange={setFilters}
-									label="Your KPI Objectives"
-									description="Filter and choose all your KPI objectives for this period."
-								>
-									<Stack pt="md" gap="xs">
-										{cards(filtersData.objectives)}
-									</Stack>
-								</Checkbox.Group>
-							</div>
+							<Flex
+								justify="space-between"
+								align="center"
+								style={{ cursor: "pointer" }}
+								onClick={toggleObjectives}
+							>
+								<Text fz="h4" fw={700} c="dark">
+									Objectives
+								</Text>
+								<IconSelector size={20} />
+							</Flex>
+							<Collapse in={objectivesOpened}>
+								<div className="all-objectives">
+									<Checkbox.Group
+										value={filters}
+										onChange={setFilters}
+									>
+										<Stack pt="md" gap="xs">
+											{cards(filtersData.objectives)}
+										</Stack>
+									</Checkbox.Group>
+								</div>
+							</Collapse>
 						</div>
 
 						<div className="objectives">
-							<Text fz="h3" fw={500} c="dark" mb="lg">
-								Topics
-							</Text>
-							<div className="all-objectives">
-								<Checkbox.Group
-									value={filters}
-									onChange={setFilters}
-									label="Your General Topics"
-									description="Filter and choose all other topics for this period."
-								>
-									<Stack pt="md" gap="xs">
-										{cards(filtersData.topics)}
-									</Stack>
-								</Checkbox.Group>
-							</div>
+							<Flex
+								justify="space-between"
+								align="center"
+								style={{ cursor: "pointer" }}
+								onClick={toggleTopics}
+								mt="xl"
+							>
+								<Text fz="h4" fw={700} c="dark">
+									Topics
+								</Text>
+								<IconSelector size={20} />
+							</Flex>
+							<Collapse in={topicsOpened}>
+								<div className="all-objectives">
+									<Checkbox.Group
+										value={filters}
+										onChange={setFilters}
+									>
+										<Stack pt="md" gap="xs">
+											{cards(filtersData.topics)}
+										</Stack>
+									</Checkbox.Group>
+								</div>
+							</Collapse>
 						</div>
 
 						<div className="objectives">
-							<Text fz="h3" fw={500} c="dark" mb="lg">
+							<Text fz="h4" fw={700} c="dark" mt="xl">
 								Selections
 							</Text>
 							<div className="all-objectives">
 								<Checkbox.Group
 									value={filters}
 									onChange={setFilters}
-									label="Your Selected Campaigns"
-									description="All campaigns added to your campaign plan so far."
 								>
 									{campaignPlans &&
 									campaignPlans?.length > 0 ? (
@@ -473,136 +473,153 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 							</div>
 						</div>
 					</div>
-
-					<div className="blocks">
-						<Text fz="h2" fw={600} c="blue" mb="xl">
-							Campaigns
-						</Text>
-
-						<Text size="xl" fw={500} className="block-subtitle">
-							All Campaigns
-						</Text>
-
+					<div className="content">
+						<DatePicker
+							type="range"
+							size={size().size as any}
+							numberOfColumns={size().col}
+							columnsToScroll={1}
+							minDate={firstDayOfYear}
+							maxDate={lastDayOfYear}
+							value={value}
+							onChange={setValue}
+							onNextMonth={(d) =>
+								setCurrentRange(monthsBetween(d))
+							}
+							onPreviousMonth={(d) =>
+								setCurrentRange(monthsBetween(d))
+							}
+						/>
 						<div className="mobile-filters">
 							<MobileMultiSelect
 								label="Your KPI Objectives"
-								description="Filter and choose all your KPI objectives for this period."
 								data={filtersData.objectives}
 							/>
 							<MobileMultiSelect
 								label="Your General Topics"
-								description="Filter and choose all other topics for this period."
 								data={filtersData.topics}
 							/>
 						</div>
-
-						<Text c="dimmed" size="sm" mt={25} mb={10}>
-							Showing all available campaigns between{" "}
-							<Text c="blue" size="sm" fw={600} span>
-								{period}
+						<div className="blocks">
+							<Text fz="h2" fw={600} c="blue">
+								Campaigns
 							</Text>
-						</Text>
-						<div className="blocks-content">
-							{allCampaigns && allCampaigns.length > 0 && (
-								<Fragment>
-									{campaingsByPeriod().map((cmp, i) => (
-										<Fragment key={i}>
-											{cmp !== undefined && (
-												<Card
-													radius="sm"
-													withBorder
-													className={clsx(
-														"c-card",
-														isChosen(
-															cmp?.campaign_id
-														) && "chosen"
-													)}
-													onClick={() => {
-														if (
+
+							<Text c="dimmed" size="sm" mb={10}>
+								Showing all available campaigns between{" "}
+								<Text c="blue" size="sm" fw={600} span>
+									{period}
+								</Text>
+							</Text>
+							<div className="blocks-content">
+								{allCampaigns && allCampaigns.length > 0 && (
+									<Fragment>
+										{campaingsByPeriod().map((cmp, i) => (
+											<Fragment key={i}>
+												{cmp !== undefined && (
+													<Card
+														radius="sm"
+														withBorder
+														className={clsx(
+															"c-card",
 															isChosen(
 																cmp?.campaign_id
-															)
-														) {
-															setCampaignPlans(
-																campaignPlans.filter(
-																	(cp) =>
-																		cp.campaign_id !==
-																		cmp?.campaign_id
-																)
-															);
-														} else {
-															setCampaign(cmp);
-														}
-													}}
-												>
-													<Group mt="xs" mb="xs">
-														<Text c="dark" fw={300}>
-															{cmp.campaign_name}
-														</Text>
-													</Group>
-
-													{isChosen(
-														cmp?.campaign_id
-													) ? (
-														<Text
-															c="blue"
-															fw={700}
-															size="sm"
-															style={{
-																alignSelf:
-																	"flex-end",
-															}}
-														>
-															Remove
-														</Text>
-													) : (
-														<ActionIcon
-															variant={
+															) && "chosen"
+														)}
+														onClick={() => {
+															if (
 																isChosen(
 																	cmp?.campaign_id
 																)
-																	? "filled"
-																	: "light"
+															) {
+																setCampaignPlans(
+																	campaignPlans.filter(
+																		(cp) =>
+																			cp.campaign_id !==
+																			cmp?.campaign_id
+																	)
+																);
+															} else {
+																setCampaign(
+																	cmp
+																);
 															}
-															aria-label="Settings"
-															style={{
-																alignSelf:
-																	"flex-end",
-															}}
-														>
-															<IconPlus
-																style={{
-																	width: "70%",
-																	height: "70%",
-																}}
-																stroke={1.5}
-															/>
-														</ActionIcon>
-													)}
-												</Card>
-											)}
-										</Fragment>
-									))}
-								</Fragment>
-							)}
-						</div>
+														}}
+													>
+														<Group mt="xs" mb="xs">
+															<Text
+																c="dark"
+																fw={300}
+															>
+																{
+																	cmp.campaign_name
+																}
+															</Text>
+														</Group>
 
-						<Button
-							fullWidth
-							className="sticky-button"
-							mt={50}
-							size="lg"
-							disabled={campaignPlans?.length < 1}
-							loading={isPending}
-							onClick={() => {
-								mutate({
-									...currentCampaign,
-									campaign_plans: campaignPlans,
-								});
-							}}
-						>
-							Submit Campaign Plan
-						</Button>
+														{isChosen(
+															cmp?.campaign_id
+														) ? (
+															<Text
+																c="blue"
+																fw={700}
+																size="sm"
+																style={{
+																	alignSelf:
+																		"flex-end",
+																}}
+															>
+																Remove
+															</Text>
+														) : (
+															<ActionIcon
+																variant={
+																	isChosen(
+																		cmp?.campaign_id
+																	)
+																		? "filled"
+																		: "light"
+																}
+																aria-label="Settings"
+																style={{
+																	alignSelf:
+																		"flex-end",
+																}}
+															>
+																<IconPlus
+																	style={{
+																		width: "70%",
+																		height: "70%",
+																	}}
+																	stroke={1.5}
+																/>
+															</ActionIcon>
+														)}
+													</Card>
+												)}
+											</Fragment>
+										))}
+									</Fragment>
+								)}
+							</div>
+
+							<Button
+								fullWidth
+								mt={50}
+								size="lg"
+								disabled={campaignPlans?.length < 1}
+								loading={isPending}
+								onClick={() => {
+									mutate({
+										...currentCampaign,
+										campaign_plans: campaignPlans,
+									});
+								}}
+								style={{ position: "sticky", bottom: "10px" }}
+							>
+								Submit Campaign Plan
+							</Button>
+						</div>
 					</div>
 				</div>
 			</div>

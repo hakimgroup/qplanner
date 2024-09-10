@@ -1,12 +1,56 @@
-import { Button, Text, TextInput, MultiSelect, Select } from "@mantine/core";
+import {
+	Button,
+	Text,
+	TextInput,
+	MultiSelect,
+	Select,
+	Table,
+	Box,
+	Badge,
+} from "@mantine/core";
 import { hasLength, useForm } from "@mantine/form";
 import filtersData from "@/filters.json";
 import "./admin.scss";
 import { IconPlus } from "@tabler/icons-react";
-import { useAddCampaignAdmin } from "../calendarPlanner/campaign.hooks";
+import {
+	useAddCampaignAdmin,
+	useAllCampaigns,
+} from "../calendarPlanner/campaign.hooks";
 import { toast } from "sonner";
+import _ from "lodash";
 
 const Admin = () => {
+	const { data: allCampaigns } = useAllCampaigns();
+
+	const rows = allCampaigns?.map((el) => (
+		<Table.Tr key={el.campaign_id} style={{ cursor: "pointer" }}>
+			<Table.Td maw={250}>
+				<Text c="blue.9" size="sm" fw={600} fs="italic">
+					{el.campaign_name}
+				</Text>
+			</Table.Td>
+			<Table.Td>{el.campaign_type}</Table.Td>
+			<Table.Td>
+				<a href={el.campaign_link} target="_blank">
+					Campaign Link
+				</a>
+			</Table.Td>
+			<Table.Td>
+				{_.head(el.campaign_availability)} -{" "}
+				{_.last(el.campaign_availability)}
+			</Table.Td>
+			<Table.Td>
+				<Box maw={200}>
+					{el.campaign_tags.map((tg, i) => (
+						<Badge size="sm" key={i} variant="light">
+							{tg}
+						</Badge>
+					))}
+				</Box>
+			</Table.Td>
+		</Table.Tr>
+	));
+
 	const form = useForm({
 		mode: "controlled",
 		initialValues: {
@@ -134,6 +178,27 @@ const Admin = () => {
 					</form>
 				</div>
 			</div>
+
+			<Box mt="lg">
+				<Table
+					striped
+					highlightOnHover
+					withTableBorder
+					withColumnBorders
+					verticalSpacing="md"
+				>
+					<Table.Thead>
+						<Table.Tr>
+							<Table.Th>Campaign Name</Table.Th>
+							<Table.Th>Type</Table.Th>
+							<Table.Th>Link</Table.Th>
+							<Table.Th>Availability</Table.Th>
+							<Table.Th>Tags</Table.Th>
+						</Table.Tr>
+					</Table.Thead>
+					<Table.Tbody>{rows}</Table.Tbody>
+				</Table>
+			</Box>
 		</div>
 	);
 };
