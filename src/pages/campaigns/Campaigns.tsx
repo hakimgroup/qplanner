@@ -1,4 +1,4 @@
-import { Card, Text, Badge, Button, Group, Title } from "@mantine/core";
+import { Card, Text, Badge, Button, Group, Title, Stack } from "@mantine/core";
 import "./campaigns.scss";
 import { useCampaign } from "../calendarPlanner/campaign.hooks";
 import { Fragment } from "react/jsx-runtime";
@@ -81,104 +81,128 @@ const Campaigns = () => {
 												activeCampaign?.campaign_id ===
 												cs.campaign_id;
 											return (
-												<Card
-													key={i}
-													className={clsx(
-														"c-card",
-														isActive && "active"
-													)}
-													padding="sm"
-													radius="sm"
-													withBorder
-													onClick={() => {
-														if (isIncomplete(cs)) {
+												<Stack gap={5}>
+													<Card
+														key={i}
+														className={clsx(
+															"c-card",
+															isActive && "active"
+														)}
+														padding="sm"
+														radius="sm"
+														withBorder
+														onClick={() => {
 															if (
-																!cs.personal_details
-															) {
-																navigate(
-																	`${
-																		AppRoutes.Calendar
-																	}/${1}`
-																);
-															} else {
-																navigate(
-																	`${
-																		AppRoutes.Calendar
-																	}/${2}/${
-																		cs.campaign_id
-																	}`
-																);
-															}
-														} else {
-															setActiveCampaign(
-																cs
-															);
-														}
-													}}
-												>
-													<Group
-														justify="flex-end"
-														mb="sm"
-													>
-														<Badge
-															size="xs"
-															radius="xs"
-															variant="light"
-															color={
 																isIncomplete(cs)
-																	? "pink"
-																	: isActive
-																	? "white"
-																	: "blue"
+															) {
+																if (
+																	!cs.personal_details
+																) {
+																	navigate(
+																		`${
+																			AppRoutes.Calendar
+																		}/${1}`
+																	);
+																} else {
+																	navigate(
+																		`${
+																			AppRoutes.Calendar
+																		}/${2}/${
+																			cs.campaign_id
+																		}`
+																	);
+																}
+															} else {
+																setActiveCampaign(
+																	cs
+																);
 															}
+														}}
+													>
+														<Group
+															justify="flex-end"
+															mb="sm"
 														>
-															{isIncomplete(cs)
-																? "Incomplete"
-																: "Done"}
-														</Badge>
-													</Group>
+															<Badge
+																size="xs"
+																radius="xs"
+																variant="light"
+																color={
+																	isIncomplete(
+																		cs
+																	)
+																		? "pink"
+																		: isActive
+																		? "white"
+																		: "blue"
+																}
+															>
+																{isIncomplete(
+																	cs
+																)
+																	? "Incomplete"
+																	: "Done"}
+															</Badge>
+														</Group>
 
-													<Text
-														fw={700}
-														c={
-															isActive
-																? "white"
-																: "dark"
-														}
-													>
-														{
-															cs.personal_details
-																.strategyName
-														}
-													</Text>
-
-													<Text
-														size="xs"
-														mt={5}
-														c={
-															isActive
-																? "white"
-																: "dark"
-														}
-													>
-														Created{" "}
 														<Text
-															size="xs"
+															fw={700}
 															c={
 																isActive
-																	? "orange"
-																	: "blue"
+																	? "white"
+																	: "dark"
 															}
-															span
-															fw={700}
 														>
-															{format(
-																cs.created_at,
-																"MMMM do, yyyy"
-															)}
+															{
+																cs
+																	.personal_details
+																	.strategyName
+															}
 														</Text>
-													</Text>
-												</Card>
+
+														<Text
+															size="xs"
+															mt={5}
+															c={
+																isActive
+																	? "white"
+																	: "dark"
+															}
+														>
+															Created{" "}
+															<Text
+																size="xs"
+																c={
+																	isActive
+																		? "orange"
+																		: "blue"
+																}
+																span
+																fw={700}
+															>
+																{format(
+																	cs.created_at,
+																	"MMMM do, yyyy"
+																)}
+															</Text>
+														</Text>
+													</Card>
+													<Button
+														size="xs"
+														variant="light"
+														onClick={() => {
+															navigate(
+																`${
+																	AppRoutes.Calendar
+																}/${3}/${
+																	cs.campaign_id
+																}`
+															);
+														}}
+													>
+														Yearly Overview
+													</Button>
+												</Stack>
 											);
 										})}
 									</Fragment>
