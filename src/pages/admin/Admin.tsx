@@ -19,6 +19,7 @@ import {
 } from "../calendarPlanner/campaign.hooks";
 import { toast } from "sonner";
 import _ from "lodash";
+import { Fragment } from "react/jsx-runtime";
 
 const Admin = () => {
 	const { data: allCampaigns } = useAllCampaigns();
@@ -45,11 +46,17 @@ const Admin = () => {
 			</Table.Td>
 			<Table.Td>
 				<Box maw={200}>
-					{el.campaign_tags.map((tg, i) => (
-						<Badge size="sm" key={i} variant="light">
-							{tg}
-						</Badge>
-					))}
+					{el.campaign_tags ? (
+						<Fragment>
+							{el.campaign_tags.map((tg, i) => (
+								<Badge size="sm" key={i} variant="light">
+									{tg}
+								</Badge>
+							))}
+						</Fragment>
+					) : (
+						<>-</>
+					)}
 				</Box>
 			</Table.Td>
 		</Table.Tr>
@@ -76,10 +83,6 @@ const Admin = () => {
 			campaign_availability: hasLength(
 				{ min: 1 },
 				"Please select all available months for this campaign"
-			),
-			campaign_tags: hasLength(
-				{ min: 1 },
-				"Campaign name cannot be empty"
 			),
 		},
 	});

@@ -1,6 +1,7 @@
 import { createTheme } from "@mantine/core";
 
 export const theme = createTheme({
+	cursorType: "pointer",
 	colors: {
 		blue: [
 			"#f6ecff",

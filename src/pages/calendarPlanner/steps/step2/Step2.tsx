@@ -124,8 +124,8 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 		Dec: `December ${calendarYear}`,
 	};
 
-	const campaingsByPeriod = () => {
-		const periodFiltered = allCampaigns.map((ac) => {
+	const campaingsByPeriod = (arr: CampaignsModel[]) => {
+		const periodFiltered = arr.map((ac) => {
 			if (
 				ac.campaign_availability.every((item) =>
 					currentRange.includes(item)
@@ -138,7 +138,7 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 		return filters.length > 0
 			? periodFiltered.filter(
 					(ftc) =>
-						!ftc?.campaign_tags.every(
+						!ftc?.campaign_tags?.every(
 							(item) => !filters.includes(item)
 						)
 			  )
@@ -181,7 +181,9 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 	};
 
 	const cards = (data: string[]) => {
-		return data.map((item) => <Checkbox value={item} label={item} />);
+		return data.map((item, i) => (
+			<Checkbox key={i} value={item} label={item} />
+		));
 	};
 
 	const addToPlan = (values: typeof form.values) => {
@@ -214,6 +216,22 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 			// Only add or remove the selected value based on the predefined set
 			return [...new Set([...prevSelectedFilters, ...filteredValues])];
 		});
+	};
+
+	const groupByCampaignType = (items = allCampaigns) => {
+		const groupedItems = _.groupBy(items, "campaign_type");
+		const result = [
+			{ campaign_type: "Campaigns", items: groupedItems.Campaign || [] },
+			{
+				campaign_type: "Marketing Suite",
+				items: groupedItems["Marketing Suite"] || [],
+			},
+			{
+				campaign_type: "Brand Activations",
+				items: groupedItems["Brand Activations"] || [],
+			},
+		];
+		return result;
 	};
 
 	const MobileMultiSelect = ({ label, data }) => (
@@ -490,6 +508,7 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 								setCurrentRange(monthsBetween(d))
 							}
 						/>
+
 						<div className="mobile-filters">
 							<MobileMultiSelect
 								label="Your KPI Objectives"
@@ -500,108 +519,147 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 								data={filtersData.topics}
 							/>
 						</div>
+
 						<div className="blocks">
-							<Text fz="h2" fw={600} c="blue">
-								Campaigns
-							</Text>
+							{groupByCampaignType().map((gr, index) => (
+								<Box key={index} mt={index !== 0 ? 50 : 0}>
+									<Text fz="h2" fw={600} c="blue">
+										{gr.campaign_type}
+									</Text>
 
-							<Text c="dimmed" size="sm" mb={10}>
-								Showing all available campaigns between{" "}
-								<Text c="blue" size="sm" fw={600} span>
-									{period}
-								</Text>
-							</Text>
-							<div className="blocks-content">
-								{allCampaigns && allCampaigns.length > 0 && (
-									<Fragment>
-										{campaingsByPeriod().map((cmp, i) => (
-											<Fragment key={i}>
-												{cmp !== undefined && (
-													<Card
-														radius="sm"
-														withBorder
-														className={clsx(
-															"c-card",
-															isChosen(
-																cmp?.campaign_id
-															) && "chosen"
-														)}
-														onClick={() => {
-															if (
-																isChosen(
-																	cmp?.campaign_id
-																)
-															) {
-																setCampaignPlans(
-																	campaignPlans.filter(
-																		(cp) =>
-																			cp.campaign_id !==
-																			cmp?.campaign_id
-																	)
-																);
-															} else {
-																setCampaign(
-																	cmp
-																);
-															}
-														}}
+									<Text c="dimmed" size="sm" mb={10}>
+										Showing all available {gr.campaign_type}{" "}
+										between{" "}
+										<Text c="blue" size="sm" fw={600} span>
+											{period}
+										</Text>
+									</Text>
+
+									<div className="blocks-content">
+										{gr.items && gr.items.length > 0 && (
+											<Fragment>
+												{_.every(
+													campaingsByPeriod(gr.items),
+													_.isUndefined
+												) ? (
+													<Text
+														fw={700}
+														c="gray"
+														fs="italic"
 													>
-														<Group mt="xs" mb="xs">
-															<Text
-																c="dark"
-																fw={300}
-															>
-																{
-																	cmp.campaign_name
-																}
-															</Text>
-														</Group>
+														No {gr.campaign_type}{" "}
+														available for this
+														period.
+													</Text>
+												) : (
+													<Fragment>
+														{campaingsByPeriod(
+															gr.items
+														).map((cmp, i) => (
+															<Fragment key={i}>
+																{cmp !==
+																	undefined && (
+																	<Card
+																		radius="sm"
+																		withBorder
+																		className={clsx(
+																			"c-card",
+																			isChosen(
+																				cmp?.campaign_id
+																			) &&
+																				"chosen"
+																		)}
+																		onClick={() => {
+																			if (
+																				isChosen(
+																					cmp?.campaign_id
+																				)
+																			) {
+																				setCampaignPlans(
+																					campaignPlans.filter(
+																						(
+																							cp
+																						) =>
+																							cp.campaign_id !==
+																							cmp?.campaign_id
+																					)
+																				);
+																			} else {
+																				setCampaign(
+																					cmp
+																				);
+																			}
+																		}}
+																	>
+																		<Group
+																			mt="xs"
+																			mb="xs"
+																		>
+																			<Text
+																				c="dark"
+																				fw={
+																					300
+																				}
+																			>
+																				{
+																					cmp.campaign_name
+																				}
+																			</Text>
+																		</Group>
 
-														{isChosen(
-															cmp?.campaign_id
-														) ? (
-															<Text
-																c="blue"
-																fw={700}
-																size="sm"
-																style={{
-																	alignSelf:
-																		"flex-end",
-																}}
-															>
-																Remove
-															</Text>
-														) : (
-															<ActionIcon
-																variant={
-																	isChosen(
-																		cmp?.campaign_id
-																	)
-																		? "filled"
-																		: "light"
-																}
-																aria-label="Settings"
-																style={{
-																	alignSelf:
-																		"flex-end",
-																}}
-															>
-																<IconPlus
-																	style={{
-																		width: "70%",
-																		height: "70%",
-																	}}
-																	stroke={1.5}
-																/>
-															</ActionIcon>
-														)}
-													</Card>
+																		{isChosen(
+																			cmp?.campaign_id
+																		) ? (
+																			<Text
+																				c="blue"
+																				fw={
+																					700
+																				}
+																				size="sm"
+																				style={{
+																					alignSelf:
+																						"flex-end",
+																				}}
+																			>
+																				Remove
+																			</Text>
+																		) : (
+																			<ActionIcon
+																				variant={
+																					isChosen(
+																						cmp?.campaign_id
+																					)
+																						? "filled"
+																						: "light"
+																				}
+																				aria-label="Settings"
+																				style={{
+																					alignSelf:
+																						"flex-end",
+																				}}
+																			>
+																				<IconPlus
+																					style={{
+																						width: "70%",
+																						height: "70%",
+																					}}
+																					stroke={
+																						1.5
+																					}
+																				/>
+																			</ActionIcon>
+																		)}
+																	</Card>
+																)}
+															</Fragment>
+														))}
+													</Fragment>
 												)}
 											</Fragment>
-										))}
-									</Fragment>
-								)}
-							</div>
+										)}
+									</div>
+								</Box>
+							))}
 
 							<Button
 								fullWidth
