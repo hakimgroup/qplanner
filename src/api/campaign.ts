@@ -30,6 +30,7 @@ export interface CampaignsModel {
 	campaign_availability: string[];
 	campaign_link: string;
 	campaign_tags: string[];
+	campaign_description: string;
 }
 
 export const getCampaign = async (
