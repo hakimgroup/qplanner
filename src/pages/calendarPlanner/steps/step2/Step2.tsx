@@ -298,17 +298,19 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 					{campaign?.campaign_description}
 				</Text>
 
-				<Text mt={20}>
-					<Anchor
-						href={campaign?.campaign_link}
-						target="_blank"
-						c="blue"
-						fw={600}
-						size="sm"
-					>
-						Link to campaign overview
-					</Anchor>
-				</Text>
+				{campaign?.campaign_link && (
+					<Text mt={20}>
+						<Anchor
+							href={campaign?.campaign_link}
+							target="_blank"
+							c="blue"
+							fw={600}
+							size="sm"
+						>
+							Link to campaign overview
+						</Anchor>
+					</Text>
+				)}
 
 				<Text mt={30} size="xl" opacity={0.6} fw={600}>
 					Select campaign period
