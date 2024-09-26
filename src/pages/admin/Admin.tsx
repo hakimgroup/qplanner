@@ -8,6 +8,7 @@ import {
 	Box,
 	Badge,
 	Flex,
+	Textarea,
 } from "@mantine/core";
 import { hasLength, useForm } from "@mantine/form";
 import filtersData from "@/filters.json";
@@ -70,6 +71,7 @@ const Admin = () => {
 			campaign_availability: [],
 			campaign_link: "",
 			campaign_tags: [],
+			campaign_description: "",
 		},
 		validate: {
 			campaign_name: hasLength(
@@ -115,13 +117,21 @@ const Admin = () => {
 				<div className="row">
 					<form onSubmit={form.onSubmit(handleCreate)}>
 						<TextInput
-							mt="md"
+							mt="xs"
 							{...form.getInputProps("campaign_name")}
 							label="Campaign Name"
 						/>
 
+						<Textarea
+							autosize
+							minRows={1}
+							mt="xs"
+							{...form.getInputProps("campaign_description")}
+							label="Campaign Description"
+						/>
+
 						<Select
-							mt="md"
+							mt="xs"
 							label="Campaign Type"
 							{...form.getInputProps("campaign_type")}
 							data={[
@@ -132,13 +142,13 @@ const Admin = () => {
 						/>
 
 						<TextInput
-							mt="md"
+							mt="xs"
 							{...form.getInputProps("campaign_link")}
 							label="Campaign Link"
 						/>
 
 						<MultiSelect
-							mt="md"
+							mt="xs"
 							label="Campaign Availability"
 							clearable
 							hidePickedOptions
@@ -161,7 +171,7 @@ const Admin = () => {
 						/>
 
 						<MultiSelect
-							mt="md"
+							mt="xs"
 							label="Campaign Tags"
 							clearable
 							hidePickedOptions
@@ -176,7 +186,7 @@ const Admin = () => {
 						<Button
 							fullWidth
 							type="submit"
-							mt={40}
+							mt={20}
 							rightSection={<IconPlus size={15} />}
 							loading={isPending}
 						>
