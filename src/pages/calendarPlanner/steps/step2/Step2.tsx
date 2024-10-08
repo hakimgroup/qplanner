@@ -291,18 +291,26 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 					</Text>
 				</Text>
 
-				<Text mt={20}>
-					<Anchor
-						href={campaign?.campaign_link}
-						target="_blank"
-						c="dark"
-						fw={700}
-						size="xl"
-						opacity={0.75}
-					>
-						Link to campaign overview
-					</Anchor>
+				<Text mt={20} size="sm">
+					<Text span c="blue" fw={700} pr={5}>
+						About Campaign:
+					</Text>
+					{campaign?.campaign_description}
 				</Text>
+
+				{campaign?.campaign_link && (
+					<Text mt={20}>
+						<Anchor
+							href={campaign?.campaign_link}
+							target="_blank"
+							c="blue"
+							fw={600}
+							size="sm"
+						>
+							Link to campaign overview
+						</Anchor>
+					</Text>
+				)}
 
 				<Text mt={30} size="xl" opacity={0.6} fw={600}>
 					Select campaign period
@@ -591,9 +599,12 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 																			}
 																		}}
 																	>
-																		<Group
+																		<Stack
 																			mt="xs"
 																			mb="xs"
+																			gap={
+																				5
+																			}
 																		>
 																			<Text
 																				c="dark"
@@ -605,7 +616,51 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 																					cmp.campaign_name
 																				}
 																			</Text>
-																		</Group>
+
+																			<Text
+																				size="xs"
+																				c="blue"
+																				fw={
+																					600
+																				}
+																			>
+																				Available:{" "}
+																				<Text
+																					size="xs"
+																					fw={
+																						600
+																					}
+																					c="dark"
+																					span
+																				>
+																					{
+																						MonthMap[
+																							cmp
+																								?.campaign_availability[0]
+																						]
+																					}{" "}
+																					{cmp
+																						?.campaign_availability
+																						.length >
+																						1 && (
+																						<>
+																							to{" "}
+																							{
+																								MonthMap[
+																									cmp
+																										?.campaign_availability[
+																										cmp
+																											?.campaign_availability
+																											.length -
+																											1
+																									]
+																								]
+																							}
+																						</>
+																					)}
+																				</Text>
+																			</Text>
+																		</Stack>
 
 																		{isChosen(
 																			cmp?.campaign_id
