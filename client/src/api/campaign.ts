@@ -1,6 +1,8 @@
 import { DatabaseTables } from "@/shared/shared.models";
 import { supabase } from "./supabase";
 import { toast } from "sonner";
+import React from "react";
+import api from "./express";
 
 export interface CampaignPlan {
 	campaign_name: string;
@@ -31,6 +33,13 @@ export interface CampaignsModel {
 	campaign_link: string;
 	campaign_tags: string[];
 	campaign_description: string;
+}
+
+export interface EmailModel {
+	from: string;
+	to: string;
+	subject: string;
+	html: any;
 }
 
 export const getCampaign = async (
@@ -136,4 +145,28 @@ export const addCampaignAdmin = async (campaign: CampaignsModel) => {
 	}
 
 	return data as CampaignsModel;
+};
+
+export const editCampaignInList = async (campaign: CampaignsModel) => {
+	const { data, error } = await supabase
+		.from(DatabaseTables.CampaignsList)
+		.update(campaign)
+		.eq("campaign_id", campaign.campaign_id)
+		.select()
+		.single();
+
+	if (error) {
+		toast.error(
+			"Something went wrong. Please check your details and try again.",
+			{ position: "top-center" }
+		);
+		throw new Error(error.message);
+	}
+
+	return data;
+};
+
+export const sendEmail = async (emailDetails: EmailModel) => {
+	const { data } = await api.post(`/send_email`, emailDetails);
+	return data;
 };

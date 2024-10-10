@@ -3,8 +3,11 @@ import {
 	CampaignModel,
 	CampaignsModel,
 	createCampaign,
+	editCampaignInList,
+	EmailModel,
 	getAllCampaigns,
 	getCampaign,
+	sendEmail,
 	updateCampaign,
 } from "@/api/campaign";
 import { DatabaseTables } from "@/shared/shared.models";
@@ -72,5 +75,26 @@ export const useAllCampaigns = (
 		refetchOnWindowFocus: false,
 		refetchOnReconnect: true,
 		enabled,
+	});
+};
+
+export const useEditCampaignInList = (onSuccess?: () => void) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (c: CampaignsModel) => editCampaignInList(c),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: [DatabaseTables.CampaignsList],
+			});
+			if (onSuccess) onSuccess();
+		},
+	});
+};
+
+export const useSendEmail = () => {
+	return useMutation({
+		mutationFn: (em: EmailModel) => sendEmail(em),
+		onSuccess: () => {},
 	});
 };

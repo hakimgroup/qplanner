@@ -24,11 +24,12 @@ import { IconPlus, IconSelector } from "@tabler/icons-react";
 import { hasLength, useForm } from "@mantine/form";
 import clsx from "clsx";
 import _ from "lodash";
-import { useUpdateCampaign } from "../../campaign.hooks";
+import { useSendEmail, useUpdateCampaign } from "../../campaign.hooks";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "@/shared/shared.models";
 import { useMediaQuery, useDisclosure } from "@mantine/hooks";
+import CampaignSummary from "@/emailTemplates/CampaignSummary";
 
 interface Props {
 	currentCampaign: CampaignModel;
@@ -101,9 +102,16 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 	});
 
 	//API
+	const { mutate: sendEmail } = useSendEmail();
 	const { mutate, isPending } = useUpdateCampaign((id) => {
 		toast.success("Campaign plan submitted successfully!!");
 		navigate(`${AppRoutes.Calendar}/${3}/${id}`);
+		sendEmail({
+			from: "team@qplanner.com",
+			to: "wetinna@gmail.com",
+			subject: "Your 2025 Campaign Summary",
+			html: "Hello Bitches",
+		});
 	});
 
 	const calendarYear = 2025;
@@ -223,7 +231,7 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 		const result = [
 			{ campaign_type: "Campaigns", items: groupedItems.Campaign || [] },
 			{
-				campaign_type: "Marketing Suite",
+				campaign_type: "Always On",
 				items: groupedItems["Marketing Suite"] || [],
 			},
 			{
