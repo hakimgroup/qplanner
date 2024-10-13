@@ -1,7 +1,6 @@
 import {
 	Text,
 	Checkbox,
-	Group,
 	Stack,
 	Card,
 	ActionIcon,
@@ -29,7 +28,9 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "@/shared/shared.models";
 import { useMediaQuery, useDisclosure } from "@mantine/hooks";
-import CampaignSummary from "@/emailTemplates/CampaignSummary";
+import CampaignSummary from "@/emails/CampaignSummary";
+import { render } from "@react-email/components";
+import { useAuth } from "@/shared/AuthProvider";
 
 interface Props {
 	currentCampaign: CampaignModel;
@@ -37,6 +38,7 @@ interface Props {
 }
 
 let fm = "MMMM do, yyyy";
+const calendarYear = 2025;
 
 const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 	const [topicsOpened, { toggle: toggleTopics }] = useDisclosure(true);
@@ -102,19 +104,24 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 	});
 
 	//API
+	const { user } = useAuth();
 	const { mutate: sendEmail } = useSendEmail();
-	const { mutate, isPending } = useUpdateCampaign((id) => {
+	const { mutate, isPending } = useUpdateCampaign((cm) => {
 		toast.success("Campaign plan submitted successfully!!");
-		navigate(`${AppRoutes.Calendar}/${3}/${id}`);
+		const emailTemplate = render(
+			<CampaignSummary
+				summary={cm}
+				firstName={user?.user_metadata.first_name}
+			/>
+		);
 		sendEmail({
-			from: "team@qplanner.com",
-			to: "wetinna@gmail.com",
-			subject: "Your 2025 Campaign Summary",
-			html: "Hello Bitches",
+			to: currentCampaign.personal_details.email,
+			subject: `Your ${calendarYear} Campaign Summary`,
+			html: emailTemplate,
 		});
+		navigate(`${AppRoutes.Calendar}/${3}/${cm.campaign_id}`);
 	});
 
-	const calendarYear = 2025;
 	const lastDayOfYear = new Date(calendarYear, 11, 31);
 	const firstDayOfYear = new Date(calendarYear, 0, 1);
 	const MonthMap = {

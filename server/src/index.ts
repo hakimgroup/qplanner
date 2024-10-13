@@ -1,12 +1,10 @@
 import express, { Express, Request, NextFunction, Response } from "express";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import Mail from "nodemailer/lib/mailer";
 import cors from "cors";
+import { Resend } from "resend";
 // import { EmailBody } from "./models";
 
 interface EmailBody {
-	from: string;
 	to: string;
 	subject: string;
 	html: string;
@@ -24,35 +22,15 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
 });
 
 const port = process.env.PORT;
-const from = process.env.FROM_EMAIL;
 const pass = process.env.RESEND_API_KEY;
+const resend = new Resend(pass);
 
 function sendMail({ to, subject, html }: EmailBody) {
-	return new Promise((resolve, reject) => {
-		const transporter = nodemailer.createTransport({
-			host: "smtp.resend.com",
-			port: 465,
-			auth: {
-				user: "resend",
-				pass,
-			},
-		});
-
-		const mail_configs: Mail.Options = {
-			from,
-			to,
-			subject,
-			html,
-		};
-
-		transporter.sendMail(mail_configs, function (error, info) {
-			if (error) {
-				console.log(error);
-				return reject({ message: `An error has occured` });
-			}
-
-			return resolve({ message: `Email sent successfully` });
-		});
+	return resend.emails.send({
+		from: "QPlanner Team <team@planner.hakimgroup.io>",
+		to: [to],
+		subject,
+		html,
 	});
 }
 

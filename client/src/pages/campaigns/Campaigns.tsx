@@ -230,7 +230,10 @@ const Campaigns = () => {
 													}}
 												>
 													<Card.Section p="lg">
-														<Title order={3}>
+														<Title
+															order={3}
+															lineClamp={1}
+														>
 															{ac.campaign_name}
 														</Title>
 													</Card.Section>

@@ -41,16 +41,17 @@ export const useCreateCampaign = (onSuccess?: (id: string) => void) => {
 	});
 };
 
-export const useUpdateCampaign = (onSuccess?: (id: string) => void) => {
+export const useUpdateCampaign = (onSuccess?: (cm: CampaignModel) => void) => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: (c: CampaignModel) => updateCampaign(c),
-		onSuccess: ({ campaign_id }) => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries({
 				queryKey: [DatabaseTables.Campaigns],
 			});
-			if (onSuccess) onSuccess(campaign_id);
+
+			if (onSuccess) onSuccess(data);
 		},
 	});
 };

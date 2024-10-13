@@ -36,7 +36,6 @@ export interface CampaignsModel {
 }
 
 export interface EmailModel {
-	from: string;
 	to: string;
 	subject: string;
 	html: any;
@@ -101,7 +100,7 @@ export const updateCampaign = async (campaign: CampaignModel) => {
 		throw new Error(error.message);
 	}
 
-	return data;
+	return data as CampaignModel;
 };
 
 export const getAllCampaigns = async (
