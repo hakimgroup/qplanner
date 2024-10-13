@@ -40,6 +40,10 @@ app.post("/send_email", (req: Request, res: Response) => {
 		.catch((error) => res.status(500).send(error.message));
 });
 
+app.use("/", (req, res) => {
+	res.send("Server is running.");
+});
+
 //Serve
 
 app.listen(port, () => {
