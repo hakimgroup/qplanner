@@ -4,7 +4,6 @@
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
-    "build": "npx tsc",
     "start": "node dist/index.js",
     "watch:ts": "npx tsc --watch",
     "watch:nodemon": "nodemon -q --delay 1.5 dist/index.js",
