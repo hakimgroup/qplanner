@@ -1,13 +1,9 @@
 {
+  "version": 2,
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/"
+      "destination": "/src"
     }
-  ],
-  "git": {
-    "deploymentEnabled": {
-      "main": false
-    }
-  }
+  ]
 }
