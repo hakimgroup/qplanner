@@ -1,10 +1,12 @@
 {
   "objectives": [
     "ADV",
+    "AOV",
     "Conversion",
     "Volume",
     "Sales (Turnover)",
-    "Recurring revenue"
+    "Recurring revenue",
+    "Eye test"
   ],
   "topics": [
     "Frame",

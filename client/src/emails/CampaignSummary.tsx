@@ -194,7 +194,7 @@ export const CampaignSummary = ({
 
 						<Section className="text-center">
 							<Button
-								href={`${url}${AppRoutes.MyCampaigns}/1`}
+								href={`${url}${AppRoutes.MyCampaigns}`}
 								className="bg-brand text-white rounded-md py-3 px-[18px] mt-20"
 							>
 								Go To My Campaigns
@@ -220,7 +220,7 @@ export const CampaignSummary = ({
 								</Text>
 								<Text>
 									<Link
-										href={`${url}${AppRoutes.MyCampaigns}/1`}
+										href={`${url}${AppRoutes.MyCampaigns}`}
 										style={link}
 									>
 										View all my plans.
@@ -228,7 +228,7 @@ export const CampaignSummary = ({
 								</Text>
 								<Text>
 									<Link
-										href={`${url}${AppRoutes.MyCampaigns}/1`}
+										href={`${url}${AppRoutes.MyCampaigns}`}
 										style={link}
 									>
 										Update exisiting plans.

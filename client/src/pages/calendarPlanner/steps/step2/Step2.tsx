@@ -140,15 +140,13 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 	};
 
 	const campaingsByPeriod = (arr: CampaignsModel[]) => {
-		const periodFiltered = arr.map((ac) => {
-			if (
-				ac.campaign_availability.every((item) =>
-					currentRange.includes(item)
+		const periodFiltered = _.filter(
+			arr,
+			(campaign) =>
+				!_.isEmpty(
+					_.intersection(currentRange, campaign.campaign_availability)
 				)
-			) {
-				return ac;
-			}
-		});
+		);
 
 		return filters.length > 0
 			? periodFiltered.filter(
@@ -233,8 +231,8 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 		});
 	};
 
-	const groupByCampaignType = (items = allCampaigns) => {
-		const groupedItems = _.groupBy(items, "campaign_type");
+	const groupByCampaignType = () => {
+		const groupedItems = _.groupBy(allCampaigns, "campaign_type");
 		const result = [
 			{ campaign_type: "Campaigns", items: groupedItems.Campaign || [] },
 			{
