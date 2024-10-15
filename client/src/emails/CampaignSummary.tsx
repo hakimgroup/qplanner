@@ -15,6 +15,7 @@ import {
 	Text,
 	Tailwind,
 	Hr,
+	Img,
 } from "@react-email/components";
 import { format } from "date-fns";
 import * as React from "react";
@@ -125,9 +126,15 @@ export const CampaignSummary = ({
 				}
 			>
 				<Body className="bg-offwhite text-base font-sans">
-					<Row>
-						<Text style={global.heading}>QPlanner</Text>
-					</Row>
+					<Img
+						src={`https://i.postimg.cc/MG5r0LMD/HG-Marketing-Planner.png`}
+						width="184"
+						style={{
+							borderRadius: "10px",
+						}}
+						alt="Netlify"
+						className="mx-auto my-20"
+					/>
 					<Container className="bg-white p-45">
 						<Heading className="text-center my-0 leading-8">
 							Campaign Summary
