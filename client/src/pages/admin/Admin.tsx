@@ -26,10 +26,18 @@ import _ from "lodash";
 import { Fragment } from "react/jsx-runtime";
 import { useState } from "react";
 import { CampaignsModel } from "@/api/campaign";
+import useUser from "../auth/auth.hooks";
+import { useNavigate } from "react-router-dom";
+import { AppRoutes } from "@/shared/shared.models";
 
 const Admin = () => {
 	const { data: allCampaigns } = useAllCampaigns();
 	const [cm, setCm] = useState<CampaignsModel>(null);
+	const navigate = useNavigate();
+
+	//APIs
+	const { data: user } = useUser();
+	const isAdmin = user?.role === "admin";
 
 	const editForm = useForm<CampaignsModel>({
 		mode: "controlled",
@@ -143,6 +151,10 @@ const Admin = () => {
 	const handleEdit = (values: typeof editForm.values) => {
 		edit(values);
 	};
+
+	if (user && !isAdmin) {
+		return null;
+	}
 
 	return (
 		<Fragment>

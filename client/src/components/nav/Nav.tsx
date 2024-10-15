@@ -1,4 +1,4 @@
-import { useSignout } from "@/pages/auth/auth.hooks";
+import useUser, { useSignout } from "@/pages/auth/auth.hooks";
 import { AppRoutes } from "@/shared/shared.models";
 import { Button, Text } from "@mantine/core";
 import { IconLogout, IconPlus } from "@tabler/icons-react";
@@ -9,7 +9,8 @@ import MobileMenu from "../mobileMenu/MobileMenu";
 
 const Nav = () => {
 	const navigate = useNavigate();
-	const { user } = useAuth();
+	const { data: user } = useUser();
+	const isAdmin = user?.role === "admin";
 
 	//APIs
 	const { mutate: signout } = useSignout();
@@ -36,7 +37,7 @@ const Nav = () => {
 						My Marketing Plans
 					</Text>
 				</Link>
-				{user?.user_metadata.isAdmin && (
+				{isAdmin && (
 					<Link to={AppRoutes.Admin}>
 						<Text
 							span

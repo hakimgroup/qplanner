@@ -75,3 +75,22 @@ export const updatePassword = async ({ password }) => {
 		throw error;
 	}
 };
+
+export const getUser = async ({ userId }) => {
+	const { data, error } = await supabase
+		.from("users")
+		.select()
+		.eq("id", userId)
+		.single();
+
+	if (error) {
+		throw new Error(error.message);
+	}
+
+	if (!data) {
+		toast.error("User not found", { position: "top-center" });
+		throw new Error("User not found");
+	}
+
+	return data;
+};

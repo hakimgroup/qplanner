@@ -1,4 +1,5 @@
 import {
+	getUser,
 	resetPassword,
 	signin,
 	signout,
@@ -9,9 +10,17 @@ import {
 import { supabase } from "@/api/supabase";
 import { useAuth } from "@/shared/AuthProvider";
 import { AppRoutes } from "@/shared/shared.models";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+
+interface UsersModel {
+	id: string;
+	created_at: string;
+	first_name: string;
+	last_name: string;
+	role: "user" | "admin";
+}
 
 export const useSignup = () => {
 	const navigate = useNavigate();
@@ -86,3 +95,12 @@ export const useUpdatePassword = () => {
 		},
 	});
 };
+
+export default function useUser() {
+	const { user } = useAuth();
+
+	return useQuery<UsersModel>({
+		queryKey: ["users"],
+		queryFn: () => getUser({ userId: user?.id }),
+	});
+}
