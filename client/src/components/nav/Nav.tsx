@@ -1,11 +1,12 @@
 import useUser, { useSignout } from "@/pages/auth/auth.hooks";
 import { AppRoutes } from "@/shared/shared.models";
-import { Button, Text } from "@mantine/core";
+import { Button, Image, Text } from "@mantine/core";
 import { IconLogout, IconPlus } from "@tabler/icons-react";
 import "./nav.scss";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/AuthProvider";
 import MobileMenu from "../mobileMenu/MobileMenu";
+import Logo from "@assets/logo.svg";
 
 const Nav = () => {
 	const navigate = useNavigate();
@@ -19,12 +20,7 @@ const Nav = () => {
 	return (
 		<nav>
 			<div className="logo">
-				<Text size="xl" fw={700} c="dark">
-					Q
-				</Text>
-				<Text size="xl" fw={700} c="blue">
-					Planner
-				</Text>
+				<Image w={120} src={Logo} alt="QPlanner Logo" />
 			</div>
 
 			<div className="links">
