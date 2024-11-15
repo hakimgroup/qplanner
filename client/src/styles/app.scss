@@ -42,6 +42,18 @@ $n: 100;
 	a {
 		text-decoration: none;
 	}
+
+	.MuiDataGrid-cell {
+		display: flex !important;
+		align-items: center !important;
+		padding: 20px 10px !important;
+	}
+
+	.MuiDataGrid-row {
+		&:nth-child(odd) {
+			background-color: rgba(gray, 0.03) !important;
+		}
+	}
 }
 
 @keyframes enter {

@@ -11,13 +11,15 @@ import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "@/shared/shared.models";
 import Empty from "@assets/empty-folder.png";
 import ProtectedWrapper from "@/shared/Protected";
+import { useAuth } from "@/shared/AuthProvider";
 
 const Campaigns = () => {
 	const navigate = useNavigate();
+	const { user } = useAuth();
 	const [activeCampaign, setActiveCampaign] = useState<CampaignModel>(null);
 
 	//APIs
-	const { data, isFetching } = useCampaign();
+	const { data, isFetching } = useCampaign(null, user?.id);
 
 	const isIncomplete = (dt: CampaignModel) => {
 		if (!dt.personal_details || !dt.campaign_plans) {

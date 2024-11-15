@@ -7,28 +7,39 @@ import {
 	Table,
 	Box,
 	Badge,
-	Flex,
 	Textarea,
 	ActionIcon,
 	Modal,
+	Stack,
+	Title,
 } from "@mantine/core";
 import { hasLength, useForm } from "@mantine/form";
 import filtersData from "@/filters.json";
 import "./admin.scss";
-import { IconEdit, IconExternalLink, IconPlus } from "@tabler/icons-react";
+import { IconEdit, IconPlus } from "@tabler/icons-react";
 import {
 	useAddCampaignAdmin,
 	useAllCampaigns,
+	useCampaign,
 	useEditCampaignInList,
 } from "../calendarPlanner/campaign.hooks";
 import { toast } from "sonner";
 import _ from "lodash";
 import { Fragment } from "react/jsx-runtime";
 import { useState } from "react";
-import { CampaignsModel } from "@/api/campaign";
+import { CampaignModel, CampaignsModel } from "@/api/campaign";
 import useUser from "../auth/auth.hooks";
 import { useNavigate } from "react-router-dom";
-import { AppRoutes } from "@/shared/shared.models";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+
+interface Formatted {
+	practiceName?: string;
+	campaign_link: string;
+	campaign_name: string;
+	campaign_note?: string;
+	start_date: string;
+	end_date: string;
+}
 
 const Admin = () => {
 	const { data: allCampaigns } = useAllCampaigns();
@@ -38,6 +49,7 @@ const Admin = () => {
 	//APIs
 	const { data: user } = useUser();
 	const isAdmin = user?.role === "admin";
+	const { data } = useCampaign();
 
 	const editForm = useForm<CampaignsModel>({
 		mode: "controlled",
@@ -73,61 +85,173 @@ const Admin = () => {
 		},
 	});
 
-	const rows = allCampaigns?.map((el) => (
-		<Table.Tr key={el.campaign_id}>
-			<Table.Td maw={250}>
-				<Text c="blue.9" size="sm" fw={600} fs="italic">
-					{el.campaign_name}
-				</Text>
-			</Table.Td>
-			<Table.Td>
-				<Text size="xs" maw={200}>
-					{el.campaign_description}
-				</Text>
-			</Table.Td>
-			<Table.Td>{el.campaign_type}</Table.Td>
-			<Table.Td>
-				<Flex align="center">
-					<a href={el.campaign_link} target="_blank">
+	const columns: GridColDef[] = [
+		{
+			field: "campaign_name",
+			headerName: "Campaign Name",
+			width: 250,
+			renderCell(params) {
+				return (
+					<Text c="blue.9" size="sm" fw={600} fs="italic">
+						{params.value}
+					</Text>
+				);
+			},
+		},
+		{
+			field: "campaign_description",
+			headerName: "Description",
+			width: 200,
+			renderCell(params) {
+				return (
+					<Text size="xs" maw={200}>
+						{params.value}
+					</Text>
+				);
+			},
+		},
+		{ field: "campaign_type", headerName: "Type", flex: 1 },
+		{
+			field: "campaign_link",
+			headerName: "Link",
+			flex: 1,
+			renderCell(params) {
+				return (
+					<a href={params.value} target="_blank">
 						Campaign Link
 					</a>
-					<IconExternalLink size={15} style={{ marginLeft: 5 }} />
-				</Flex>
-			</Table.Td>
-			<Table.Td>
-				{_.head(el.campaign_availability)} -{" "}
-				{_.last(el.campaign_availability)}
-			</Table.Td>
-			<Table.Td>
-				<Box maw={200}>
-					{el.campaign_tags ? (
-						<Fragment>
-							{el.campaign_tags.map((tg, i) => (
-								<Badge size="sm" key={i} variant="light">
-									{tg}
-								</Badge>
-							))}
-						</Fragment>
-					) : (
-						<>-</>
-					)}
-				</Box>
-			</Table.Td>
-			<Table.Td>
-				<ActionIcon
-					variant="light"
-					size="xs"
-					c="blue.9"
-					onClick={() => {
-						setCm(el);
-						editForm.setValues(el);
-					}}
-				>
-					<IconEdit />
-				</ActionIcon>
-			</Table.Td>
-		</Table.Tr>
-	));
+				);
+			},
+		},
+		{
+			field: "campaign_availability",
+			headerName: "Availability",
+			width: 150,
+			renderCell(params) {
+				return (
+					<Text size="xs">
+						{String(_.head(params.value))} -{" "}
+						{String(_.last(params.value))}
+					</Text>
+				);
+			},
+		},
+		{
+			field: "campaign_tags",
+			headerName: "Tags",
+			width: 200,
+			renderCell(params) {
+				return (
+					<Box maw={200}>
+						{params.value.map((tg, i) => (
+							<Badge
+								size="sm"
+								key={i}
+								variant="light"
+								mr={5}
+								mb={5}
+							>
+								{tg}
+							</Badge>
+						))}
+					</Box>
+				);
+			},
+		},
+		{
+			align: "center",
+			field: "actions",
+			headerName: "",
+			width: 100,
+			sortable: false,
+			renderCell(params) {
+				return (
+					<ActionIcon
+						variant="light"
+						size="xs"
+						c="blue.9"
+						onClick={() => {
+							setCm(params.row);
+							editForm.setValues(params.row);
+						}}
+					>
+						<IconEdit />
+					</ActionIcon>
+				);
+			},
+		},
+	];
+
+	const plansColumns: GridColDef[] = [
+		{
+			field: "practiceName",
+			headerName: "Practice Name",
+			flex: 1,
+			renderCell(params) {
+				return (
+					<Text c="red.9" size="sm" fw={600} fs="italic">
+						{params.value}
+					</Text>
+				);
+			},
+		},
+		{
+			field: "campaign_link",
+			headerName: "Campaign Link",
+			flex: 1,
+			renderCell(params) {
+				return (
+					<a href={params.value} target="_blank">
+						Campaign Link
+					</a>
+				);
+			},
+		},
+		{
+			field: "campaign_name",
+			headerName: "Campaign Name",
+			flex: 1,
+			renderCell(params) {
+				return (
+					<Text size="sm" fw={700}>
+						{params.value}
+					</Text>
+				);
+			},
+		},
+		{
+			field: "campaign_note",
+			headerName: "Campaign Note",
+			flex: 1,
+			renderCell(params) {
+				return <Text size="xs">{params.value}</Text>;
+			},
+		},
+		{
+			field: "start_date",
+			headerName: "Start Date",
+			width: 100,
+			renderCell(params) {
+				return (
+					<Text size="xs" fw={600} c="blue.9">
+						{params.value}
+					</Text>
+				);
+			},
+		},
+		{
+			field: "end_date",
+			headerName: "End Date",
+			width: 100,
+			renderCell(params) {
+				return (
+					<Text size="xs" fw={600} c="blue.9">
+						{params.value}
+					</Text>
+				);
+			},
+		},
+	];
 
 	const { mutate, isPending } = useAddCampaignAdmin(() => {
 		form.reset();
@@ -150,6 +274,25 @@ const Admin = () => {
 
 	const handleEdit = (values: typeof editForm.values) => {
 		edit(values);
+	};
+
+	const formatCampaigns = (campaignModels: CampaignModel[]): Formatted[] => {
+		return _.flatMap(campaignModels, (campaignModel) => {
+			const practiceName = campaignModel.personal_details?.practiceName;
+			const campaignPlans = campaignModel.campaign_plans || [];
+
+			return campaignPlans.map((plan) => {
+				const [start_date, end_date] = plan.campaign_period || ["", ""];
+				return {
+					practiceName: practiceName,
+					campaign_link: plan.campaign_link,
+					campaign_name: plan.campaign_name,
+					campaign_note: plan.campaign_note,
+					start_date: start_date,
+					end_date: end_date,
+				} as Formatted;
+			});
+		});
 	};
 
 	if (user && !isAdmin) {
@@ -284,26 +427,51 @@ const Admin = () => {
 					</div>
 				</div>
 
-				<Box mt="lg">
-					<Table
-						striped
-						highlightOnHover
-						withTableBorder
-						withColumnBorders
-						verticalSpacing="md"
-					>
-						<Table.Thead>
-							<Table.Tr>
-								<Table.Th>Campaign Name</Table.Th>
-								<Table.Th>Type</Table.Th>
-								<Table.Th>Link</Table.Th>
-								<Table.Th>Availability</Table.Th>
-								<Table.Th>Tags</Table.Th>
-							</Table.Tr>
-						</Table.Thead>
-						<Table.Tbody>{rows}</Table.Tbody>
-					</Table>
-				</Box>
+				<Stack h={1000} w="100%" mt="lg">
+					<Title order={3} c="teal.9">
+						All Campaigns
+					</Title>
+					<DataGrid
+						disableRowSelectionOnClick
+						getRowHeight={() => "auto"}
+						showCellVerticalBorder
+						hideFooter
+						rows={
+							allCampaigns?.map((el) => ({
+								...el,
+								id: el.campaign_id,
+							})) ?? []
+						}
+						columns={columns}
+						sx={{
+							borderRadius: 0,
+						}}
+					/>
+				</Stack>
+
+				<Stack h={880} w="100%" mt="xl">
+					<Title order={3} c="teal.9">
+						Campaigns By Practice
+					</Title>
+					<DataGrid
+						disableRowSelectionOnClick
+						getRowHeight={() => "auto"}
+						showCellVerticalBorder
+						showColumnVerticalBorder
+						unstable_rowSpanning
+						hideFooter
+						rows={(formatCampaigns(data) ?? []).map(
+							(row, index) => ({
+								...row,
+								id: index,
+							})
+						)}
+						columns={plansColumns}
+						sx={{
+							borderRadius: 0,
+						}}
+					/>
+				</Stack>
 			</div>
 		</Fragment>
 	);
