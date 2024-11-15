@@ -39,13 +39,11 @@ const Login = () => {
 	return (
 		<div className="auth">
 			<div className="auth-content">
-				<Text fz="h1" fw={600} c="dark">
-					Q
-					<Text span fz="h1" c="blue" fw={600}>
-						Planner
-					</Text>{" "}
-					Login
-				</Text>
+			<div className="logo-wrapper">
+  <img src="logo.svg" alt="Logo" className="logo-main" />
+</div>
+
+				
 
 				<form onSubmit={form.onSubmit(handleLogin)}>
 					<TextInput
