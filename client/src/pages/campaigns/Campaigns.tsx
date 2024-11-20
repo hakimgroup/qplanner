@@ -158,7 +158,7 @@ const Campaigns = () => {
 															{
 																cs
 																	.personal_details
-																	.strategyName
+																	.practiceName
 															}
 														</Text>
 

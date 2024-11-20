@@ -34,6 +34,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 interface Formatted {
 	practiceName?: string;
+	buddyName?: string;
 	campaign_link: string;
 	campaign_name: string;
 	campaign_note?: string;
@@ -196,6 +197,18 @@ const Admin = () => {
 			},
 		},
 		{
+			field: "buddyName",
+			headerName: "Buddy Name",
+			flex: 1,
+			renderCell(params) {
+				return (
+					<Text c="blue.9" size="sm" fw={600} fs="italic">
+						{params.value}
+					</Text>
+				);
+			},
+		},
+		{
 			field: "campaign_link",
 			headerName: "Campaign Link",
 			flex: 1,
@@ -279,12 +292,14 @@ const Admin = () => {
 	const formatCampaigns = (campaignModels: CampaignModel[]): Formatted[] => {
 		return _.flatMap(campaignModels, (campaignModel) => {
 			const practiceName = campaignModel.personal_details?.practiceName;
+			const buddyName = campaignModel.personal_details?.strategyName;
 			const campaignPlans = campaignModel.campaign_plans || [];
 
 			return campaignPlans.map((plan) => {
 				const [start_date, end_date] = plan.campaign_period || ["", ""];
 				return {
 					practiceName: practiceName,
+					buddyName: buddyName,
 					campaign_link: plan.campaign_link,
 					campaign_name: plan.campaign_name,
 					campaign_note: plan.campaign_note,
