@@ -95,8 +95,7 @@ const Step1 = () => {
 							mt="md"
 							variant="filled"
 							{...form.getInputProps("strategyName")}
-							label="Marketing Plan Name"
-							placeholder="Overall marketing plan name"
+							label="Practice Buddy Name"
 						/>
 
 						<Button type="submit" mt="xl" loading={loading}>
