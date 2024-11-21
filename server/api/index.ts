@@ -29,7 +29,7 @@ function sendMail({ to, subject, html }: EmailBody) {
 	return resend.emails.send({
 		from: "QPlanner Team <team@planner.hakimgroup.io>",
 		to: [to],
-		bcc: ["marketing@hakimgroup.co.uk"],
+		bcc: ["david.barker@hakimgroup.co.uk"],
 		subject,
 		html,
 	});
