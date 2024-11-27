@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSignin } from "./auth.hooks";
 import { useEffect } from "react";
 import { useAuth } from "@/shared/AuthProvider";
+import Logo from "@assets/logo.svg";
 
 const Login = () => {
 	const navigate = useNavigate();
@@ -40,7 +41,7 @@ const Login = () => {
 		<div className="auth">
 			<div className="auth-content">
 			<div className="logo-wrapper">
-  <img src="logo.svg" alt="Logo" className="logo-main" />
+  <img src={Logo} alt="Logo" className="logo-main" />
 </div>
 
 				
