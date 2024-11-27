@@ -41,7 +41,7 @@ const Login = () => {
 		<div className="auth">
 			<div className="auth-content">
 			<div className="logo-wrapper">
-  <img src={Logo} alt="Logo" className="logo-main" />
+  <img src="https://i.postimg.cc/MG5r0LMD/HG-Marketing-Planner.png" alt="Logo" className="logo-main" />
 </div>
 
 				
