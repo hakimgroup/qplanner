@@ -81,7 +81,7 @@ const Step3 = ({ currentCampaign }: Props) => {
 				</Text>
 				<Text size="sm" mb="md" c="dimmed" maw={600}>This is your saved campaign plan for the year. Review your calendar to ensure your campaigns are perfectly timed to achieve maximum impact. Please speaker to you marketing executive if you have questions about this.</Text>
 
-				<Text fz="h5" fw={600} c="blue" span>Next Steps:</Text>
+				<Text fz="h5" fw={600} c="dimmed" span>Next Steps:</Text>
 
 				<Text size="sm" c="dimmed" maw={600}>To make changes or add more campaigns, visit <strong>My Marketing Plans</strong> at any time. Your plans are saved and can be updated throughout the year.</Text>
 
