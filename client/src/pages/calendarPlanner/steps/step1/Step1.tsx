@@ -58,13 +58,14 @@ const Step1 = () => {
 					STEP 1
 				</Text>
 				<Text fz="h1" fw={600} c="dark">
-					Personal Details
+					Personal Practice Information
 				</Text>
 				<Text size="sm" c="dimmed" maw={600}>
-					To personalize your experience and optimize your marketing
-					plan strategy, we need a few details from you. Please fill
-					out the form below, and let's get you ready to conquer your
-					marketing plans!
+				To begin building your marketing plan, we need some key details about your practice. Please fill out the form below with accurate information to help us organise your campaigns effectively within the platform.
+				</Text>
+
+				<Text size="sm" c="dimmed" maw={600}>
+				This step sets the foundation for creating and managing your campaigns, streamlining communication, and ensuring that your objectives are aligned with the marketing tools and resources available.
 				</Text>
 
 				<div className="step-1-content">

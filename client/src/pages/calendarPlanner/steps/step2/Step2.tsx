@@ -374,12 +374,18 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 							</Text>
 						</Text>
 						<Text size="sm" c="dimmed" maw={600}>
-							Explore your calendar and select the perfect dates
-							for your marketing plans! Review the available
-							slots, choose the plans that align with your goals,
-							and schedule them to maximize your impact throughout
-							the year.
+						Use the calendar to schedule marketing campaigns that align with your practice’s goals. Filter by objectives (e.g., ADV, conversion) or topics (e.g., frames, lenses) to explore available campaigns. Each campaign includes details such as availability dates and links to materials, helping you plan effectively.
 						</Text>
+
+						<Text size="sm" c="dimmed" maw={600}>
+						“Always On” campaigns provide year-round opportunities, while “Brand Activations” focus on specific, time-sensitive initiatives.
+						</Text>
+
+						<Text fz="h3">Save Your Progress:</Text>
+
+						<Text size="sm" c="dimmed" maw={600}>Be sure to save your selections before exiting—your plan will be available in My Marketing Plans, where you can return anytime to make updates or add new campaigns.</Text>
+
+						<Text size="sm" c="dimmed" maw={600}>When ready, submit your plan to receive a summary email, with additional feedback provided closer to implementation.</Text>
 					</Box>
 
 					<Button
@@ -743,7 +749,7 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 								}}
 								style={{ position: "sticky", bottom: "10px" }}
 							>
-								Submit Campaign Plan
+								Save Marketing Plan
 							</Button>
 						</div>
 					</div>
