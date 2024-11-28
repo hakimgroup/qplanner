@@ -374,17 +374,17 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 								2025
 							</Text>
 						</Text>
-						<Text size="sm" c="dimmed" maw={600}>
+						<Text size="sm" c="dimmed" mb="md" maw={600}>
 						Use the calendar to schedule marketing campaigns that align with your practice’s goals. Filter by objectives (e.g., ADV, conversion) or topics (e.g., frames, lenses) to explore available campaigns. Each campaign includes details such as availability dates and links to materials, helping you plan effectively.
 						</Text>
 
-						<Text size="sm" c="dimmed" maw={600}>
+						<Text size="sm"mb="md" c="dimmed" maw={600}>
 						“Always On” campaigns provide year-round opportunities, while “Brand Activations” focus on specific, time-sensitive initiatives.
 						</Text>
 
-						<Text fz="h3">Save Your Progress:</Text>
+						<Text fz="h4">Save Your Progress:</Text>
 
-						<Text size="sm" c="dimmed" maw={600}>Be sure to save your selections before exiting—your plan will be available in My Marketing Plans, where you can return anytime to make updates or add new campaigns.</Text>
+						<Text size="sm" mb="md" c="dimmed" maw={600}>Be sure to save your selections before exiting—your plan will be available in My Marketing Plans, where you can return anytime to make updates or add new campaigns.</Text>
 
 						<Text size="sm" c="dimmed" maw={600}>When ready, submit your plan to receive a summary email, with additional feedback provided closer to implementation.</Text>
 					</Box>
