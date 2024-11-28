@@ -20,7 +20,7 @@ const Nav = () => {
 	return (
 		<nav>
 			<div className="logo">
-				<Image w={120} src={Logo} alt="QPlanner Logo" />
+				<Image w={120} src="https://i.postimg.cc/MG5r0LMD/HG-Marketing-Planner.png" alt="QPlanner Logo" />
 			</div>
 
 			<div className="links">

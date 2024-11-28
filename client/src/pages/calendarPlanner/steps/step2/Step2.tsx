@@ -25,7 +25,7 @@ import clsx from "clsx";
 import _ from "lodash";
 import { useSendEmail, useUpdateCampaign } from "../../campaign.hooks";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AppRoutes } from "@/shared/shared.models";
 import { useMediaQuery, useDisclosure } from "@mantine/hooks";
 import CampaignSummary from "@/emails/CampaignSummary";
@@ -41,6 +41,7 @@ let fm = "MMMM do, yyyy";
 const calendarYear = 2025;
 
 const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
+	const { campaignId } = useParams();
 	const [topicsOpened, { toggle: toggleTopics }] = useDisclosure(true);
 	const [objectivesOpened, { toggle: toggleObjectives }] =
 		useDisclosure(true);
@@ -744,6 +745,7 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 								onClick={() => {
 									mutate({
 										...currentCampaign,
+										campaign_id: campaignId,
 										campaign_plans: campaignPlans,
 									});
 								}}

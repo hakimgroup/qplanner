@@ -11,10 +11,14 @@
     "email": "email dev --dir src/emails --port 8000"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
     "@mantine/core": "7.12.2",
     "@mantine/dates": "^7.12.2",
     "@mantine/form": "^7.12.2",
     "@mantine/hooks": "7.12.2",
+    "@mui/material": "^6.1.7",
+    "@mui/x-data-grid": "^7.22.2",
     "@react-email/components": "^0.0.22",
     "@supabase/supabase-js": "^2.45.3",
     "@tabler/icons-react": "^3.14.0",

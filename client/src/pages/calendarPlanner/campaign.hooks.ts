@@ -15,12 +15,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useCampaign = (
 	campaign_id?: string,
+	user_id?: string,
 	enabled = true,
 	onSuccess?: () => void
 ) => {
 	return useQuery<CampaignModel[]>({
 		queryKey: [DatabaseTables.Campaigns, campaign_id],
-		queryFn: () => getCampaign(campaign_id, onSuccess),
+		queryFn: () => getCampaign(user_id, campaign_id, onSuccess),
 		refetchOnWindowFocus: false,
 		refetchOnReconnect: true,
 		enabled,

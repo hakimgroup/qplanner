@@ -148,9 +148,9 @@ export const CampaignSummary = ({
 										{firstName}
 									</Link>
 									! We're excited to let you know that your
-									marketing campaign plan -{" "}
+									campaign plan by{" "}
 									<Link className="text-brand font-bold">
-										{summary?.personal_details.strategyName}
+										{summary?.personal_details.practiceName}
 									</Link>{" "}
 									has been submitted successfully!!
 								</Text>

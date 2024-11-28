@@ -11,7 +11,7 @@ const CalendarPlanner = () => {
 	const { campaignId, stage } = useParams();
 
 	//APIs
-	const { data, refetch } = useCampaign(campaignId, false);
+	const { data, refetch } = useCampaign(campaignId, null, false);
 	const { data: allCampaigns } = useAllCampaigns();
 
 	const STEPS = {

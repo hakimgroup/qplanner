@@ -1,7 +1,6 @@
 import { DatabaseTables } from "@/shared/shared.models";
 import { supabase } from "./supabase";
 import { toast } from "sonner";
-import React from "react";
 import api from "./express";
 
 export interface CampaignPlan {
@@ -42,6 +41,7 @@ export interface EmailModel {
 }
 
 export const getCampaign = async (
+	user_id: string,
 	campaign_id: string,
 	onSuccess?: () => void
 ) => {
@@ -49,6 +49,10 @@ export const getCampaign = async (
 
 	if (campaign_id) {
 		query = query.eq("campaign_id", campaign_id);
+	}
+
+	if (user_id) {
+		query = query.eq("creator_id", user_id);
 	}
 
 	const { data, error } = await query;
