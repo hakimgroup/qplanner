@@ -375,10 +375,10 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 							</Text>
 						</Text>
 						<Text size="sm" c="dimmed" mb="md" maw={600}>
-						Use the calendar to schedule marketing campaigns that align with your practice’s goals. Filter by objectives (e.g., ADV, conversion) or topics (e.g., frames, lenses) to explore available campaigns. Each campaign includes details such as availability dates and links to materials, helping you plan effectively.
+						Use the calendar to schedule marketing campaigns that align with your practice's goals. Filter by objectives (e.g., ADV, conversion) or topics (e.g., frames, lenses) to explore available campaigns. Each campaign includes details such as availability dates and links to materials, helping you plan effectively.
 						</Text>
 
-						<Text size="sm"mb="md" c="dimmed" maw={600}>
+						<Text size="sm" mb="md" c="dimmed" maw={600}>
 						“Always On” campaigns provide year-round opportunities, while “Brand Activations” focus on specific, time-sensitive initiatives.
 						</Text>
 
