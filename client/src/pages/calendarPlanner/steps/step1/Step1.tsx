@@ -58,9 +58,9 @@ const Step1 = () => {
 					STEP 1
 				</Text>
 				<Text fz="h1" fw={600} c="dark">
-					Personal Practice Information
+					Practice Information
 				</Text>
-				<Text size="sm" c="dimmed" maw={600}>
+				<Text size="sm" mb="sm" c="dimmed" maw={600}>
 				To begin building your marketing plan, we need some key details about your practice. Please fill out the form below with accurate information to help us organise your campaigns effectively within the platform.
 				</Text>
 
