@@ -83,7 +83,7 @@ const Step3 = ({ currentCampaign }: Props) => {
 
 				<Text fz="h5" fw={600} c="dimmed" span>Next Steps:</Text>
 
-				<Text size="sm" c="dimmed" maw={600}>To make changes or add more campaigns, visit <strong>My Marketing Plans</strong> at any time. Your plans are saved and can be updated throughout the year.</Text>
+				<Text size="sm" c="dimmed" maw={600}>To make changes or add more campaigns, visit <a href="https://planner.hakimgroup.co.uk/my-campaigns">My Marketing Plans</a> at any time. Your plans are saved and can be updated throughout the year.</Text>
 
 				<div className="campaigns-overview">
 					<div className="all-campaigns">
