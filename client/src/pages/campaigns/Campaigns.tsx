@@ -83,9 +83,8 @@ const Campaigns = () => {
 												activeCampaign?.campaign_id ===
 												cs.campaign_id;
 											return (
-												<Stack gap={5}>
+												<Stack gap={5} key={i}>
 													<Card
-														key={i}
 														className={clsx(
 															"c-card",
 															isActive && "active"

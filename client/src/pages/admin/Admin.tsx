@@ -24,7 +24,7 @@ import {
 	useEditCampaignInList,
 } from "../calendarPlanner/campaign.hooks";
 import { toast } from "sonner";
-import _ from "lodash";
+import _, { isEmpty } from "lodash";
 import { Fragment } from "react/jsx-runtime";
 import { useState } from "react";
 import { CampaignModel, CampaignsModel } from "@/api/campaign";
@@ -144,17 +144,21 @@ const Admin = () => {
 			renderCell(params) {
 				return (
 					<Box maw={200}>
-						{params.value.map((tg, i) => (
-							<Badge
-								size="sm"
-								key={i}
-								variant="light"
-								mr={5}
-								mb={5}
-							>
-								{tg}
-							</Badge>
-						))}
+						{!isEmpty(params.value) && (
+							<Fragment>
+								{params.value.map((tg, i) => (
+									<Badge
+										size="sm"
+										key={i}
+										variant="light"
+										mr={5}
+										mb={5}
+									>
+										{tg}
+									</Badge>
+								))}
+							</Fragment>
+						)}
 					</Box>
 				);
 			},
