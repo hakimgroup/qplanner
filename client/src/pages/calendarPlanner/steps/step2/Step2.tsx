@@ -125,20 +125,6 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 
 	const lastDayOfYear = new Date(calendarYear, 11, 31);
 	const firstDayOfYear = new Date(calendarYear, 0, 1);
-	const MonthMap = {
-		Jan: `January ${calendarYear}`,
-		Feb: `February ${calendarYear}`,
-		Mar: `March ${calendarYear}`,
-		Apr: `April ${calendarYear}`,
-		May: `May ${calendarYear}`,
-		Jun: `June ${calendarYear}`,
-		Jul: `July ${calendarYear}`,
-		Aug: `August ${calendarYear}`,
-		Sep: `September ${calendarYear}`,
-		Oct: `October ${calendarYear}`,
-		Nov: `November ${calendarYear}`,
-		Dec: `December ${calendarYear}`,
-	};
 
 	const campaingsByPeriod = (arr: CampaignsModel[]) => {
 		const periodFiltered = _.filter(
@@ -173,9 +159,33 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 		return mB;
 	};
 
+	const generateMonthMap = (year) => {
+		const months = [
+			"Jan",
+			"Feb",
+			"Mar",
+			"Apr",
+			"May",
+			"Jun",
+			"Jul",
+			"Aug",
+			"Sep",
+			"Oct",
+			"Nov",
+			"Dec",
+		];
+
+		return months.reduce((map, month, index) => {
+			// Generate ISO 8601 date strings for the first day of each month
+			map[month] = `${year}-${String(index + 1).padStart(2, "0")}-01`;
+			return map;
+		}, {});
+	};
+
+	const MonthMap = generateMonthMap(calendarYear);
 	const getMaxMinDate = () => {
-		let minDate = new Date(MonthMap[campaign?.campaign_availability[0]]);
-		let maxDate =
+		const minDate = new Date(MonthMap[campaign?.campaign_availability[0]]);
+		const maxDate =
 			campaign?.campaign_availability.length > 1
 				? lastDayOfMonth(
 						new Date(
@@ -192,6 +202,26 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 			minDate,
 			maxDate,
 		};
+	};
+	const formatDateToMonthYear = (dateString) => {
+		if (!dateString) return null;
+
+		// Parse the date
+		const date = new Date(dateString);
+
+		// Validate if the date is valid
+		if (_.isNaN(date.getTime())) {
+			console.error("Invalid date format:", dateString);
+			return null;
+		}
+
+		// Format the date to "MMM YYYY"
+		return _.upperFirst(
+			date.toLocaleDateString("en-US", {
+				month: "short",
+				year: "numeric",
+			})
+		);
 	};
 
 	const cards = (data: string[]) => {
@@ -288,18 +318,20 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 				<Text size="md" c="dark">
 					Available:{" "}
 					<Text size="sm" fw={600} c="blue" span>
-						{MonthMap[campaign?.campaign_availability[0]]}{" "}
+						{formatDateToMonthYear(
+							MonthMap[campaign?.campaign_availability[0]]
+						)}{" "}
 						{campaign?.campaign_availability.length > 1 && (
 							<>
 								to{" "}
-								{
+								{formatDateToMonthYear(
 									MonthMap[
 										campaign?.campaign_availability[
 											campaign?.campaign_availability
 												.length - 1
 										]
 									]
-								}
+								)}
 							</>
 						)}
 					</Text>
@@ -334,7 +366,6 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 					<DatePickerInput
 						type="range"
 						clearable
-						size="sm"
 						label="Campaign period"
 						placeholder="Date input"
 						minDate={getMaxMinDate().minDate}
@@ -375,18 +406,35 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 							</Text>
 						</Text>
 						<Text size="sm" c="dimmed" mb="md" maw={600}>
-						Use the calendar to schedule marketing campaigns that align with your practice's goals. Filter by objectives (e.g., ADV, conversion) or topics (e.g., frames, lenses) to explore available campaigns. Each campaign includes details such as availability dates and links to materials, helping you plan effectively.
+							Use the calendar to schedule marketing campaigns
+							that align with your practice's goals. Filter by
+							objectives (e.g., ADV, conversion) or topics (e.g.,
+							frames, lenses) to explore available campaigns. Each
+							campaign includes details such as availability dates
+							and links to materials, helping you plan
+							effectively.
 						</Text>
 
 						<Text size="sm" mb="md" c="dimmed" maw={600}>
-						“Always On” campaigns provide year-round opportunities, while “Brand Activations” focus on specific, time-sensitive initiatives.
+							“Always On” campaigns provide year-round
+							opportunities, while “Brand Activations” focus on
+							specific, time-sensitive initiatives.
 						</Text>
 
 						<Text fz="h4">Save Your Progress:</Text>
 
-						<Text size="sm" mb="md" c="dimmed" maw={600}>Be sure to save your selections before exiting—your plan will be available in My Marketing Plans, where you can return anytime to make updates or add new campaigns.</Text>
+						<Text size="sm" mb="md" c="dimmed" maw={600}>
+							Be sure to save your selections before exiting—your
+							plan will be available in My Marketing Plans, where
+							you can return anytime to make updates or add new
+							campaigns.
+						</Text>
 
-						<Text size="sm" c="dimmed" maw={600}>When ready, submit your plan to receive a summary email, with additional feedback provided closer to implementation.</Text>
+						<Text size="sm" c="dimmed" maw={600}>
+							When ready, submit your plan to receive a summary
+							email, with additional feedback provided closer to
+							implementation.
+						</Text>
 					</Box>
 
 					<Button
@@ -653,19 +701,19 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 																					c="dark"
 																					span
 																				>
-																					{
+																					{formatDateToMonthYear(
 																						MonthMap[
 																							cmp
 																								?.campaign_availability[0]
 																						]
-																					}{" "}
+																					)}{" "}
 																					{cmp
 																						?.campaign_availability
 																						.length >
 																						1 && (
 																						<>
 																							to{" "}
-																							{
+																							{formatDateToMonthYear(
 																								MonthMap[
 																									cmp
 																										?.campaign_availability[
@@ -675,7 +723,7 @@ const Step2 = ({ allCampaigns, currentCampaign }: Props) => {
 																											1
 																									]
 																								]
-																							}
+																							)}
 																						</>
 																					)}
 																				</Text>
