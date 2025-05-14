@@ -13,7 +13,7 @@ export interface CampaignPlan {
 
 export interface CampaignModel {
 	creator_id: string;
-	created_at?: Date;
+	created_at?: any;
 	campaign_id?: string;
 	personal_details?: {
 		name?: string;

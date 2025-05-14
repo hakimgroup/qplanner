@@ -31,6 +31,7 @@ import { CampaignModel, CampaignsModel } from "@/api/campaign";
 import useUser from "../auth/auth.hooks";
 import { useNavigate } from "react-router-dom";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import BulkImport from "@/components/bulkImport/BulkImport";
 
 interface Formatted {
 	practiceName?: string;
@@ -362,6 +363,8 @@ const Admin = () => {
 					to ensure your campaigns are up-to-date and aligned with
 					your goals.
 				</Text>
+
+				<BulkImport />
 
 				<div className="create-rows">
 					<div className="row">
