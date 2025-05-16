@@ -4,7 +4,6 @@ import {
 	TextInput,
 	MultiSelect,
 	Select,
-	Table,
 	Box,
 	Badge,
 	Textarea,
@@ -29,7 +28,6 @@ import { Fragment } from "react/jsx-runtime";
 import { useState } from "react";
 import { CampaignModel, CampaignsModel } from "@/api/campaign";
 import useUser from "../auth/auth.hooks";
-import { useNavigate } from "react-router-dom";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import BulkImport from "@/components/bulkImport/BulkImport";
 
@@ -46,7 +44,6 @@ interface Formatted {
 const Admin = () => {
 	const { data: allCampaigns } = useAllCampaigns();
 	const [cm, setCm] = useState<CampaignsModel>(null);
-	const navigate = useNavigate();
 
 	//APIs
 	const { data: user } = useUser();

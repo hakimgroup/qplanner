@@ -4,6 +4,8 @@ import Papa from "papaparse";
 import { Box, Button, FileButton, Group } from "@mantine/core";
 import api from "@/api/express";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { DatabaseTables } from "@/shared/shared.models";
 
 type Row = {
 	firstName: string;
@@ -19,6 +21,7 @@ type Row = {
 };
 
 export default function BulkImport() {
+	const queryClient = useQueryClient();
 	const [file, setFile] = useState<File | null>(null);
 	const [loading, setLoading] = useState(false);
 
@@ -42,6 +45,9 @@ export default function BulkImport() {
 					setLoading(false);
 					toast.success("Automation completed successfully!!", {
 						position: "top-center",
+					});
+					queryClient.invalidateQueries({
+						queryKey: [DatabaseTables.Campaigns],
 					});
 				} catch (error: any) {
 					setLoading(false);
