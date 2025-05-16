@@ -45,7 +45,6 @@ export default function BulkImport() {
 					});
 				} catch (error: any) {
 					setLoading(false);
-					console.error("Import failed:", error);
 					// you can also set an error state here if you like
 				}
 			},

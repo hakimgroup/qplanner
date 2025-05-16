@@ -457,7 +457,7 @@ const Admin = () => {
 						disableRowSelectionOnClick
 						getRowHeight={() => "auto"}
 						showCellVerticalBorder
-						hideFooter
+						showToolbar
 						rows={
 							allCampaigns?.map((el) => ({
 								...el,
@@ -480,8 +480,10 @@ const Admin = () => {
 						getRowHeight={() => "auto"}
 						showCellVerticalBorder
 						showColumnVerticalBorder
-						unstable_rowSpanning
-						hideFooter
+						rowSpanning
+						// disableVirtualization
+						virtualizeColumnsWithAutoRowHeight
+						showToolbar
 						rows={(formatCampaigns(data) ?? []).map(
 							(row, index) => ({
 								...row,
