@@ -2,7 +2,7 @@ import { Card, Text, Badge, Button, Group, Title, Stack } from "@mantine/core";
 import "./campaigns.scss";
 import { useCampaign } from "../calendarPlanner/campaign.hooks";
 import { Fragment } from "react/jsx-runtime";
-import { format } from "date-fns";
+import { format, parse, parseISO } from "date-fns";
 import { CampaignModel } from "@/api/campaign";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
@@ -27,6 +27,28 @@ const Campaigns = () => {
 		}
 
 		return false;
+	};
+
+	const CampaignEnd = ({ campaign_period }) => {
+		if (campaign_period.length < 2) {
+			return <></>;
+		}
+
+		const raw = campaign_period[1]; // "30/06/2025"
+		const dateObj: any = parse(raw, "dd/MM/yyyy", new Date());
+
+		if (isNaN(dateObj)) {
+			return <></>;
+		}
+
+		return (
+			<Text span c="blue" fw={600}>
+				<Text span c="dark">
+					and ends
+				</Text>{" "}
+				{format(dateObj, "MMMM do, yyyy")}
+			</Text>
+		);
 	};
 
 	useEffect(() => {
@@ -260,18 +282,11 @@ const Campaigns = () => {
 																	"MMMM do, yyyy"
 																)}
 															</Text>{" "}
-															and ends{" "}
-															<Text
-																span
-																c="blue"
-																fw={600}
-															>
-																{format(
-																	ac
-																		.campaign_period[1],
-																	"MMMM do, yyyy"
-																)}
-															</Text>
+															<CampaignEnd
+																campaign_period={
+																	ac?.campaign_period
+																}
+															/>
 														</Text>
 													</Group>
 
