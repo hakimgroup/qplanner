@@ -201,7 +201,7 @@ export const CampaignSummary = ({
 
 						<Section className="text-center">
 							<Button
-								href={`${url}${AppRoutes.MyCampaigns}`}
+								href={``}
 								className="bg-brand text-white rounded-md py-3 px-[18px] mt-20"
 							>
 								Go To My Campaigns
@@ -218,26 +218,17 @@ export const CampaignSummary = ({
 									What's Next?
 								</Text>
 								<Text>
-									<Link
-										href={`${url}${AppRoutes.Calendar}/1`}
-										style={link}
-									>
+									<Link href={``} style={link}>
 										Create a new plan.
 									</Link>
 								</Text>
 								<Text>
-									<Link
-										href={`${url}${AppRoutes.MyCampaigns}`}
-										style={link}
-									>
+									<Link href={``} style={link}>
 										View all my plans.
 									</Link>
 								</Text>
 								<Text>
-									<Link
-										href={`${url}${AppRoutes.MyCampaigns}`}
-										style={link}
-									>
+									<Link href={``} style={link}>
 										Update exisiting plans.
 									</Link>
 								</Text>
