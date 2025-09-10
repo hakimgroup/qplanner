@@ -26,7 +26,7 @@ const Login = () => {
 
 	useEffect(() => {
 		if (auth) {
-			navigate(AppRoutes.Calendar);
+			navigate(AppRoutes.Dashboard);
 		}
 	}, [auth]);
 
@@ -62,7 +62,7 @@ const Login = () => {
 					/>
 
 					<div className={cl["form-right-link"]}>
-						<Link to={AppRoutes.Forgot}>
+						<Link to={AppRoutes.Dashboard}>
 							<Text size="sm" c="blue">
 								Forgot password?
 							</Text>
@@ -73,7 +73,7 @@ const Login = () => {
 						Login
 					</Button>
 
-					<Link to={AppRoutes.Signup}>
+					<Link to={AppRoutes.Dashboard}>
 						<Text size="sm" c="blue" ta="center" fw={600} mt="sm">
 							Don't have an account? Create account.
 						</Text>
