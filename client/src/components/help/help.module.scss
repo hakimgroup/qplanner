@@ -1,0 +1,39 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+.help-video-card {
+	margin-top: 15px;
+	height: 225px;
+	border: 2px dashed variables.$sea;
+	position: relative;
+	overflow: hidden;
+	cursor: pointer;
+	background-color: #f3f4f6;
+
+	.content {
+		position: relative;
+		z-index: 1;
+	}
+
+	// &::before {
+	// 	content: "";
+	// 	position: absolute;
+	// 	top: 0;
+	// 	left: 0;
+	// 	right: 0;
+	// 	bottom: 0;
+	// 	background-image: url("https://i.postimg.cc/7Z946X6k/Chat-GPT-Image-Sep-10-2025-03-23-13-PM.png");
+	// 	background-size: cover;
+	// 	background-position: center;
+	// 	filter: blur(10px);
+	// 	z-index: 0;
+	// 	transition: all 0.3s;
+	// }
+
+	&:hover {
+		&::before {
+			filter: blur(3px);
+		}
+	}
+}

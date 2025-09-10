@@ -1,10 +1,11 @@
-@import "@/styles/variables.scss";
-@import "@/styles/mixins.scss";
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
 
 .auth {
 	height: 100vh;
-	@include center-item;
-	@include enter-animation;
+	@include mixins.center-item;
+	@include mixins.enter-animation;
 
 	.auth-content {
 		padding: 50px 0px;
@@ -23,7 +24,6 @@
 		}
 	}
 }
-
 
 .logo-wrapper {
 	text-align: center;

@@ -1,0 +1,14 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+.nav {
+	padding: 15px 20px;
+	background-color: white;
+	border-bottom: 1px solid rgba(variables.$sea, 0.15);
+	box-shadow: 0px 1px 4px 1px rgba(57, 58, 166, 0.15);
+	position: sticky;
+	top: 0px;
+	z-index: 3;
+	@include mixins.enter-animation;
+}

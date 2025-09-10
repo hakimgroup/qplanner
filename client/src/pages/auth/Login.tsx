@@ -1,5 +1,5 @@
 import { AppRoutes } from "@/shared/shared.models";
-import "./auth.scss";
+import cl from "./auth.module.scss";
 import { Button, Text, TextInput, PasswordInput } from "@mantine/core";
 import { hasLength, isEmail, useForm } from "@mantine/form";
 import { Link, useNavigate } from "react-router-dom";
@@ -38,13 +38,15 @@ const Login = () => {
 	};
 
 	return (
-		<div className="auth">
-			<div className="auth-content">
-			<div className="logo-wrapper">
-  <img src="https://i.postimg.cc/MG5r0LMD/HG-Marketing-Planner.png" alt="Logo" className="logo-main" />
-</div>
-
-				
+		<div className={cl.auth}>
+			<div className={cl["auth-content"]}>
+				<div className={cl["logo-wrapper"]}>
+					<img
+						src="https://i.postimg.cc/MG5r0LMD/HG-Marketing-Planner.png"
+						alt="Logo"
+						className={cl["logo-main"]}
+					/>
+				</div>
 
 				<form onSubmit={form.onSubmit(handleLogin)}>
 					<TextInput
@@ -59,7 +61,7 @@ const Login = () => {
 						label="Password"
 					/>
 
-					<div className="form-right-link">
+					<div className={cl["form-right-link"]}>
 						<Link to={AppRoutes.Forgot}>
 							<Text size="sm" c="blue">
 								Forgot password?

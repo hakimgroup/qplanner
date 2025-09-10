@@ -6,6 +6,7 @@ import App from "./App";
 import { Toaster } from "sonner";
 import { BrowserRouter } from "react-router-dom";
 import AuthProvider from "./shared/AuthProvider";
+import "./index.scss";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 	<React.StrictMode>

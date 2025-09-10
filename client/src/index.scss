@@ -1,0 +1,77 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+//Mantine UI Config
+//Combobox Select
+.mantine-Select-input {
+	border-color: variables.$sea;
+}
+
+.mantine-Select-dropdown,
+.mantine-Combobox-dropdown {
+	border-color: variables.$sea;
+	border-radius: 10px;
+}
+
+.mantine-Combobox-option {
+	border-radius: 7px;
+
+	&:hover,
+	&[data-combobox-active] {
+		background-color: rgba(variables.$purple, 0.09);
+		color: color.adjust(variables.$purple, $lightness: -20%) !important;
+	}
+}
+
+//Menu
+//Menu
+.mantine-Menu-item {
+	transition: all 0.3s;
+
+	&:hover {
+		color: color.adjust(variables.$purple, $lightness: -20%) !important;
+		background-color: rgba(variables.$purple, 0.09);
+	}
+}
+
+.mantine-Menu-dropdown {
+	border: 1px solid rgba(variables.$sea, 1);
+	box-shadow: 0px 1px 5px 0px rgba(139, 0, 255, 0.08);
+	border-radius: 10px;
+}
+
+// .mantine-Menu-label {
+// 	color: variables.$main-color;
+// 	opacity: 0.5;
+// }
+
+//Button
+.mantine-Button-root {
+	&[data-disabled] {
+		opacity: 0.5;
+	}
+}
+
+//DateTime Input
+.mantine-DateInput-root,
+.mantine-TimePicker-root,
+.mantine-NumberInput-root {
+	.mantine-DateInput-wrapper,
+	.mantine-TimePicker-wrapper,
+	.mantine-NumberInput-wrapper {
+		.mantine-DateInput-input,
+		.mantine-TimePicker-input,
+		.mantine-NumberInput-input {
+			border: 1px solid rgba(variables.$sea, 1);
+
+			&:hover {
+				color: color.adjust(
+					variables.$purple,
+					$lightness: -20%
+				) !important;
+				background-color: rgba(variables.$purple, 0.09);
+			}
+		}
+	}
+}

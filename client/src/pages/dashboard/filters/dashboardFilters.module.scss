@@ -1,0 +1,30 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+.dashboard-filters {
+	.filter-group {
+		.vm-card {
+			border: 1px solid variables.$sea;
+			transition: all 0.3s;
+			cursor: pointer;
+
+			&:hover {
+				color: color.adjust(
+					variables.$purple,
+					$lightness: -20%
+				) !important;
+				background-color: rgba(variables.$purple, 0.09);
+			}
+
+			&.active {
+				background-color: variables.$blue;
+				color: white;
+
+				&:hover {
+					color: white !important;
+				}
+			}
+		}
+	}
+}

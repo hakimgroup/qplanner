@@ -1,3 +1,8 @@
+@use "@/styles/variables.module.scss";
+@use "sass:color";
+
+$n: 100;
+
 @mixin mQ($arg) {
 	@media (max-width: #{$arg}) {
 		@content;
@@ -18,4 +23,33 @@
 
 @mixin enter-animation {
 	animation: enter 0.5s 1;
+}
+
+@mixin c-card {
+	border-color: #f7f2fd;
+	background-color: #faf7fe;
+	cursor: pointer;
+	transition: all 0.3s;
+	transform: translateY(50px);
+	opacity: 0;
+	animation: stagger-in 500ms ease forwards;
+
+	@for $x from 2 through $n {
+		&:nth-child(#{$x}) {
+			animation-delay: 100ms * ($x - 1);
+		}
+	}
+
+	&.active {
+		background-color: variables.$purple;
+		pointer-events: none;
+	}
+
+	&.chosen {
+		border-color: variables.$purple;
+	}
+
+	&:hover {
+		border-color: variables.$purple;
+	}
 }
