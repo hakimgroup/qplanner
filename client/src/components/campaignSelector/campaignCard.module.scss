@@ -1,0 +1,21 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+.campaign-card {
+	position: relative;
+	overflow: hidden;
+	border: 1px solid variables.$sea;
+	cursor: pointer;
+	min-height: 400px;
+
+	&::before {
+		content: "";
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		height: 100%;
+		width: 4px;
+		background-color: variables.$red;
+	}
+}

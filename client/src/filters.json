@@ -20,5 +20,41 @@
     "Kids",
     "Clinical",
     "Seasonal"
+  ],
+  "assets": [
+    "Posters",
+    "IPTV content",
+    "Email templates",
+    "Business cards",
+    "Web banners",
+    "Video content",
+    "Window vinyl",
+    "Social media assets",
+    "Flyers",
+    "In-store displays",
+    "Product photography",
+    "Brochures"
+  ],
+  "status": [
+    {
+      "label": "Requested",
+      "value": "requested"
+    },
+    {
+      "label": "In Progress",
+      "value": "inProgress"
+    },
+    {
+      "label": "Confirmed",
+      "value": "confirmed"
+    },
+    {
+      "label": "Live",
+      "value": "live"
+    },
+    {
+      "label": "Cancelled",
+      "value": "cancelled"
+    }
   ]
 }

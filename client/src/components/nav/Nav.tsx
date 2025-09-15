@@ -9,6 +9,7 @@ import Logo from "../logo/Logo";
 import PracticeSelector from "../practiceSelector/PracticeSelector";
 import Help from "../help/Help";
 import Notification from "../notification/Notification";
+import StyledButton from "../styledButton/StyledButton";
 
 const Nav = () => {
 	const navigate = useNavigate();
@@ -61,17 +62,12 @@ const Nav = () => {
 
 					<Notification />
 
-					<Button
-						radius={10}
+					<StyledButton
 						disabled
-						variant="subtle"
-						color="violet"
-						style={{ border: "1px solid #e5e7eb" }}
-						c="gray.9"
 						leftSection={<IconDeviceFloppy size={18} />}
 					>
 						Save
-					</Button>
+					</StyledButton>
 
 					<Button
 						radius={10}

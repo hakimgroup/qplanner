@@ -10,6 +10,7 @@ import {
 	Paper,
 	Stack,
 	Text,
+	Title,
 	useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
@@ -20,6 +21,7 @@ import {
 	IconPlayerPlay,
 } from "@tabler/icons-react";
 import cl from "./help.module.scss";
+import StyledButton from "../styledButton/StyledButton";
 
 const Help = () => {
 	const T = useMantineTheme();
@@ -42,15 +44,15 @@ const Help = () => {
 				title={
 					<Flex align={"center"} gap={10}>
 						<IconPlayerPlay color={T.colors.blue[3]} size={21} />
-						<Text fz={"h4"} fw={600}>
+						<Title order={4} fw={600}>
 							Marketing Planner Tutorial
-						</Text>
+						</Title>
 					</Flex>
 				}
 				position="right"
 				offset={8}
 				radius={10}
-				overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
+				overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
 			>
 				<Text size="sm" c="gray.7">
 					Get started with a quick 60-second walkthrough of the new
@@ -121,15 +123,7 @@ const Help = () => {
 					>
 						Watch Tutorial
 					</Button>
-					<Button
-						radius={10}
-						variant="subtle"
-						color="violet"
-						c="gray.9"
-						style={{ border: "1px solid #e5e7eb" }}
-					>
-						Skip for now
-					</Button>
+					<StyledButton>Skip for now</StyledButton>
 				</Stack>
 
 				<Text size="xs" ta={"center"} c={"dimmed"} mt={15}>

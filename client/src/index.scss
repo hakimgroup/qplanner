@@ -2,10 +2,34 @@
 @use "@/styles/mixins.scss";
 @use "sass:color";
 
+html {
+	&::-webkit-scrollbar {
+		width: 11px;
+	}
+
+	& {
+		scrollbar-width: thin;
+		scrollbar-color: color.adjust(variables.$sea, $lightness: -10%) white;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: white;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background-color: variables.$sea;
+		border-radius: 2px;
+		border: 3px solid white;
+	}
+}
+
 //Mantine UI Config
 //Combobox Select
-.mantine-Select-input {
-	border-color: variables.$sea;
+.mantine-Select-input,
+.mantine-TextInput-input,
+.mantine-Textarea-input,
+.mantine-Chip-label {
+	border-color: variables.$sea !important;
 }
 
 .mantine-Select-dropdown,
@@ -66,12 +90,98 @@
 			border: 1px solid rgba(variables.$sea, 1);
 
 			&:hover {
-				color: color.adjust(
-					variables.$purple,
-					$lightness: -20%
-				) !important;
 				background-color: rgba(variables.$purple, 0.09);
+
+				&::placeholder {
+					color: color.adjust(
+						variables.$purple,
+						$lightness: -20%
+					) !important;
+				}
 			}
 		}
+	}
+}
+
+//Styled Tabs and Tabs
+.mantine-SegmentedControl-root {
+	background: variables.$sea;
+
+	.mantine-SegmentedControl-indicator {
+		box-shadow: none;
+	}
+
+	&.styled-tab {
+		background: #efeffd;
+		background: linear-gradient(
+			130deg,
+			rgba(239, 239, 253, 1) 0%,
+			rgba(251, 235, 243, 1) 49%,
+			rgba(244, 234, 252, 1) 100%
+		);
+		border: 1px solid variables.$sea;
+
+		.mantine-SegmentedControl-label {
+			.mantine-SegmentedControl-innerLabel {
+				p {
+					transition: all 0.3s;
+				}
+			}
+
+			&[data-active="true"] {
+				.mantine-SegmentedControl-innerLabel {
+					p {
+						color: white !important;
+					}
+				}
+
+				&:hover {
+					.mantine-SegmentedControl-innerLabel {
+						p {
+							&:nth-child(1) {
+								color: white !important;
+							}
+						}
+					}
+				}
+			}
+
+			&:hover {
+				.mantine-SegmentedControl-innerLabel {
+					p {
+						&:nth-child(1) {
+							color: variables.$blue !important;
+						}
+					}
+				}
+			}
+		}
+
+		.mantine-SegmentedControl-indicator {
+			border-radius: 5px;
+			background: #6666f1;
+			background: linear-gradient(
+				130deg,
+				rgba(102, 102, 241, 1) 0%,
+				rgba(169, 87, 197, 1) 49%,
+				rgba(234, 70, 154, 1) 100%
+			);
+		}
+	}
+}
+
+//Input
+.mantine-TextInput-input {
+	font-weight: 600;
+
+	&:focus {
+		border-color: variables.$blue;
+	}
+}
+
+//Slider
+.mantine-Slider-track {
+	&::before {
+		background-color: variables.$red;
 	}
 }

@@ -1,0 +1,16 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+.quick-card {
+	border: 2px solid variables.$sea;
+	cursor: pointer;
+	height: 100%;
+	transition: all 0.3s;
+
+	&:hover,
+	&.active {
+		box-shadow: 0 0 0 3px rgba(variables.$blue, 0.2);
+		border: 2px solid variables.$blue;
+	}
+}

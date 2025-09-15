@@ -130,6 +130,7 @@ const DashboardFilters = ({ showCalendarOption = false }) => {
 				<Stack mt="xs" gap={9}>
 					{filtersData[type].map((ct) => (
 						<Checkbox
+							key={ct}
 							radius={50}
 							size="xs"
 							color="blue.3"
@@ -154,7 +155,7 @@ const DashboardFilters = ({ showCalendarOption = false }) => {
 					icon={<IconCategory size={16} />}
 				/>
 				{filterOptions.viewModes.map((vm) => (
-					<>
+					<Fragment key={vm.name}>
 						{vm.show && (
 							<Card
 								radius={10}
@@ -178,7 +179,7 @@ const DashboardFilters = ({ showCalendarOption = false }) => {
 								</Group>
 							</Card>
 						)}
-					</>
+					</Fragment>
 				))}
 			</Stack>
 

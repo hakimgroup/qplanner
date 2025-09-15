@@ -30,7 +30,7 @@ export function DashboardSidebar({ collapsed, setCollapsed }: SidebarProps) {
 			gap={25}
 			pt={30}
 			pr={10}
-			w={collapsed ? 50 : 320}
+			w={collapsed ? 50 : 300}
 			className={cl["dashboard-sidebar"]}
 		>
 			<Flex align={"center"} justify={"space-between"}>

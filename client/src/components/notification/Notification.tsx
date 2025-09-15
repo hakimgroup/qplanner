@@ -1,33 +1,23 @@
 import {
 	ActionIcon,
 	Badge,
-	Box,
-	Button,
 	Card,
 	Divider,
 	Flex,
-	Group,
 	Indicator,
 	Menu,
+	Modal,
 	Stack,
 	Text,
 	useMantineTheme,
 } from "@mantine/core";
-import {
-	IconArrowsLeftRight,
-	IconBell,
-	IconCircleCheck,
-	IconFile,
-	IconFileText,
-	IconMessageCircle,
-	IconPhoto,
-	IconSearch,
-	IconSettings,
-	IconTrash,
-} from "@tabler/icons-react";
+import { useDisclosure } from "@mantine/hooks";
+import { IconBell, IconCircleCheck, IconFileText } from "@tabler/icons-react";
+import SingleNotification from "./SingleNotification";
 
 const Notification = () => {
 	const T = useMantineTheme();
+	const [opened, { open, close }] = useDisclosure(false);
 
 	const notifications = [
 		{
@@ -93,7 +83,7 @@ const Notification = () => {
 					</Menu.Label>
 
 					{notifications.map((n, i) => (
-						<Menu.Item key={i}>
+						<Menu.Item key={i} onClick={open}>
 							<Card bg={"transparent"} p={10} w={"inherit"}>
 								<Flex gap={8}>
 									<IconFileText
@@ -144,7 +134,7 @@ const Notification = () => {
 
 					<Divider size={"xs"} color="gray.1" mt={20} />
 
-					<Menu.Item mt={6} mb={10}>
+					<Menu.Item mt={6} mb={10} onClick={() => {}}>
 						<Card bg={"transparent"} pt={2} pl={10} pb={2} pr={10}>
 							<Flex gap={8} align={"center"}>
 								<IconCircleCheck
@@ -160,6 +150,23 @@ const Notification = () => {
 					</Menu.Item>
 				</Menu.Dropdown>
 			</Menu>
+
+			{/* Single Notification Pop-Up */}
+			<Modal
+				opened={opened}
+				onClose={close}
+				title={
+					<Text fz={"h4"} fw={600}>
+						Acknowledge This Campaign Request
+					</Text>
+				}
+				centered
+				radius={10}
+				size={"73rem"}
+				overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
+			>
+				<SingleNotification />
+			</Modal>
 		</>
 	);
 };
