@@ -14,7 +14,7 @@ export default function Dashboard() {
 			/>
 
 			{/* Main content (always fills remaining space) */}
-			<Box style={{ flex: 1, minHeight: "100%" }} p="md">
+			<Box style={{ flex: 1, minHeight: "100%" }} pl={20}>
 				<DashboardContent />
 			</Box>
 		</Group>

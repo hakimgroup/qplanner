@@ -18,4 +18,10 @@
 		width: 4px;
 		background-color: variables.$red;
 	}
+
+	&.isSelections {
+		&::before {
+			background-color: variables.$blue;
+		}
+	}
 }

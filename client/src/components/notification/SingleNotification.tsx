@@ -78,12 +78,7 @@ const SingleNotification = () => {
 							</Title>
 
 							<Flex align={"center"} gap={7}>
-								<Badge
-									color="red.4"
-									style={{ textTransform: "unset" }}
-								>
-									High Priority
-								</Badge>
+								<Badge color="red.4">High Priority</Badge>
 								<IconAlertCircle
 									size={18}
 									color={T.colors.orange[5]}
@@ -120,11 +115,7 @@ const SingleNotification = () => {
 						</Text>
 						<Flex align={"center"} gap={4}>
 							{["AOV", "Sales"].map((c) => (
-								<Badge
-									key={c}
-									color="red.4"
-									style={{ textTransform: "unset" }}
-								>
+								<Badge key={c} color="red.4">
 									{c}
 								</Badge>
 							))}

@@ -2,6 +2,8 @@ import { DatabaseTables } from "@/shared/shared.models";
 import { supabase } from "./supabase";
 import { toast } from "sonner";
 import api from "./express";
+import { Campaign } from "@/models/campaign.models";
+import { normalizeAvailability } from "@/shared/shared.utilities";
 
 export interface CampaignPlan {
 	campaign_name: string;
@@ -40,6 +42,63 @@ export interface EmailModel {
 	html: any;
 }
 
+//New Layout Calls
+// export const getAllCampaigns = async (
+// 	campaign_id?: string,
+// 	onSuccess?: () => void
+// ) => {
+// 	let query = supabase.from(DatabaseTables.CampaignsCatalog).select();
+
+// 	if (campaign_id) {
+// 		query = query.eq("campaign_id", campaign_id);
+// 	}
+
+// 	const { data, error } = await query;
+
+// 	if (onSuccess) onSuccess();
+
+// 	if (error) throw new Error(error.message);
+
+// 	if (!data) {
+// 		toast.error("Something went wrong", { position: "top-center" });
+// 		throw new Error("Something went wrong");
+// 	}
+
+// 	const mapped = data.map((row: any) => ({
+// 		...row,
+// 		availability: normalizeAvailability(row.availability),
+// 	}));
+
+// 	return mapped as Campaign[];
+// };
+
+export const getAllCampaigns = async (practiceId?: string | null) => {
+	const arg =
+		practiceId === undefined
+			? undefined // don't send param at all
+			: { p_practice: practiceId ?? null };
+
+	const { data, error } =
+		arg === undefined
+			? await supabase.rpc("get_campaigns")
+			: await supabase.rpc("get_campaigns", arg);
+
+	if (error) throw new Error(error.message);
+
+	if (!data) {
+		toast.error("Something went wrong", { position: "top-center" });
+		throw new Error("Something went wrong");
+	}
+
+	const mapped = data.map((row: any) => ({
+		...row,
+		availability: normalizeAvailability(row.availability),
+	}));
+
+	return mapped as Campaign[];
+};
+
+//Old Layout Calls
 export const getCampaign = async (
 	user_id: string,
 	campaign_id: string,
@@ -107,35 +166,9 @@ export const updateCampaign = async (campaign: CampaignModel) => {
 	return data as CampaignModel;
 };
 
-export const getAllCampaigns = async (
-	campaign_id?: string,
-	onSuccess?: () => void
-) => {
-	let query = supabase.from(DatabaseTables.CampaignsList).select();
-
-	if (campaign_id) {
-		query = query.eq("campaign_id", campaign_id);
-	}
-
-	const { data, error } = await query;
-
-	if (onSuccess) onSuccess();
-
-	if (error) {
-		throw new Error(error.message);
-	}
-
-	if (!data) {
-		toast.error("Something went wrong", { position: "top-center" });
-		throw new Error("Something went wrong");
-	}
-
-	return data as CampaignsModel[];
-};
-
 export const addCampaignAdmin = async (campaign: CampaignsModel) => {
 	const { data, error } = await supabase
-		.from(DatabaseTables.CampaignsList)
+		.from(DatabaseTables.CampaignsCatalog)
 		.insert(campaign)
 		.select()
 		.single();
@@ -152,7 +185,7 @@ export const addCampaignAdmin = async (campaign: CampaignsModel) => {
 
 export const editCampaignInList = async (campaign: CampaignsModel) => {
 	const { data, error } = await supabase
-		.from(DatabaseTables.CampaignsList)
+		.from(DatabaseTables.CampaignsCatalog)
 		.update(campaign)
 		.eq("campaign_id", campaign.campaign_id)
 		.select()

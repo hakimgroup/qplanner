@@ -177,6 +177,10 @@ html {
 	&:focus {
 		border-color: variables.$blue;
 	}
+
+	&::placeholder {
+		font-weight: normal;
+	}
 }
 
 //Slider

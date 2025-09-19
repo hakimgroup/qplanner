@@ -1,8 +1,9 @@
 {
   "categories": [
     "Brand Activations",
-    "Campaigns",
-    "Evergreen"
+    "Campaign",
+    "Evergreen",
+    "Marketing Suite"
   ],
   "objectives": [
     "ADV",
@@ -37,12 +38,16 @@
   ],
   "status": [
     {
-      "label": "Requested",
-      "value": "requested"
+      "label": "On Plan",
+      "value": "onPlan"
     },
     {
       "label": "In Progress",
       "value": "inProgress"
+    },
+    {
+      "label": "Requested",
+      "value": "requested"
     },
     {
       "label": "Confirmed",

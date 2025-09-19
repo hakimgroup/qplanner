@@ -16,8 +16,7 @@ export const useSignin = () => {
 	const navigate = useNavigate();
 
 	return useMutation({
-		mutationFn: (user: { email: string; password: string }) =>
-			signin(user.email, user.password),
+		mutationFn: () => signin(),
 		onSuccess: () => {
 			navigate(AppRoutes.Dashboard);
 		},

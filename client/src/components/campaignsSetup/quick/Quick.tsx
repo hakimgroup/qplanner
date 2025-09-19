@@ -149,11 +149,7 @@ const Quick = () => {
 										</Text>
 									</Stack>
 
-									<Badge
-										variant="outline"
-										color="gray.1"
-										style={{ textTransform: "unset" }}
-									>
+									<Badge variant="outline" color="gray.1">
 										<Text
 											size="xs"
 											fw={600}

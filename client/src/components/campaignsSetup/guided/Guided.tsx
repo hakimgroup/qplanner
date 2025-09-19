@@ -204,11 +204,7 @@ const Guided = () => {
 							>
 								<Text size="sm">{sr.previewTitle}:</Text>
 
-								<Badge
-									variant="outline"
-									color="gray.2"
-									style={{ textTransform: "unset" }}
-								>
+								<Badge variant="outline" color="gray.2">
 									<Text
 										size="xs"
 										fw={600}

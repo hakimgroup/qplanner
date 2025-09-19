@@ -73,12 +73,7 @@ const Notification = () => {
 							<Text fw={700} size="md" c={"gray.9"}>
 								Notifications
 							</Text>
-							<Badge
-								color="red.4"
-								style={{ textTransform: "unset" }}
-							>
-								5 new
-							</Badge>
+							<Badge color="red.4">5 new</Badge>
 						</Flex>
 					</Menu.Label>
 
@@ -104,12 +99,7 @@ const Notification = () => {
 											>
 												{n.name}
 											</Text>
-											<Badge
-												color="red.6"
-												style={{
-													textTransform: "unset",
-												}}
-											>
+											<Badge color="red.6">
 												<Text size="xs" fw={600} mt={2}>
 													New
 												</Text>

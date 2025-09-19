@@ -13,8 +13,10 @@ import StyledButton from "../styledButton/StyledButton";
 
 const Nav = () => {
 	const navigate = useNavigate();
-	const { data: user } = useUser();
-	const isAdmin = user?.role === "admin";
+	// const { data: user } = useUser();
+	// const isAdmin = user?.role === "admin";
+
+	const { user } = useAuth();
 
 	//APIs
 	const { mutate: signout } = useSignout();
@@ -48,13 +50,10 @@ const Nav = () => {
 				</Flex>
 
 				<Flex align={"center"} gap={15}>
-					<Badge
-						variant="outline"
-						color="gray.1"
-						style={{ textTransform: "unset" }}
-					>
+					<Badge variant="outline" color="gray.1">
 						<Text size="xs" fw={600} c={"gray.9"}>
-							Sarah Johnson
+							{user?.identities[0].identity_data.first_name}{" "}
+							{user?.identities[0].identity_data.last_name}
 						</Text>
 					</Badge>
 

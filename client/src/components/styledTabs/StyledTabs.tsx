@@ -1,19 +1,27 @@
+import { UserTabModes } from "@/models/general.models";
+import AppContext from "@/shared/AppContext";
+import { updateState } from "@/shared/shared.utilities";
 import { SegmentedControl, Center, Stack, Text } from "@mantine/core";
-import { useState } from "react";
+import { useContext } from "react";
 
 const StyledTabs = () => {
-	const [value, setValue] = useState("browse");
+	const {
+		state: { filters },
+		setState,
+	} = useContext(AppContext);
 
 	return (
 		<SegmentedControl
 			className="styled-tab"
 			radius={10}
 			transitionDuration={500}
-			value={value}
-			onChange={setValue}
+			value={filters.userSelectedTab}
+			onChange={(t) =>
+				updateState(setState, "filters.userSelectedTab", t)
+			}
 			data={[
 				{
-					value: "browse",
+					value: UserTabModes.Browse,
 					label: (
 						<Center pt={10} pb={10}>
 							<Stack gap={4}>
@@ -26,7 +34,7 @@ const StyledTabs = () => {
 					),
 				},
 				{
-					value: "selected",
+					value: UserTabModes.Selected,
 					label: (
 						<Center pt={10} pb={10}>
 							<Stack gap={4}>

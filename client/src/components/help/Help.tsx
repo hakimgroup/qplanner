@@ -18,6 +18,7 @@ import {
 	IconCircleCheck,
 	IconClockHour1,
 	IconHelp,
+	IconLink,
 	IconPlayerPlay,
 } from "@tabler/icons-react";
 import cl from "./help.module.scss";
@@ -79,11 +80,7 @@ const Help = () => {
 								Tutorial Video
 							</Text>
 
-							<Badge
-								size="md"
-								color="red.4"
-								style={{ textTransform: "unset" }}
-							>
+							<Badge size="md" color="red.4">
 								<Flex align={"center"} gap={5}>
 									<IconClockHour1 size={15} color="white" />
 									<Text size="xs" fw={500} c={"white"}>
@@ -123,7 +120,9 @@ const Help = () => {
 					>
 						Watch Tutorial
 					</Button>
-					<StyledButton>Skip for now</StyledButton>
+					<StyledButton rightSection={<IconLink size={14} />}>
+						Go To Full FAQs
+					</StyledButton>
 				</Stack>
 
 				<Text size="xs" ta={"center"} c={"dimmed"} mt={15}>

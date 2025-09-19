@@ -1,10 +1,13 @@
 import { toast } from "sonner";
 import { supabase } from "./supabase";
 
-export const signin = async (email: string, password: string) => {
-	const { data, error } = await supabase.auth.signInWithPassword({
-		email,
-		password,
+export const signin = async () => {
+	const { data, error } = await supabase.auth.signInWithOAuth({
+		provider: "azure",
+		options: {
+			scopes: "email",
+			redirectTo: window.location.origin,
+		},
 	});
 
 	if (error) {

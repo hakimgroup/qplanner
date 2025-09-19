@@ -1,4 +1,4 @@
-import { createTheme } from "@mantine/core";
+import { Button, createTheme } from "@mantine/core";
 
 export const theme = createTheme({
 	cursorType: "pointer",
@@ -41,5 +41,24 @@ export const theme = createTheme({
 			"#59616f",
 			"#363d49",
 		],
+	},
+	components: {
+		Badge: {
+			styles: {
+				root: {
+					textTransform: "unset", // 👈 applies to all badges
+				},
+			},
+		},
+		Button: {
+			defaultProps: {
+				color: "blue.3",
+			},
+			styles: {
+				root: {
+					borderRadius: 10,
+				},
+			},
+		},
 	},
 });

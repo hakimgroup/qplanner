@@ -5,9 +5,35 @@ import { IconCircleFilled } from "@tabler/icons-react";
 import Bespoke from "@/components/campaignsSetup/bespoke/Bespoke";
 import Quick from "@/components/campaignsSetup/quick/Quick";
 import Guided from "@/components/campaignsSetup/guided/Guided";
-import CampaignSelector from "@/components/campaignSelector/CampaignSelector";
+import { useContext } from "react";
+import AppContext from "@/shared/AppContext";
+import { upperFirst } from "lodash";
+import { UserTabModes, ViewModes } from "@/models/general.models";
+import CampaignSelectorCards from "@/components/campaignSelector/cards/CampaignSelector";
+import CampaignSelectorTable from "@/components/campaignSelector/table/CampaignSelectorTable";
+import CampaignSelectorCalendar from "@/components/campaignSelector/calendar/CampaignSelectorCalendar";
 
 export function DashboardContent() {
+	const {
+		state: { filters },
+	} = useContext(AppContext);
+
+	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
+
+	// Render logic for main content
+	const renderContent = () => {
+		if (isSelections && filters.viewMode === ViewModes.Calendar) {
+			return <CampaignSelectorCalendar />;
+		}
+
+		if (filters.viewMode === ViewModes.Table) {
+			return <CampaignSelectorTable />;
+		}
+
+		// Default fallback to Card view
+		return <CampaignSelectorCards />;
+	};
+
 	return (
 		<Paper pt={10} h="100%">
 			<Stack gap={25}>
@@ -17,31 +43,36 @@ export function DashboardContent() {
 				<Group align="center" justify="space-between">
 					<Stack gap={5}>
 						<Title order={3}>
-							Downtown Vision Center - Select Campaigns
+							Downtown Vision Center -{" "}
+							{isSelections ? "Selections" : "Select Campaigns"}
 						</Title>
 						<Flex align={"center"} gap={20}>
 							<Text size="sm" c={"gray.8"}>
-								Browse and add campaigns to your plan
+								{isSelections
+									? "Manage your chosen campaigns"
+									: "Browse and add campaigns to your plan"}
 							</Text>
 							<IconCircleFilled size={4} />
 							<Text size="sm" c={"gray.8"}>
-								Cards View
+								{upperFirst(filters.viewMode)} View
 							</Text>
 						</Flex>
 					</Stack>
 
-					<Flex gap={12}>
-						<Bespoke />
-						<Quick />
-						<Guided />
-					</Flex>
+					{!isSelections && (
+						<Flex gap={12}>
+							<Bespoke />
+							<Quick />
+							<Guided />
+						</Flex>
+					)}
 				</Group>
 
 				<Divider size={"xs"} color="gray.1" />
 			</Stack>
 
 			<Stack gap={25} pt={25}>
-				<CampaignSelector />
+				{renderContent()}
 			</Stack>
 		</Paper>
 	);

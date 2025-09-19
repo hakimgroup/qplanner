@@ -1,80 +1,132 @@
+// AuthProvider.tsx
 import { supabase } from "@/api/supabase";
 import { LoadingOverlay } from "@mantine/core";
 import { User } from "@supabase/supabase-js";
-import { createContext, useContext, useState, useEffect } from "react";
-import { AppRoutes } from "./shared.models";
+import {
+	createContext,
+	useContext,
+	useEffect,
+	useState,
+	ReactNode,
+} from "react";
+import { AppRoutes, DatabaseTables, RPCFunctions } from "./shared.models";
 import { useNavigate } from "react-router-dom";
+import { pushAuthNotice } from "./shared.utilities";
 
 interface AuthContextModel {
 	user: User | null;
-	auth: boolean;
 	loading: boolean;
 	userError: boolean;
 }
-
 const AuthContext = createContext<AuthContextModel>({
 	user: null,
-	auth: false,
-	loading: false,
+	loading: true,
 	userError: false,
 });
-
 export const useAuth = () => useContext(AuthContext);
 
-const AuthProvider = ({ children }) => {
+async function isWhitelisted(email: string): Promise<boolean> {
+	const { data, error } = await supabase
+		.from(DatabaseTables.Allowed_Users)
+		.select("id")
+		.eq("email", email.toLowerCase())
+		.maybeSingle();
+	if (error) throw error;
+	return !!data;
+}
+
+const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const navigate = useNavigate();
 	const [user, setUser] = useState<User | null>(null);
-	const [auth, setAuth] = useState(false);
-	const [loading, setLoading] = useState(null);
-	const [userError, setUserError] = useState(null);
+	const [loading, setLoading] = useState<boolean>(true);
+	const [userError, setUserError] = useState<boolean>(false);
 
+	// 1) Initialize session (no whitelist yet) and subscribe to auth changes
 	useEffect(() => {
-		setLoading(true);
-		setUserError(false);
+		let mounted = true;
 
-		const getUser = async () => {
-			const { data, error } = await supabase.auth.getUser();
-			const { user: currentUser } = data;
+		(async () => {
+			setUserError(false);
+			const { data, error } = await supabase.auth.getSession();
+			if (!mounted) return;
 
-			if (error) {
-				setUserError(true);
-			}
-
-			setUser(currentUser);
-			setLoading(false);
-		};
-
-		getUser();
+			if (error) setUserError(true);
+			setUser(data.session?.user ?? null);
+			setLoading(false); // ✅ always clear loader after initial session read
+		})();
 
 		const { data: authListener } = supabase.auth.onAuthStateChange(
-			(event, session) => {
-				switch (event) {
-					case "SIGNED_IN":
-						setUser(session.user);
-						setAuth(true);
-						break;
-					case "SIGNED_OUT":
-						setUser(null);
-						setAuth(false);
-						navigate(AppRoutes.Home);
-						break;
-					case "PASSWORD_RECOVERY":
-						setAuth(false);
-						break;
-					default:
-				}
+			(_event, session) => {
+				if (!mounted) return;
+				// Don’t toggle loading here; whitelist check happens in the next effect
+				setUser(session?.user ?? null);
 			}
 		);
 
 		return () => {
+			mounted = false;
 			authListener.subscription.unsubscribe();
 		};
 	}, []);
 
+	// 2) When a user appears, run the whitelist check (+ link_current_user on success)
+	useEffect(() => {
+		let cancelled = false;
+
+		async function check() {
+			if (!user?.email) return; // no user -> nothing to check
+
+			try {
+				setLoading(true);
+
+				const allowed = await isWhitelisted(user.email);
+				if (cancelled) return;
+
+				if (!allowed) {
+					// Not whitelisted → sign out and notify
+					pushAuthNotice("denied");
+					await supabase.auth.signOut().catch(() => {});
+					if (cancelled) return;
+					setUser(null);
+					navigate(AppRoutes.Login, { replace: true });
+					return; // stop here
+				}
+
+				// ✅ Whitelisted → link allowed_users.id (and practice_members.user_id) to auth.uid()
+				// This RPC is security definer on the DB side and idempotent.
+				try {
+					await supabase.rpc(RPCFunctions.LinkUser);
+				} catch {
+					// Non-fatal: don't block the user if the link fails
+					// You can optionally log this for observability
+				}
+			} catch (_err) {
+				if (!cancelled) {
+					setUserError(true);
+					pushAuthNotice("failed");
+
+					// Fail-safe: sign out to avoid half-authorized state
+					await supabase.auth.signOut().catch(() => {});
+					if (!cancelled) {
+						setUser(null);
+						navigate(AppRoutes.Login, { replace: true });
+					}
+				}
+			} finally {
+				if (!cancelled) setLoading(false); // ✅ always clear loader
+			}
+		}
+
+		check();
+		return () => {
+			cancelled = true;
+		};
+	}, [user, navigate]);
+
 	if (loading) {
 		return (
 			<LoadingOverlay
-				visible={loading}
+				visible
 				zIndex={1000}
 				overlayProps={{ radius: "sm", blur: 2 }}
 			/>
@@ -82,7 +134,7 @@ const AuthProvider = ({ children }) => {
 	}
 
 	return (
-		<AuthContext.Provider value={{ user, auth, loading, userError }}>
+		<AuthContext.Provider value={{ user, loading, userError }}>
 			{children}
 		</AuthContext.Provider>
 	);

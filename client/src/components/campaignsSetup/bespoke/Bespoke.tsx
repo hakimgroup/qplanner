@@ -16,13 +16,13 @@ import {
 	TextInput,
 	useMantineTheme,
 } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { IconCalendar, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
 import filtersData from "@/filters.json";
+import CampaignDates from "@/components/campaignDates/CampaignDates";
 
-const Bespoke = () => {
+const Bespoke = ({ buttonText = "Bespoke Campaign" }) => {
 	const [opened, { open, close }] = useDisclosure(false);
 	const T = useMantineTheme();
 
@@ -57,7 +57,7 @@ const Bespoke = () => {
 	return (
 		<>
 			<StyledButton leftSection={<IconPlus size={14} />} onClick={open}>
-				Bespoke Campaign
+				{buttonText}
 			</StyledButton>
 
 			<Modal
@@ -94,6 +94,7 @@ const Bespoke = () => {
 					<Textarea
 						withAsterisk
 						resize="vertical"
+						size="md"
 						radius={10}
 						label="Description"
 						placeholder="Describe your campaign goals and requirements"
@@ -102,66 +103,20 @@ const Bespoke = () => {
 						autosize
 					/>
 
-					<Stack gap={5}>
-						<Text size="md" c="gray.9" fw={500}>
-							Preferred Dates
-						</Text>
-
-						<Flex
-							align={"center"}
-							justify={"space-between"}
-							gap={15}
-						>
-							<DateInput
-								w={"100%"}
-								pointer
-								size="md"
-								radius={10}
-								valueFormat="DD MMM YYYY"
-								leftSection={<IconCalendar size={16} />}
-								value={campaign.dateRange.from}
-								onChange={(d) =>
-									setCampaign({
-										...campaign,
-										dateRange: {
-											...campaign.dateRange,
-											from: d,
-										},
-									})
-								}
-								label={
-									<Text size="sm" c={"gray.9"} fw={500}>
-										Preferred Start Date
-									</Text>
-								}
-								placeholder="Start Date"
-							/>
-							<DateInput
-								w={"100%"}
-								pointer
-								size="md"
-								radius={10}
-								valueFormat="DD MMM YYYY"
-								leftSection={<IconCalendar size={16} />}
-								value={campaign.dateRange.to}
-								onChange={(d) =>
-									setCampaign({
-										...campaign,
-										dateRange: {
-											...campaign.dateRange,
-											to: d,
-										},
-									})
-								}
-								label={
-									<Text size="sm" c={"gray.9"} fw={500}>
-										Preferred End Date
-									</Text>
-								}
-								placeholder="End Date"
-							/>
-						</Flex>
-					</Stack>
+					<CampaignDates
+						title="Preferred Dates"
+						icon={<IconCalendar size={16} />}
+						dateRange={campaign.dateRange}
+						onChange={(range) =>
+							setCampaign({ ...campaign, dateRange: range })
+						}
+						startLabel="Preferred Start Date"
+						endLabel="Preferred End Date"
+						inputSize="md"
+						labelSize="sm"
+						titleLabelSize="md"
+						hideTitleIcon
+					/>
 
 					<Stack gap={10}>
 						<Text size="md" c="gray.9" fw={500}>

@@ -1,6 +1,5 @@
 import {
 	Badge,
-	Box,
 	Button,
 	Card,
 	Checkbox,
@@ -23,43 +22,21 @@ import {
 	IconTag,
 	IconTarget,
 } from "@tabler/icons-react";
-import { Fragment, useState } from "react";
+import { Fragment, useContext } from "react";
 import cl from "./dashboardFilters.module.scss";
 import clsx from "clsx";
-import { DateInput } from "@mantine/dates";
 import filtersData from "../../../filters.json";
 import { isEqual } from "lodash";
+import CampaignDates from "@/components/campaignDates/CampaignDates";
+import AppContext from "@/shared/AppContext";
+import { Filters, UserTabModes, ViewModes } from "@/models/general.models";
+import { updateState } from "@/shared/shared.utilities";
 
-enum ViewModes {
-	Cards = "cards",
-	Table = "table",
-	Calendar = "calendar",
-}
-
-interface Filters {
-	viewMode: ViewModes;
-	dateRange: {
-		from: any;
-		to: any;
-	};
-	categories: string[];
-	objectives: string[];
-	topics: string[];
-	hideSelected: boolean;
-}
-
-const DashboardFilters = ({ showCalendarOption = false }) => {
-	const [filters, setFilters] = useState<Filters>({
-		viewMode: ViewModes.Cards,
-		dateRange: {
-			from: null,
-			to: null,
-		},
-		categories: [],
-		objectives: [],
-		topics: [],
-		hideSelected: false,
-	});
+const DashboardFilters = () => {
+	const {
+		state: { filters },
+		setState,
+	} = useContext(AppContext);
 
 	const defaultFilters: Filters = {
 		viewMode: ViewModes.Cards,
@@ -88,7 +65,7 @@ const DashboardFilters = ({ showCalendarOption = false }) => {
 			{
 				name: ViewModes.Calendar,
 				icon: <IconCalendar size={16} />,
-				show: showCalendarOption,
+				show: filters.userSelectedTab === UserTabModes.Selected,
 			},
 		],
 	};
@@ -125,7 +102,9 @@ const DashboardFilters = ({ showCalendarOption = false }) => {
 
 			<Checkbox.Group
 				value={filters[type]}
-				onChange={(v) => setFilters({ ...filters, [type]: v })}
+				onChange={(v) => {
+					updateState(setState, `filters.${type}`, v);
+				}}
 			>
 				<Stack mt="xs" gap={9}>
 					{filtersData[type].map((ct) => (
@@ -165,10 +144,11 @@ const DashboardFilters = ({ showCalendarOption = false }) => {
 									filters.viewMode === vm.name && cl.active
 								)}
 								onClick={() =>
-									setFilters({
-										...filters,
-										viewMode: vm.name,
-									})
+									updateState(
+										setState,
+										"filters.viewMode",
+										vm.name
+									)
 								}
 							>
 								<Group align="center">
@@ -185,54 +165,19 @@ const DashboardFilters = ({ showCalendarOption = false }) => {
 
 			<Divider size={"xs"} color="gray.1" />
 
-			<Stack gap={6} className={cl["filter-group"]}>
-				<GroupTitle
-					title="Date Range"
-					icon={<IconCalendar size={16} />}
-				/>
-
-				<Flex align={"center"} justify={"space-between"}>
-					<DateInput
-						pointer
-						radius={10}
-						valueFormat="DD MMM YYYY"
-						leftSection={<IconCalendar size={16} />}
-						value={filters.dateRange.from}
-						onChange={(d) =>
-							setFilters({
-								...filters,
-								dateRange: { ...filters.dateRange, from: d },
-							})
-						}
-						label={
-							<Text size="xs" c={"gray.8"} fw={500}>
-								From
-							</Text>
-						}
-						placeholder="Start Date"
-					/>
-					<Box w={10}></Box>
-					<DateInput
-						pointer
-						radius={10}
-						valueFormat="DD MMM YYYY"
-						leftSection={<IconCalendar size={16} />}
-						value={filters.dateRange.to}
-						onChange={(d) =>
-							setFilters({
-								...filters,
-								dateRange: { ...filters.dateRange, to: d },
-							})
-						}
-						label={
-							<Text size="xs" c={"gray.8"} fw={500}>
-								To
-							</Text>
-						}
-						placeholder="End Date"
-					/>
-				</Flex>
-			</Stack>
+			<CampaignDates
+				title="Date Range"
+				icon={<IconCalendar size={16} />}
+				dateRange={filters.dateRange}
+				onChange={(range) =>
+					updateState(setState, "filters.dateRange", range)
+				}
+				startLabel="From"
+				endLabel="To"
+				inputSize="sm"
+				labelSize="sm"
+				gap={2}
+			/>
 
 			<Divider size={"xs"} color="gray.1" />
 
@@ -265,10 +210,11 @@ const DashboardFilters = ({ showCalendarOption = false }) => {
 						size="md"
 						checked={filters.hideSelected}
 						onChange={(event) =>
-							setFilters({
-								...filters,
-								hideSelected: event.currentTarget.checked,
-							})
+							updateState(
+								setState,
+								"filters.hideSelected",
+								event.currentTarget.checked
+							)
 						}
 					/>
 				</Flex>
@@ -284,7 +230,9 @@ const DashboardFilters = ({ showCalendarOption = false }) => {
 						c={"gray.8"}
 						color="violet"
 						style={{ border: "1px solid #e5e7eb" }}
-						onClick={() => setFilters(defaultFilters)}
+						onClick={() =>
+							updateState(setState, "filters", defaultFilters)
+						}
 					>
 						Clear All Filters
 					</Button>
