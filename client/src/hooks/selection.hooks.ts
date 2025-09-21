@@ -38,7 +38,7 @@ export function useSelections() {
 
 export function useAddSelection(onSuccess?: () => void) {
 	const qc = useQueryClient();
-	const { activePracticeId, unitedView } = usePractice();
+	const { activePracticeId } = usePractice();
 
 	return useMutation({
 		mutationFn: async (input: AddSelectionInput) => {
@@ -73,7 +73,6 @@ export function useAddSelection(onSuccess?: () => void) {
 
 export function useUpdateSelection() {
 	const qc = useQueryClient();
-	const { activePracticeId, unitedView } = usePractice();
 
 	return useMutation({
 		mutationFn: async ({ id, patch }: UpdateSelectionInput) => {
@@ -98,7 +97,6 @@ export function useUpdateSelection() {
 
 export function useDeleteSelection() {
 	const qc = useQueryClient();
-	const { activePracticeId, unitedView } = usePractice();
 
 	return useMutation({
 		mutationFn: async (id: string) => {

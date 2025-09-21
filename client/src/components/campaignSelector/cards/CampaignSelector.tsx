@@ -9,6 +9,7 @@ import {
 	Center,
 	ThemeIcon,
 	Button,
+	Flex,
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import CampaignCard from "./CampaignCard";
@@ -18,6 +19,7 @@ import AppContext from "@/shared/AppContext";
 import { useContext, useMemo, useState } from "react";
 import Bespoke from "../../campaignsSetup/bespoke/Bespoke";
 import { useDebouncedValue } from "@mantine/hooks";
+import StyledButton from "@/components/styledButton/StyledButton";
 
 const CampaignSelectorCards = () => {
 	const {
@@ -51,18 +53,21 @@ const CampaignSelectorCards = () => {
 
 	return (
 		<Stack gap={20} className={cl["campaign-selector"]}>
-			<Stack gap={5}>
-				<Title order={3}>
-					{isSelections
-						? "Your Practice Campaigns"
-						: "Select Marketing Campaigns"}
-				</Title>
-				<Text size="sm" c={"gray.8"}>
-					{isSelections
-						? "Manage your selected campaigns and track their progress"
-						: "Browse and add campaigns to this practice plan"}
-				</Text>
-			</Stack>
+			<Flex justify={"space-between"} align={"flex-end"}>
+				<Stack gap={5}>
+					<Title order={3}>
+						{isSelections
+							? "Your Practice Campaigns"
+							: "Select Marketing Campaigns"}
+					</Title>
+					<Text size="sm" c={"gray.8"}>
+						{isSelections
+							? "Manage your selected campaigns and track their progress"
+							: "Browse and add campaigns to this practice plan"}
+					</Text>
+				</Stack>
+				<Bespoke />
+			</Flex>
 
 			<TextInput
 				radius={10}
@@ -86,7 +91,6 @@ const CampaignSelectorCards = () => {
 					</Text>{" "}
 					campaigns
 				</Text>
-				<Bespoke buttonText="Add Campaign" />
 			</Group>
 
 			<Grid gutter={22} mih={200} pos={"relative"}>
@@ -101,25 +105,25 @@ const CampaignSelectorCards = () => {
 				{!loading && viewCampaigns.length === 0 && (
 					<Grid.Col span={12}>
 						<Center mih={220} style={{ textAlign: "center" }}>
-							<Stack gap={12} align="center">
+							<Stack gap={18} align="center">
 								<ThemeIcon
-									size={46}
-									radius="xl"
+									size={75}
+									radius={100}
 									variant="light"
 								>
-									<IconSearch size={22} />
+									<IconSearch size={30} />
 								</ThemeIcon>
 								<Title order={4}>No campaigns found</Title>
 								<Text size="sm" c="gray.7">
 									No campaigns match your current filters or
 									search query.
 								</Text>
-								<Button
+								<StyledButton
 									variant="default"
 									onClick={handleClearSearch}
 								>
 									Clear Search &amp; Filters
-								</Button>
+								</StyledButton>
 							</Stack>
 						</Center>
 					</Grid.Col>

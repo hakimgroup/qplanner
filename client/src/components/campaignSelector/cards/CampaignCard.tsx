@@ -1,6 +1,6 @@
 import { Badge, Button, Card, Flex, Stack, Text, Title } from "@mantine/core";
 import cl from "./campaignCard.module.scss";
-import { IconCircleCheck, IconPencil, IconPlus } from "@tabler/icons-react";
+import { IconPencil, IconPlus } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import StyledButton from "@/components/styledButton/StyledButton";
 import View from "../View";
@@ -30,7 +30,7 @@ const CampaignCard = (c: Campaign) => {
 		<Stack gap={5}>
 			{!noTitle && (
 				<Text size="xs" fw={500} c={"blue.3"}>
-					OBJECTIVES
+					Objectives
 				</Text>
 			)}
 			<Flex align={"center"} gap={4}>
@@ -43,7 +43,7 @@ const CampaignCard = (c: Campaign) => {
 		<Stack gap={5}>
 			{!noTitle && (
 				<Text size="xs" fw={500} c={"blue.3"}>
-					TOPICS
+					Categories
 				</Text>
 			)}
 
@@ -66,7 +66,7 @@ const CampaignCard = (c: Campaign) => {
 				radius={10}
 				className={clsx(
 					cl["campaign-card"],
-					isSelections && cl.isSelections
+					c.selected && cl.isSelected
 				)}
 				onClick={open}
 			>
@@ -100,8 +100,24 @@ const CampaignCard = (c: Campaign) => {
 					</Stack>
 
 					<Stack gap={5}>
+						<Text size="sm" fw={500} c={"blue.3"}>
+							{c.selected ? "Scheduled For" : "Availability"}
+						</Text>
+						<Text size="xs" c={"gray.6"} fw={600}>
+							{formatAvailabilityForUI(
+								c.selected
+									? {
+											from: c.selection_from_date,
+											to: c.selection_to_date,
+									  }
+									: c.availability
+							)}
+						</Text>
+					</Stack>
+
+					<Stack gap={5}>
 						<Text size="xs" fw={500} c={"blue.3"}>
-							SECTION
+							Activity
 						</Text>
 
 						<Flex align={"center"} gap={4}>
@@ -116,22 +132,6 @@ const CampaignCard = (c: Campaign) => {
 					<Objectives />
 
 					<Topics />
-
-					<Stack gap={5}>
-						<Text size="xs" fw={500} c={"blue.3"}>
-							{c.selected ? "SCHEDULED DATES" : "AVAILABLE DATES"}
-						</Text>
-						<Text size="xs" c={"gray.6"} fw={600}>
-							{formatAvailabilityForUI(
-								c.selected
-									? {
-											from: c.selection_from_date,
-											to: c.selection_to_date,
-									  }
-									: c.availability
-							)}
-						</Text>
-					</Stack>
 
 					<Flex
 						justify={"space-between"}

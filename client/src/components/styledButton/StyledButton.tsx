@@ -3,12 +3,14 @@ import cl from "./styledButton.module.scss";
 
 interface StyledButtonProps extends ButtonProps {
 	link?: string;
+	alignLeft?: boolean;
 	children?: React.ReactNode;
 	onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 const StyledButton = ({
 	link,
+	alignLeft,
 	children,
 	onClick,
 	...props
@@ -22,6 +24,13 @@ const StyledButton = ({
 		style: {
 			border: "1px solid #e5e7eb",
 			transition: "all 0.2s",
+		},
+		styles: {
+			...(alignLeft && {
+				inner: {
+					justifyContent: "flex-start",
+				},
+			}),
 		},
 		...props,
 	};

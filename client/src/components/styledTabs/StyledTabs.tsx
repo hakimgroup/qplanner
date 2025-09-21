@@ -1,5 +1,6 @@
 import { UserTabModes } from "@/models/general.models";
 import AppContext from "@/shared/AppContext";
+import { usePractice } from "@/shared/PracticeProvider";
 import { updateState } from "@/shared/shared.utilities";
 import { SegmentedControl, Center, Stack, Text } from "@mantine/core";
 import { useContext } from "react";
@@ -9,6 +10,7 @@ const StyledTabs = () => {
 		state: { filters },
 		setState,
 	} = useContext(AppContext);
+	const { setActivePracticeId, setUnitedView } = usePractice();
 
 	return (
 		<SegmentedControl
@@ -16,9 +18,16 @@ const StyledTabs = () => {
 			radius={10}
 			transitionDuration={500}
 			value={filters.userSelectedTab}
-			onChange={(t) =>
-				updateState(setState, "filters.userSelectedTab", t)
-			}
+			onChange={(t) => {
+				updateState(setState, "filters.userSelectedTab", t);
+
+				if (t === UserTabModes.Browse) {
+					setActivePracticeId(
+						localStorage.getItem("active_practice_id")
+					);
+					setUnitedView(false);
+				}
+			}}
 			data={[
 				{
 					value: UserTabModes.Browse,

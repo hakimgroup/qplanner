@@ -10,21 +10,26 @@ import {
 	Button,
 	Text,
 	useMantineTheme,
+	Collapse,
 } from "@mantine/core";
 import {
-	IconFileText,
 	IconShare3,
 	IconCalendar,
 	IconClockHour2,
 	IconPlus,
 	IconEdit,
 	IconX,
+	IconMinus,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import CampaignDates from "../campaignDates/CampaignDates";
 import StyledButton from "../styledButton/StyledButton";
 import { Campaign } from "@/models/campaign.models";
-import { firstSentence } from "@/shared/shared.utilities";
+import {
+	firstSentence,
+	formatDateRange,
+	getReferenceLinkLabel,
+} from "@/shared/shared.utilities";
 import { toast } from "sonner";
 import {
 	addDays,
@@ -41,6 +46,7 @@ import { SelectionStatus } from "@/shared/shared.models";
 import Status from "../status/Status";
 import Edit from "./Edit";
 import { useDisclosure } from "@mantine/hooks";
+import { usePractice } from "@/shared/PracticeProvider";
 
 interface Props {
 	mode: "add" | "view";
@@ -56,13 +62,17 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 	const T = useMantineTheme();
 	const [editOpened, { open: openEdit, close: closeEdit }] =
 		useDisclosure(false);
+	const [addOpened, { toggle: toggleAdd }] = useDisclosure(false);
 
 	const availFrom = c.availability?.from
 		? new Date(c.availability.from)
 		: null;
 	const availTo = c.availability?.to ? new Date(c.availability.to) : null;
 
-	const defaultFrom = new Date(c.availability?.from);
+	const defaultFrom = c.availability?.from
+		? new Date(c.availability.from)
+		: new Date();
+
 	const defaultTo = addDays(addMonths(defaultFrom, 1), -1);
 
 	const [campaign, setCampaign] = useState<{ dateRange: DateRange }>(() => ({
@@ -77,17 +87,11 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 	const { mutate: deleteSelection, isPending: deleting } =
 		useDeleteSelection();
 
-	const assets = [
-		{ name: "back-to-school-flyer.pdf", type: "application/pdf" },
-		{ name: "parent-education-video.mp4", type: "video/mp4" },
-		{ name: "insurance-benefits-sheet.docx", type: "application/msword" },
-	];
-
 	const Objectives = ({ noTitle = false }) => (
 		<Stack gap={5}>
 			{!noTitle && (
-				<Text size="xs" fw={500} c={"blue.3"}>
-					OBJECTIVES
+				<Text size="sm" fw={500} c={"blue.3"}>
+					Objectives
 				</Text>
 			)}
 			<Flex align={"center"} gap={4}>
@@ -103,8 +107,8 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 	const Topics = ({ noTitle = false }) => (
 		<Stack gap={5}>
 			{!noTitle && (
-				<Text size="xs" fw={500} c={"blue.3"}>
-					TOPICS
+				<Text size="sm" fw={500} c={"blue.3"}>
+					Categories
 				</Text>
 			)}
 			<Flex align={"center"} gap={4}>
@@ -252,6 +256,20 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 						{firstSentence(c.description)}
 					</Text>
 
+					<Stack gap={5}>
+						<Text c={"gray.9"} size="sm">
+							Availability
+						</Text>
+
+						<Text size="sm" fw={500}>
+							{formatDateRange(
+								c.availability?.from,
+								c.availability?.to
+							)}
+						</Text>
+					</Stack>
+
+					<Divider size={"xs"} color="gray.1" />
 					<Objectives />
 					<Topics />
 					<Divider size={"xs"} color="gray.1" />
@@ -265,197 +283,56 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 
 					<Divider size={"xs"} color="gray.1" />
 
-					<Flex align={"center"} gap={5}>
-						<IconFileText size={18} color={T.colors.blue[3]} />
+					<Stack gap={10}>
 						<Text fw={500} size="sm">
-							Assets (3)
+							More Information
 						</Text>
-					</Flex>
 
-					<Stack gap={8}>
-						{assets.map((as) => (
-							<Card
-								key={as.name}
-								bg={"#f6f6f8"}
-								radius={10}
-								style={{ cursor: "pointer" }}
-								p={10}
-							>
-								<Flex
-									align={"center"}
-									justify={"space-between"}
-								>
-									<Group align={"center"} gap={8}>
-										<IconFileText
+						<Text c="gray.6" size="sm">
+							We don't have the current artwork for this yet, but
+							please see similar campaigns that have rolled out in
+							the past.
+						</Text>
+
+						<Stack mt={10}>
+							{c.reference_links?.map((rl: string, i: number) => (
+								<StyledButton
+									alignLeft
+									bg={"violet.0"}
+									key={rl}
+									link={rl}
+									leftSection={
+										<IconShare3
 											size={18}
-											color={T.colors.gray[5]}
+											color={T.colors.gray[9]}
 										/>
-										<Stack gap={5}>
-											<Text fw={500} size="sm">
-												{as.name}
-											</Text>
-											<Text size="xs" c={"gray.5"}>
-												{as.type}
-											</Text>
-										</Stack>
-									</Group>
-									<IconShare3
-										size={18}
-										color={T.colors.gray[9]}
-									/>
-								</Flex>
-							</Card>
-						))}
-					</Stack>
-
-					<Divider size={"xs"} color="gray.1" />
-
-					{isAdd && (
-						<>
-							<Card bg={"#fbfbfc"} radius={10}>
-								<Stack gap={25}>
-									<Stack gap={3}>
-										<Text fw={600} size="sm">
-											Campaign Dates
-										</Text>
-										<Text c="gray.7" size="sm">
-											Set the date range for "{c.name}"
-										</Text>
-									</Stack>
-
-									<CampaignDates
-										icon={<IconCalendar size={16} />}
-										dateRange={campaign.dateRange}
-										minDate={
-											availFrom
-												? new Date(availFrom)
-												: undefined
-										}
-										maxDate={
-											availTo
-												? new Date(availTo)
-												: undefined
-										}
-										onChange={(range) =>
-											setCampaign((prev) => ({
-												...prev,
-												dateRange: range,
-											}))
-										}
-										startLabel="Start Date"
-										endLabel="End Date"
-										inputSize="md"
-										labelSize="sm"
-										titleLabelSize="sm"
-										hideTitleIcon
-									/>
-
-									<Card bg={"#f6f6f8"} radius={10}>
-										<Flex
-											align={"center"}
-											justify={"space-between"}
-										>
-											<Group align={"center"} gap={10}>
-												<IconClockHour2
-													size={18}
-													color={T.colors.gray[7]}
-												/>
-												<Text fw={500} size="sm">
-													Duration:
-												</Text>
-											</Group>
-											<Badge color="red.4">
-												{daysDuration
-													? `${daysDuration} day${
-															daysDuration === 1
-																? ""
-																: "s"
-													  }`
-													: "-"}
-											</Badge>
-										</Flex>
-									</Card>
-
-									<Stack>
-										<Text fw={500} size="sm">
-											Quick Options
-										</Text>
-
-										<Grid gutter={8}>
-											{quickDateOptions.map((d) => {
-												const disabled =
-													optionDisabled(d);
-												return (
-													<Grid.Col
-														span={4}
-														key={d.name}
-													>
-														<StyledButton
-															fullWidth
-															fw={500}
-															fz={"xs"}
-															disabled={disabled}
-															onClick={() => {
-																if (!disabled)
-																	applyQuickOption(
-																		d
-																	);
-															}}
-														>
-															{d.name}
-														</StyledButton>
-													</Grid.Col>
-												);
-											})}
-										</Grid>
-									</Stack>
-
-									<Card bg={"#ecedfd"} radius={10}>
-										<Stack gap={2}>
-											<Text
-												fw={600}
-												size="xs"
-												c={"gray.6"}
-											>
-												Campaign Schedule:
-											</Text>
-											<Text size="xs" c={"gray.6"}>
-												{scheduleText ?? "—"}
-											</Text>
-										</Stack>
-									</Card>
-								</Stack>
-							</Card>
-
-							{mode === "add" && (
-								<Button
-									fullWidth
-									radius={10}
-									color="blue.3"
-									leftSection={<IconPlus size={15} />}
-									onClick={handleAddToPlan}
-									loading={adding}
+									}
 								>
-									Add to Plan
-								</Button>
+									{getReferenceLinkLabel(rl, i)}
+								</StyledButton>
+							))}
+
+							{!c.reference_links?.length && (
+								<IconMinus size={20} />
 							)}
+						</Stack>
 
-							<Divider size={"xs"} color="gray.1" />
-						</>
-					)}
-
-					<Text fw={500} size="sm">
-						More Information
-					</Text>
-
-					<StyledButton
-						link={c.more_info_link}
-						leftSection={
-							<IconShare3 size={18} color={T.colors.gray[9]} />
-						}
-					>
-						Read more on SharePoint
-					</StyledButton>
+						<StyledButton
+							alignLeft
+							bg={"lime.0"}
+							link={"#"}
+							fullWidth
+							leftSection={
+								<IconShare3
+									size={18}
+									color={T.colors.gray[9]}
+								/>
+							}
+							style={{ justifyContent: "flex-start" }}
+						>
+							Full FAQs
+						</StyledButton>
+					</Stack>
 
 					{c.selected && (
 						<>
@@ -464,6 +341,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 							<Grid gutter={10}>
 								<Grid.Col span={8}>
 									<StyledButton
+										fw={500}
 										fullWidth
 										leftSection={
 											<IconEdit
@@ -473,7 +351,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 										}
 										onClick={openEdit}
 									>
-										Edit Campaign
+										Edit Dates
 									</StyledButton>
 								</Grid.Col>
 
@@ -493,7 +371,143 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 						</>
 					)}
 
-					{mode === "add" && (
+					{isAdd && !addOpened && (
+						<>
+							<Divider size={"xs"} color="gray.1" />
+							<Button
+								fullWidth
+								radius={10}
+								color="blue.3"
+								leftSection={<IconPlus size={15} />}
+								onClick={toggleAdd}
+								loading={adding}
+							>
+								Add to Plan
+							</Button>
+						</>
+					)}
+
+					<Collapse in={addOpened}>
+						<Card bg={"#fbfbfc"} radius={10}>
+							<Stack gap={25}>
+								<Stack gap={3}>
+									<Text fw={600} size="sm">
+										Select Campaign Dates
+									</Text>
+									<Text c="gray.7" size="sm">
+										Set the date range for "{c.name}"
+									</Text>
+								</Stack>
+
+								<CampaignDates
+									icon={<IconCalendar size={16} />}
+									dateRange={campaign.dateRange}
+									minDate={
+										availFrom
+											? new Date(availFrom)
+											: undefined
+									}
+									maxDate={
+										availTo ? new Date(availTo) : undefined
+									}
+									onChange={(range) =>
+										setCampaign((prev) => ({
+											...prev,
+											dateRange: range,
+										}))
+									}
+									startLabel="Start Date"
+									endLabel="End Date"
+									inputSize="md"
+									labelSize="sm"
+									titleLabelSize="sm"
+									hideTitleIcon
+								/>
+
+								<Card bg={"#f6f6f8"} radius={10}>
+									<Flex
+										align={"center"}
+										justify={"space-between"}
+									>
+										<Group align={"center"} gap={10}>
+											<IconClockHour2
+												size={18}
+												color={T.colors.gray[7]}
+											/>
+											<Text fw={500} size="sm">
+												Duration:
+											</Text>
+										</Group>
+										<Badge color="red.4">
+											{daysDuration
+												? `${daysDuration} day${
+														daysDuration === 1
+															? ""
+															: "s"
+												  }`
+												: "-"}
+										</Badge>
+									</Flex>
+								</Card>
+
+								<Stack>
+									<Text fw={500} size="sm">
+										Quick Options
+									</Text>
+
+									<Grid gutter={8}>
+										{quickDateOptions.map((d) => {
+											const disabled = optionDisabled(d);
+											return (
+												<Grid.Col span={4} key={d.name}>
+													<StyledButton
+														fullWidth
+														fw={500}
+														fz={"xs"}
+														disabled={disabled}
+														onClick={() => {
+															if (!disabled)
+																applyQuickOption(
+																	d
+																);
+														}}
+													>
+														{d.name}
+													</StyledButton>
+												</Grid.Col>
+											);
+										})}
+									</Grid>
+								</Stack>
+
+								<Card bg={"#ecedfd"} radius={10}>
+									<Stack gap={2}>
+										<Text fw={600} size="xs" c={"gray.6"}>
+											Campaign Schedule:
+										</Text>
+										<Text size="xs" c={"gray.6"}>
+											{scheduleText ?? "—"}
+										</Text>
+									</Stack>
+								</Card>
+
+								<Flex align="center" gap={10}>
+									<StyledButton fullWidth onClick={toggleAdd}>
+										Cancel
+									</StyledButton>
+									<Button
+										fullWidth
+										onClick={handleAddToPlan}
+										leftSection={<IconCalendar size={18} />}
+									>
+										Add to Calendar
+									</Button>
+								</Flex>
+							</Stack>
+						</Card>
+					</Collapse>
+
+					{isAdd && (
 						<Text fw={700} size="xs" ta={"center"}>
 							Adding to{" "}
 							<Text span fw={700} c="blue.4">

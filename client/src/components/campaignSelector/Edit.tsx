@@ -13,6 +13,8 @@ import {
 	Text,
 	SelectProps,
 	Badge,
+	Drawer,
+	Divider,
 } from "@mantine/core";
 import {
 	IconEdit,
@@ -184,7 +186,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 	};
 
 	return (
-		<Modal
+		<Drawer
 			opened={opened}
 			onClose={closeModal}
 			title={
@@ -206,9 +208,10 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 					</Text>
 				</Stack>
 			}
-			centered
+			size={"32rem"}
+			position="right"
+			offset={8}
 			radius={10}
-			size={"33rem"}
 			overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
 		>
 			<Stack gap={20}>
@@ -225,14 +228,20 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 					</Stack>
 				</Card>
 
-				<Select
+				<Divider size={"xs"} color="gray.1" />
+
+				{/* <Select
 					radius={10}
 					label="Status"
 					data={filterData.status}
 					renderOption={renderSelectOption}
 					value={statusValue}
 					onChange={setStatusValue as any}
-				/>
+				/> */}
+
+				<Text size="sm" c={"gray.9"} fw={600}>
+					Campaign Dates
+				</Text>
 
 				<CampaignDates
 					icon={<IconCalendar size={16} />}
@@ -247,6 +256,8 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 					titleLabelSize="sm"
 					hideTitleIcon
 				/>
+
+				<Divider size={"xs"} color="gray.1" />
 
 				<Card radius={10} bg={"violet.0"} p={10} mt={5}>
 					<Text size="sm" c={"gray.7"}>
@@ -265,6 +276,8 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 					</Text>
 				</Card>
 
+				<Divider size={"xs"} color="gray.1" />
+
 				<Textarea
 					withAsterisk
 					resize="vertical"
@@ -278,6 +291,8 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 					value={notes}
 					onChange={(e) => setNotes(e.currentTarget.value)}
 				/>
+
+				<Divider size={"xs"} color="gray.1" />
 
 				<Group align={"center"} justify="space-between">
 					<Button
@@ -303,7 +318,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 					</Flex>
 				</Group>
 			</Stack>
-		</Modal>
+		</Drawer>
 	);
 };
 

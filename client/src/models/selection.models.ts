@@ -3,6 +3,7 @@ import { SelectionStatus } from "@/shared/shared.models";
 // types/db.ts
 export type Selection = {
 	id: string;
+	assets: string[];
 	practice_id: string;
 	campaign_id: string;
 	from_date: string; // ISO date (YYYY-MM-DD)
@@ -12,12 +13,13 @@ export type Selection = {
 	bespoke: boolean;
 	created_by: string | null;
 	updated_at: string;
+	reference_links: string[];
 };
 
 export type AddSelectionInput = {
-	campaign_id: string;
-	from_date: string; // 'YYYY-MM-DD'
-	to_date: string; // 'YYYY-MM-DD'
+	campaign_id?: string;
+	from_date?: string; // 'YYYY-MM-DD'
+	to_date?: string; // 'YYYY-MM-DD'
 	status?: SelectionStatus; // default 'On Plan'
 	notes?: string | null;
 	bespoke?: boolean;

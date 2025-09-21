@@ -1,7 +1,6 @@
 import Bespoke from "@/components/campaignsSetup/bespoke/Bespoke";
 import Logo from "@/components/logo/Logo";
-import StyledButton from "@/components/styledButton/StyledButton";
-import { Colors } from "@/shared/shared.const";
+import { Colors, statusColors } from "@/shared/shared.const";
 import {
 	Box,
 	Flex,
@@ -12,12 +11,14 @@ import {
 	Card,
 	rgba,
 } from "@mantine/core";
-import {
-	IconChevronLeft,
-	IconChevronRight,
-	IconCircleFilled,
-	IconGridDots,
-} from "@tabler/icons-react";
+import { IconCircleFilled, IconGridDots } from "@tabler/icons-react";
+import { Fragment, useContext, useMemo, useState } from "react";
+import { usePractice } from "@/shared/PracticeProvider";
+import AppContext from "@/shared/AppContext";
+import { format } from "date-fns";
+import { Campaign } from "@/models/campaign.models";
+import Edit from "../Edit";
+import { isEmpty } from "lodash";
 
 /** =========================
  *  CONFIG & TYPES
@@ -25,14 +26,6 @@ import {
 const LABEL_COL_WIDTH = 210; // Keep in sync across headers & rows
 
 type Mode = "equal" | "proportional";
-
-type Campaign = {
-	id: string | number;
-	title: string;
-	start: string; // YYYY-MM-DD
-	end: string; // YYYY-MM-DD
-	color: string;
-};
 
 type GroupRowData = {
 	id: string | number;
@@ -44,6 +37,12 @@ type GroupRowData = {
 /** =========================
  *  DATE / POSITION UTILS
  *  ========================= */
+function statusToColor(status?: string | null) {
+	if (!status) return "gray";
+	// status is like "onPlan", "inProgress", etc.
+	return (statusColors as Record<string, string>)[status] ?? "gray";
+}
+
 function daysInMonth(year: number, month0: number) {
 	return new Date(year, month0 + 1, 0).getDate();
 }
@@ -130,8 +129,8 @@ type Interval = {
 function toIntervals(campaigns: Campaign[]): Interval[] {
 	return campaigns
 		.map((c) => {
-			const s = new Date(c.start);
-			const e = new Date(c.end);
+			const s = new Date(c.selection_from_date);
+			const e = new Date(c.selection_to_date);
 			return {
 				id: c.id,
 				startMs: s.getTime(),
@@ -171,138 +170,10 @@ function layoutLanes(campaigns: Campaign[]) {
 }
 
 /** =========================
- *  STATIC LABELS & SAMPLE DATA
+ *  STATIC LABELS
  *  ========================= */
 const monthsH1 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 const monthsH2 = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-// --- Sample grouped data (per half) ---
-const H1_GROUPS: GroupRowData[] = [
-	{
-		id: "g1",
-		name: "Downtown Vision Center",
-		dotColor: "blue",
-		campaigns: [
-			{
-				id: 1,
-				title: "Designer Frames",
-				start: "2025-03-15",
-				end: "2025-04-10",
-				color: "#7b88f3",
-			},
-			{
-				id: 2,
-				title: "Holiday Gift Card Promotion",
-				start: "2025-06-10",
-				end: "2025-06-30",
-				color: "#f44f88",
-			},
-			// Overlap demo
-			{
-				id: 6,
-				title: "Spring Clearance",
-				start: "2025-04-01",
-				end: "2025-04-20",
-				color: "#3f8cff",
-			},
-		],
-	},
-	{
-		id: "g2",
-		name: "Riverside Eye Clinic",
-		dotColor: "blue",
-		campaigns: [
-			{
-				id: 7,
-				title: "Contact Lens Week",
-				start: "2025-02-05",
-				end: "2025-02-18",
-				color: "#2f7bdc",
-			},
-			{
-				id: 8,
-				title: "Family Vision Days",
-				start: "2025-03-25",
-				end: "2025-04-05",
-				color: "#8e67ff",
-			},
-		],
-	},
-	{
-		id: "g3",
-		name: "Uptown Optics",
-		dotColor: "blue",
-		campaigns: [
-			{
-				id: 9,
-				title: "Frames BOGO",
-				start: "2025-05-10",
-				end: "2025-05-28",
-				color: "#ff6b6b",
-			},
-		],
-	},
-];
-
-const H2_GROUPS: GroupRowData[] = [
-	{
-		id: "g4",
-		name: "Downtown Vision Center",
-		dotColor: "red",
-		campaigns: [
-			{
-				id: 3,
-				title: "Back to School",
-				start: "2025-08-15",
-				end: "2025-09-10",
-				color: "#7b3ff3",
-			},
-			// Overlap demo
-			{
-				id: 5,
-				title: "Freshers Promo",
-				start: "2025-08-25",
-				end: "2025-09-05",
-				color: "#9b59ff",
-			},
-		],
-	},
-	{
-		id: "g5",
-		name: "Riverside Eye Clinic",
-		dotColor: "red",
-		campaigns: [
-			{
-				id: 10,
-				title: "Autumn Savings",
-				start: "2025-10-01",
-				end: "2025-10-18",
-				color: "#e74c3c",
-			},
-			{
-				id: 11,
-				title: "Wellness Check",
-				start: "2025-11-05",
-				end: "2025-11-25",
-				color: "#ff9f43",
-			},
-		],
-	},
-	{
-		id: "g6",
-		name: "Uptown Optics",
-		dotColor: "red",
-		campaigns: [
-			{
-				id: 12,
-				title: "Holiday Gift Cards",
-				start: "2025-12-01",
-				end: "2025-12-22",
-				color: "#ff6b6b",
-			},
-		],
-	},
-];
 
 /** =========================
  *  HEADER ROWS
@@ -406,6 +277,7 @@ function CampaignRow({
 	laneGap?: number;
 	minBlockWidth?: number;
 }) {
+	const [cp, setCp] = useState<Campaign>(null);
 	const { laneIndexById, lanes } = layoutLanes(group.campaigns);
 	const laneCount = lanes.length;
 	const containerHeight =
@@ -414,100 +286,207 @@ function CampaignRow({
 	const calcPos = (c: Campaign) =>
 		mode === "proportional"
 			? getPositionProportional(
-					c.start,
-					c.end,
+					c.selection_from_date,
+					c.selection_to_date,
 					rangeStartISO,
 					rangeEndISO
 			  )
-			: getPositionEqual(c.start, c.end, rangeStartISO);
+			: getPositionEqual(
+					c.selection_from_date,
+					c.selection_to_date,
+					rangeStartISO
+			  );
 
 	return (
-		<Card
-			mt="lg"
-			radius={10}
-			bg={rgba(Colors.cream, 0.5)}
-			style={{ overflow: "visible" }}
-		>
-			<Flex align="center">
-				<Group
-					align="center"
-					gap={5}
-					w={LABEL_COL_WIDTH}
-					h={containerHeight}
-				>
-					<IconCircleFilled color={group.dotColor} size={12} />
-					<Text size="sm" fw={600}>
-						{group.name}
-					</Text>
-				</Group>
+		<>
+			<Card
+				mt="lg"
+				radius={10}
+				bg={rgba(Colors.cream, 0.5)}
+				style={{ overflow: "visible" }}
+			>
+				<Flex align="center">
+					<Group
+						align="center"
+						gap={5}
+						w={LABEL_COL_WIDTH}
+						h={containerHeight}
+					>
+						<IconCircleFilled color={group.dotColor} size={12} />
+						<Text size="sm" fw={600}>
+							{group.name}
+						</Text>
+					</Group>
 
-				<Box
-					pos="relative"
-					flex={1}
-					style={{ height: containerHeight }}
-				>
-					{group.campaigns.map((c) => {
-						const pos = calcPos(c);
-						const lane = laneIndexById.get(c.id) ?? 0;
-						const top = 8 + lane * (laneHeight + laneGap);
+					<Box
+						pos="relative"
+						flex={1}
+						style={{ height: containerHeight }}
+					>
+						{group.campaigns.map((c) => {
+							const pos = calcPos(c);
+							const lane = laneIndexById.get(c.id) ?? 0;
+							const top = 8 + lane * (laneHeight + laneGap);
 
-						return (
-							<Box
-								key={c.id}
-								pos="absolute"
-								style={{
-									top,
-									left: pos.left,
-									width: `max(${pos.width}, ${minBlockWidth}px)`,
-									height: laneHeight,
-									backgroundColor: rgba(c.color, 0.85),
-									borderRadius: 6,
-									color: "white",
-									fontWeight: 700,
-									display: "grid",
-									gridAutoFlow: "column",
-									gridTemplateColumns: "auto 1fr",
-									alignItems: "center",
-									columnGap: 5,
-									padding: "0 8px",
-									lineHeight: 1,
-									border: `2px solid ${c.color}`,
-								}}
-								title={`${c.title} (${c.start}–${c.end})`}
-							>
-								<IconGridDots size={10} color="white" />
-								<Text
-									size="xs"
-									fw={700}
-									truncate
-									// for safety if not using truncate:
-									// style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}
-									style={{ minWidth: 0 }}
-									title={c.title}
-								>
-									{c.title}
-								</Text>
-							</Box>
-						);
-					})}
-				</Box>
-			</Flex>
-		</Card>
+							return (
+								<Fragment key={c.id}>
+									<Box
+										pos="absolute"
+										style={{
+											top,
+											left: pos.left,
+											width: `max(${pos.width}, ${minBlockWidth}px)`,
+											height: laneHeight,
+											backgroundColor: rgba(
+												statusToColor(c.status),
+												0.85
+											),
+											borderRadius: 6,
+											color: "white",
+											fontWeight: 700,
+											display: "grid",
+											gridAutoFlow: "column",
+											gridTemplateColumns: "auto 1fr",
+											alignItems: "center",
+											columnGap: 5,
+											padding: "0 8px",
+											lineHeight: 1,
+											border: `2px solid ${statusToColor(
+												c.status
+											)}`,
+											cursor: "pointer",
+										}}
+										title={`${c.name} (${c.selection_from_date}–${c.selection_to_date})`}
+										onClick={() => setCp(c)}
+									>
+										<IconGridDots size={10} color="white" />
+										<Text
+											size="xs"
+											fw={700}
+											truncate
+											style={{ minWidth: 0 }}
+											title={c.name}
+										>
+											{c.name}
+										</Text>
+									</Box>
+
+									{!isEmpty(cp) && (
+										<Edit
+											selection={cp}
+											opened={
+												!isEmpty(cp) && cp.id === c.id
+											}
+											closeModal={() => setCp(null)}
+										/>
+									)}
+								</Fragment>
+							);
+						})}
+					</Box>
+				</Flex>
+			</Card>
+		</>
 	);
 }
 
 /** =========================
  *  MAIN COMPONENT
  *  ========================= */
-export default function CampaignTimeline({
-	mode = "equal",
-	h1Groups = H1_GROUPS,
-	h2Groups = H2_GROUPS,
-}: {
-	mode?: Mode;
-	h1Groups?: GroupRowData[];
-	h2Groups?: GroupRowData[];
-}) {
+export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
+	const {
+		state: {
+			allCampaigns: { data },
+		},
+	} = useContext(AppContext);
+
+	// We’ll use the current practice/unitedView to decide grouping.
+	const { unitedView, activePracticeId, practices } = usePractice() as {
+		unitedView: boolean;
+		activePracticeId: string | null;
+		practices?: { id: string; name: string }[];
+	};
+
+	const practiceName = (pid: string) => {
+		const found = practices?.find((p) => String(p.id) === String(pid));
+		return found?.name ?? pid;
+	};
+
+	// Build groups (H1 & H2) from selection dates.
+	const { h1Groups, h2Groups } = useMemo(() => {
+		const byPractice: Record<string, Campaign[]> = {};
+
+		// Filter by context: single practice vs united (all practices current user can see are already represented in campaigns)
+		const filtered = (data || []).filter((c) => {
+			if (
+				!c.selection_from_date ||
+				!c.selection_to_date ||
+				!c.selection_practice_id
+			)
+				return false;
+			if (unitedView) return true;
+			if (!activePracticeId) return false;
+			return String(c.selection_practice_id) === String(activePracticeId);
+		});
+
+		// Transform into Campaign items grouped by practice
+		for (const c of filtered) {
+			const pid = c.selection_practice_id as string;
+			if (!byPractice[pid]) byPractice[pid] = [];
+			byPractice[pid].push(c);
+		}
+
+		// Split each practice’s campaigns into H1/H2 groups
+		const groupsH1: GroupRowData[] = [];
+		const groupsH2: GroupRowData[] = [];
+
+		Object.entries(byPractice).forEach(([pid, list]) => {
+			const name = practiceName(pid);
+			const gH1: GroupRowData = {
+				id: `${pid}-h1`,
+				name,
+				dotColor: "blue",
+				campaigns: [],
+			};
+			const gH2: GroupRowData = {
+				id: `${pid}-h2`,
+				name,
+				dotColor: "red",
+				campaigns: [],
+			};
+
+			for (const it of list) {
+				const startMonth = new Date(it.selection_from_date).getMonth(); // 0..11
+				// If the campaign straddles halves, split into two bars so it renders cleanly in both halves.
+				const endMonth = new Date(it.selection_to_date).getMonth();
+
+				// boundaries
+				const h1End = "2025-06-30";
+				const h2Start = "2025-07-01";
+
+				if (startMonth <= 5 && endMonth <= 5) {
+					gH1.campaigns.push(it);
+				} else if (startMonth >= 6 && endMonth >= 6) {
+					gH2.campaigns.push(it);
+				} else {
+					// spans across: split at July 1
+					const left: Campaign = { ...it, selection_to_date: h1End };
+					const right: Campaign = {
+						...it,
+						selection_from_date: h2Start,
+					};
+					gH1.campaigns.push(left);
+					gH2.campaigns.push(right);
+				}
+			}
+
+			if (gH1.campaigns.length) groupsH1.push(gH1);
+			if (gH2.campaigns.length) groupsH2.push(gH2);
+		});
+
+		return { h1Groups: groupsH1, h2Groups: groupsH2 };
+	}, [data, unitedView, activePracticeId, practices]);
+
 	// derive total planned for header badge
 	const plannedCount =
 		h1Groups.reduce((n, g) => n + g.campaigns.length, 0) +
@@ -517,30 +496,18 @@ export default function CampaignTimeline({
 		<Box p="md">
 			{/* Year Header And Selector */}
 			<Flex align="center" justify="space-between">
-				<Group align="center" gap={15}>
-					<Text
-						fz={"h1"}
-						fw={700}
-						variant="gradient"
-						gradient={{ from: "blue.3", to: "red.4", deg: 180 }}
-					>
-						2025
-					</Text>
-
-					<Group align="center" gap={5}>
-						<StyledButton>
-							<IconChevronLeft size={17} />
-						</StyledButton>
-						<StyledButton>Today</StyledButton>
-						<StyledButton>
-							<IconChevronRight size={17} />
-						</StyledButton>
-					</Group>
-				</Group>
+				<Text
+					fz={"h1"}
+					fw={700}
+					variant="gradient"
+					gradient={{ from: "blue.3", to: "red.4", deg: 180 }}
+				>
+					{Number(format(new Date(), "yyyy"))} Planner Calendar
+				</Text>
 
 				<Flex align="center" gap={10}>
 					<Badge variant="outline" color="gray.1">
-						<Text size="sm" fw={600} c={"gray.9"}>
+						<Text size="xs" fw={500} c={"gray.9"}>
 							{plannedCount} campaigns planned
 						</Text>
 					</Badge>

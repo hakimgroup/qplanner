@@ -2,7 +2,6 @@ import { Title, Paper, Stack, Group, Flex, Text, Divider } from "@mantine/core";
 import VideoBanner from "../../components/videoBanner/VideoBanner";
 import StyledTabs from "@/components/styledTabs/StyledTabs";
 import { IconCircleFilled } from "@tabler/icons-react";
-import Bespoke from "@/components/campaignsSetup/bespoke/Bespoke";
 import Quick from "@/components/campaignsSetup/quick/Quick";
 import Guided from "@/components/campaignsSetup/guided/Guided";
 import { useContext } from "react";
@@ -61,7 +60,6 @@ export function DashboardContent() {
 
 					{!isSelections && (
 						<Flex gap={12}>
-							<Bespoke />
 							<Quick />
 							<Guided />
 						</Flex>

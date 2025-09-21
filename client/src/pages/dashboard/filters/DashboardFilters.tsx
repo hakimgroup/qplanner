@@ -37,6 +37,22 @@ const DashboardFilters = () => {
 		state: { filters },
 		setState,
 	} = useContext(AppContext);
+	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
+
+	const filterRemap = {
+		categories: {
+			name: "Activity",
+			value: "categories",
+		},
+		objectives: {
+			name: "Objectives",
+			value: "objectives",
+		},
+		topics: {
+			name: "Categories",
+			value: "topics",
+		},
+	};
 
 	const defaultFilters: Filters = {
 		viewMode: ViewModes.Cards,
@@ -89,7 +105,7 @@ const DashboardFilters = () => {
 		<Stack gap={6} className={cl["filter-group"]}>
 			<Flex align={"center"} justify={"space-between"}>
 				<GroupTitle
-					title={upperFirst(type)}
+					title={upperFirst(filterRemap[type].name)}
 					icon={filterGroupsIcon[type]}
 				/>
 
@@ -188,37 +204,42 @@ const DashboardFilters = () => {
 			<Divider size={"xs"} color="gray.1" />
 
 			<FilterCheckboxes type="topics" />
-			<Divider size={"xs"} color="gray.1" />
 
-			<Stack gap={6} className={cl["filter-group"]}>
-				<GroupTitle title="Plan Display" />
+			{!isSelections && (
+				<>
+					<Divider size={"xs"} color="gray.1" />
 
-				<Flex align={"center"} justify={"space-between"}>
-					<Group gap={5}>
-						{filters.hideSelected ? (
-							<IconEyeOff size={19} />
-						) : (
-							<IconEye size={19} />
-						)}
-						<Text size="sm" fw={500}>
-							Hide placed items
-						</Text>
-					</Group>
+					<Stack gap={6} className={cl["filter-group"]}>
+						<GroupTitle title="Plan Display" />
 
-					<Switch
-						color="blue.3"
-						size="md"
-						checked={filters.hideSelected}
-						onChange={(event) =>
-							updateState(
-								setState,
-								"filters.hideSelected",
-								event.currentTarget.checked
-							)
-						}
-					/>
-				</Flex>
-			</Stack>
+						<Flex align={"center"} justify={"space-between"}>
+							<Group gap={5}>
+								{filters.hideSelected ? (
+									<IconEyeOff size={19} />
+								) : (
+									<IconEye size={19} />
+								)}
+								<Text size="sm" fw={500}>
+									Hide placed items
+								</Text>
+							</Group>
+
+							<Switch
+								color="blue.3"
+								size="md"
+								checked={filters.hideSelected}
+								onChange={(event) =>
+									updateState(
+										setState,
+										"filters.hideSelected",
+										event.currentTarget.checked
+									)
+								}
+							/>
+						</Flex>
+					</Stack>
+				</>
+			)}
 
 			{!isEqual(defaultFilters, filters) && (
 				<Fragment>

@@ -14,7 +14,13 @@ import { RequireAuth } from "./shared/RequireAuth";
 import { PracticeProvider } from "./shared/PracticeProvider";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			refetchOnWindowFocus: false,
+		},
+	},
+});
 
 export default function App() {
 	const { pathname } = useLocation();

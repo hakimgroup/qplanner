@@ -48,12 +48,12 @@ const Quick = () => {
 			variant: "light",
 			name: Tiers.Good,
 			description: "Essential campaigns to get started",
-			numberOfCampaigns: 2,
+			numberOfCampaigns: 4,
 			numberOfEvents: 1,
 			inclusions: [
-				"1 core campaign per quarter",
+				"4 campaigns for the year",
+				"Always-on: Google Reviews Pack (all year)",
 				"1 seasonal event",
-				"Basic asset pack",
 			],
 		},
 		{
@@ -63,13 +63,12 @@ const Quick = () => {
 			variant: "filled",
 			name: Tiers.Better,
 			description: "Balanced mix for steady growth",
-			numberOfCampaigns: 4,
+			numberOfCampaigns: 7,
 			numberOfEvents: 2,
 			inclusions: [
-				"1 core + 1 filler per quarter",
-				"2 seasonal events",
-				"Extended asset library",
-				"Basic analytics",
+				"7 campaigns for the year",
+				"Always-on: Google Reviews Pack + light monthly social (all year)",
+				"1 seasonal event and 1 brand activation",
 			],
 		},
 		{
@@ -79,21 +78,23 @@ const Quick = () => {
 			variant: "filled",
 			name: Tiers.Best,
 			description: "Maximum impact with always-on strategy",
-			numberOfCampaigns: 7,
+			numberOfCampaigns: 10,
 			numberOfEvents: 4,
 			inclusions: [
-				"Always-on layer",
-				"Multiple concurrent campaigns",
-				"Premium assets",
-				"Advanced analytics",
-				"Priority support",
+				"10 campaigns for the year",
+				"Always-on: Google Reviews Pack + monthly pulses (all year)",
+				"2 seasonal events and 2 brand activations",
 			],
 		},
 	];
 
 	return (
 		<>
-			<StyledButton leftSection={<IconBolt size={14} />} onClick={open}>
+			<StyledButton
+				fw={500}
+				leftSection={<IconBolt size={14} />}
+				onClick={open}
+			>
 				Quick Populate
 			</StyledButton>
 
@@ -185,7 +186,7 @@ const Quick = () => {
 											{t.numberOfEvents}
 										</Text>
 										<Text size="xs" c="gray.7" mt={-5}>
-											Events
+											Activations
 										</Text>
 									</Stack>
 								</Flex>
@@ -197,21 +198,23 @@ const Quick = () => {
 										Includes:
 									</Text>
 
-									<Stack gap={5} mt={5}>
+									<Stack gap={10} mt={5}>
 										{t.inclusions.map((inc) => (
-											<Group
+											<Flex
 												gap={5}
 												align="center"
 												key={inc}
 											>
-												<IconStar
-													size={12}
-													color={T.colors.blue[3]}
-												/>
+												<Box>
+													<IconStar
+														size={12}
+														color={T.colors.blue[3]}
+													/>
+												</Box>
 												<Text size="xs" c={"gray.6"}>
 													{inc}
 												</Text>
-											</Group>
+											</Flex>
 										))}
 									</Stack>
 								</Box>

@@ -68,12 +68,13 @@ function includesAll(
 
 const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const { unitedView, activePracticeId } = usePractice();
+	const practiceParam = unitedView ? null : activePracticeId;
 	const { data: selections = [] } = useSelections();
 	const [state, setState] = useState(appStateDefault); // full app state
 
 	// Fetch raw campaigns once (or as your hook dictates)
 	const { data: rawCampaigns = [], isFetching } =
-		useAllCampaigns(activePracticeId);
+		useAllCampaigns(practiceParam);
 
 	// Compute filtered campaigns from app-level filters
 	const filteredCampaigns = useMemo(() => {
@@ -91,19 +92,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 			String(userSelectedTab ?? "").toLowerCase() ===
 			UserTabModes.Selected;
 
-		// Build a set of campaign_ids that are already On Plan for the CURRENT PRACTICE.
-		// (United View is typically not used for browsing the catalog.)
-		const onPlanSetCurrent = new Set<string>(
-			selections.map((s: any) => String(s.campaign_id))
-		);
-
-		// Augment rows with a `selected` flag based on current practice selections
-		const augmented = (rawCampaigns as any[]).map((c) => ({
-			...c,
-			selected: onPlanSetCurrent.has(String(c.id)),
-		}));
-
-		return augmented.filter((c) => {
+		return rawCampaigns.filter((c) => {
 			// If we're on the Selected tab, only show items already on plan
 			if (isSelectedTab && !c.selected) return false;
 

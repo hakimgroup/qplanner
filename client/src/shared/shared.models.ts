@@ -12,6 +12,7 @@ export enum DatabaseTables {
 	Selections = "selections",
 	Practices = "practices",
 	Allowed_Users = "allowed_users",
+	BespokeCampaigns = "bespoke_campaigns",
 }
 
 export enum RPCFunctions {
@@ -19,6 +20,8 @@ export enum RPCFunctions {
 	AssignUserToPractice = "assign_user_to_practice",
 	UnAssignUserFromPractice = "unassign_user_from_practice",
 	GetCampaigns = "get_campaigns",
+	CreateBespokeSelection = "create_bespoke_selection",
+	AddCampaignsBulk = "add_campaigns_bulk",
 }
 
 export enum SelectionStatus {

@@ -14,6 +14,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { IconBell, IconCircleCheck, IconFileText } from "@tabler/icons-react";
 import SingleNotification from "./SingleNotification";
+import StyledButton from "../styledButton/StyledButton";
 
 const Notification = () => {
 	const T = useMantineTheme();
@@ -122,9 +123,14 @@ const Notification = () => {
 						</Menu.Item>
 					))}
 
-					<Divider size={"xs"} color="gray.1" mt={20} />
+					<Stack gap={8} mb={10} pl={15} pr={15}>
+						<Divider size={"xs"} color="gray.1" mt={20} />
+						<StyledButton fw={500} size="sm" fullWidth>
+							View all notifications
+						</StyledButton>
+					</Stack>
 
-					<Menu.Item mt={6} mb={10} onClick={() => {}}>
+					<Menu.Item mb={10} onClick={() => {}}>
 						<Card bg={"transparent"} pt={2} pl={10} pb={2} pr={10}>
 							<Flex gap={8} align={"center"}>
 								<IconCircleCheck

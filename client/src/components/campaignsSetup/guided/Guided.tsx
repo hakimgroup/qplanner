@@ -83,7 +83,11 @@ const Guided = () => {
 
 	return (
 		<>
-			<StyledButton leftSection={<IconWand size={14} />} onClick={open}>
+			<StyledButton
+				fw={500}
+				leftSection={<IconWand size={14} />}
+				onClick={open}
+			>
 				Guided Populate
 			</StyledButton>
 

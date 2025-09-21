@@ -5,12 +5,12 @@ export const Colors = {
 };
 
 export const statusColors = {
-	requested: "orange",
-	live: "green",
-	inProgress: "blue",
-	onPlan: "teal",
-	cancelled: "red",
-	confirmed: "purple",
+	requested: "#ff7f50",
+	live: "#2ed573",
+	inProgress: "#1e90ff",
+	onPlan: "#10ac84",
+	cancelled: "#ff4757",
+	confirmed: "#5352ed",
 };
 
 export const appStateDefault: AppState = {

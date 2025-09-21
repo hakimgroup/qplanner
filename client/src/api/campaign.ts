@@ -42,36 +42,6 @@ export interface EmailModel {
 	html: any;
 }
 
-//New Layout Calls
-// export const getAllCampaigns = async (
-// 	campaign_id?: string,
-// 	onSuccess?: () => void
-// ) => {
-// 	let query = supabase.from(DatabaseTables.CampaignsCatalog).select();
-
-// 	if (campaign_id) {
-// 		query = query.eq("campaign_id", campaign_id);
-// 	}
-
-// 	const { data, error } = await query;
-
-// 	if (onSuccess) onSuccess();
-
-// 	if (error) throw new Error(error.message);
-
-// 	if (!data) {
-// 		toast.error("Something went wrong", { position: "top-center" });
-// 		throw new Error("Something went wrong");
-// 	}
-
-// 	const mapped = data.map((row: any) => ({
-// 		...row,
-// 		availability: normalizeAvailability(row.availability),
-// 	}));
-
-// 	return mapped as Campaign[];
-// };
-
 export const getAllCampaigns = async (practiceId?: string | null) => {
 	const arg =
 		practiceId === undefined
@@ -166,7 +136,7 @@ export const updateCampaign = async (campaign: CampaignModel) => {
 	return data as CampaignModel;
 };
 
-export const addCampaignAdmin = async (campaign: CampaignsModel) => {
+export const addCampaignAdmin = async (campaign: Campaign) => {
 	const { data, error } = await supabase
 		.from(DatabaseTables.CampaignsCatalog)
 		.insert(campaign)

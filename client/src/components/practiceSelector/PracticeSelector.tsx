@@ -15,9 +15,11 @@ import {
 	IconCircleFilled,
 	IconUsers,
 } from "@tabler/icons-react";
-import { Fragment, useMemo } from "react";
+import { Fragment, useContext, useMemo } from "react";
 import cl from "./practiceSelector.module.scss";
 import { usePractice } from "@/shared/PracticeProvider"; // ⬅️ context
+import AppContext from "@/shared/AppContext";
+import { UserTabModes } from "@/models/general.models";
 
 type TargetProps = {
 	isAll?: boolean;
@@ -73,6 +75,10 @@ const PracticeSelector = () => {
 	const combobox = useCombobox({
 		onDropdownClose: () => combobox.resetSelectedOption(),
 	});
+	const {
+		state: { filters },
+	} = useContext(AppContext);
+	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
 
 	const {
 		practices, // [{ id, name }, ...] limited by RLS to what the user can access
@@ -174,6 +180,7 @@ const PracticeSelector = () => {
 							value="all"
 							key="all"
 							active={selectedValue === "all"}
+							disabled={!isSelections}
 						>
 							<TargetComponent
 								isAll

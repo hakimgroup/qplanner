@@ -1,6 +1,6 @@
 // src/utils/stateUtils.ts
 import _ from "lodash";
-import { parseISO, format } from "date-fns";
+import { parseISO, format, isValid } from "date-fns";
 
 type State = Record<string, any>;
 type SetState = React.Dispatch<React.SetStateAction<State>>;
@@ -111,4 +111,128 @@ export function firstSentence(input: string): string {
 	if (match) return match[0];
 	const nl = clean.indexOf("\n");
 	return nl >= 0 ? clean.slice(0, nl) : clean;
+}
+
+// utils/linkLabel.ts
+export function getReferenceLinkLabel(raw: string, index: number = 0): string {
+	try {
+		const url = new URL(raw);
+		const host = url.hostname.replace(/^www\./, "");
+		const path = url.pathname || "/";
+		const lastSeg = decodeURIComponent(
+			path.split("/").filter(Boolean).pop() || ""
+		);
+		const ext = (lastSeg.split(".").pop() || "").toLowerCase();
+
+		// Map common hosts to friendly names
+		const hostMap: Record<string, string> = {
+			"sharepoint.com": "SharePoint",
+			"dropbox.com": "Dropbox",
+			"drive.google.com": "Google Drive",
+			"docs.google.com": "Google Docs",
+			"figma.com": "Figma",
+			"notion.so": "Notion",
+			"onedrive.live.com": "OneDrive",
+			"box.com": "Box",
+			"loom.com": "Loom",
+			"youtube.com": "YouTube",
+			"vimeo.com": "Vimeo",
+		};
+
+		// Quick heuristics
+		const isFolder = /folder|folders|drive\/u\/\d\/folders|:f:|:o:/i.test(
+			path + url.search
+		);
+		const isShare = /share|sharing|view|open|s\/|file\/d\//i.test(
+			path + url.search
+		);
+
+		// Pretty title from last segment (strip extension, kebab → Title Case)
+		const prettyFromSegment = (seg: string) => {
+			const base = seg.replace(/\.[^.]+$/, ""); // remove extension
+			if (!base) return "";
+			return base
+				.replace(/[-_]+/g, " ")
+				.replace(/\s+/g, " ")
+				.trim()
+				.replace(/\b\w/g, (m) => m.toUpperCase());
+		};
+
+		const hostLabel =
+			hostMap[Object.keys(hostMap).find((k) => host.endsWith(k)) || ""] ||
+			host.split(".").slice(-2).join("."); // fallback: domain.tld
+
+		// File type badges (text only)
+		const fileType =
+			ext === "pdf"
+				? "PDF"
+				: ["doc", "docx", "pages"].includes(ext)
+				? "Doc"
+				: ["xls", "xlsx", "numbers", "csv"].includes(ext)
+				? "Sheet"
+				: ["ppt", "pptx", "key"].includes(ext)
+				? "Slides"
+				: ["mp4", "mov", "webm"].includes(ext)
+				? "Video"
+				: ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext)
+				? "Image"
+				: "";
+
+		let title = prettyFromSegment(lastSeg);
+
+		// If no good last segment, try a query param like ?name= or ?title=
+		if (!title) {
+			const qpTitle =
+				url.searchParams.get("name") ||
+				url.searchParams.get("title") ||
+				url.searchParams.get("file") ||
+				url.searchParams.get("v") || // YouTube id
+				"";
+			title = prettyFromSegment(qpTitle);
+		}
+
+		// Build the final label
+		// Priority: [Host] Title (Type) → [Host] Folder → [Host] Shared Link → fallback
+		if (title && fileType) return `${hostLabel}: ${title} (${fileType})`;
+		if (title) return `${hostLabel}: ${title}`;
+		if (isFolder) return `${hostLabel}: Folder`;
+		if (isShare) return `${hostLabel}: Shared Link`;
+
+		// Fallback with index (1-based) and domain
+		return `Link ${index + 1} (${hostLabel})`;
+	} catch {
+		// If URL parsing fails, fall back softly
+		return `Link ${index + 1}`;
+	}
+}
+
+export function formatDateRange(
+	from?: string | null,
+	to?: string | null
+): string {
+	let formattedFrom = "";
+	let formattedTo = "";
+
+	if (from) {
+		const fromDate = parseISO(from);
+		if (isValid(fromDate)) {
+			formattedFrom = format(fromDate, "MMMM do, yyyy");
+		}
+	}
+
+	if (to) {
+		const toDate = parseISO(to);
+		if (isValid(toDate)) {
+			formattedTo = format(toDate, "MMMM do, yyyy");
+		}
+	}
+
+	if (formattedFrom && formattedTo) {
+		return `From ${formattedFrom} to ${formattedTo}`;
+	}
+
+	if (formattedFrom) return `From ${formattedFrom}`;
+	if (formattedTo) return `Until ${formattedTo}`;
+
+	return "";
 }

@@ -7,7 +7,7 @@
 	overflow: hidden;
 	border: 1px solid variables.$sea;
 	cursor: pointer;
-	min-height: 400px;
+	min-height: 430px;
 
 	&::before {
 		content: "";
@@ -16,12 +16,12 @@
 		top: 0px;
 		height: 100%;
 		width: 4px;
-		background-color: variables.$red;
+		background-color: variables.$sea;
 	}
 
-	&.isSelections {
+	&.isSelected {
 		&::before {
-			background-color: variables.$blue;
+			background-color: variables.$red;
 		}
 	}
 }
