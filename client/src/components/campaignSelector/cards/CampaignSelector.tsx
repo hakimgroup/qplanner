@@ -8,7 +8,6 @@ import {
 	Title,
 	Center,
 	ThemeIcon,
-	Button,
 	Flex,
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
@@ -20,6 +19,7 @@ import { useContext, useMemo, useState } from "react";
 import Bespoke from "../../campaignsSetup/bespoke/Bespoke";
 import { useDebouncedValue } from "@mantine/hooks";
 import StyledButton from "@/components/styledButton/StyledButton";
+import { usePractice } from "@/shared/PracticeProvider";
 
 const CampaignSelectorCards = () => {
 	const {
@@ -28,6 +28,7 @@ const CampaignSelectorCards = () => {
 			allCampaigns: { data: filteredAppCampaigns, loading },
 		},
 	} = useContext(AppContext);
+	const { unitedView } = usePractice();
 
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
 
@@ -66,7 +67,7 @@ const CampaignSelectorCards = () => {
 							: "Browse and add campaigns to this practice plan"}
 					</Text>
 				</Stack>
-				<Bespoke />
+				{!unitedView && <Bespoke />}
 			</Flex>
 
 			<TextInput
@@ -104,7 +105,11 @@ const CampaignSelectorCards = () => {
 				{/* Empty state */}
 				{!loading && viewCampaigns.length === 0 && (
 					<Grid.Col span={12}>
-						<Center mih={220} style={{ textAlign: "center" }}>
+						<Center
+							mih={220}
+							style={{ textAlign: "center" }}
+							mb={50}
+						>
 							<Stack gap={18} align="center">
 								<ThemeIcon
 									size={75}
@@ -122,7 +127,7 @@ const CampaignSelectorCards = () => {
 									variant="default"
 									onClick={handleClearSearch}
 								>
-									Clear Search &amp; Filters
+									Clear Search & Filters
 								</StyledButton>
 							</Stack>
 						</Center>

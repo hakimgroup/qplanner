@@ -8,14 +8,14 @@ export const theme = createTheme({
 		blue: [
 			"#ebecff",
 			"#d3d4ff",
-			"#a3a5f8",
-			"#7476f3",
-			"#4648ee",
-			"#2c2eec",
-			"#1d20eb",
-			"#0f14d2",
-			"#0611bc",
-			"#000ca6",
+			"#a3a5f9",
+			"#6467f2",
+			"#4649ee",
+			"#2b2eec",
+			"#1c21ec",
+			"#0e15d2",
+			"#0511bd",
+			"#000da7",
 		],
 		red: [
 			"#ffe9f8",
@@ -60,5 +60,8 @@ export const theme = createTheme({
 				},
 			},
 		},
+	},
+	shadows: {
+		xs: "0px 1px 5px 0px rgba(139, 0, 255, 0.08)",
 	},
 });

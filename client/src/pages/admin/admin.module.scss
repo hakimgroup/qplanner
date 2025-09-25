@@ -1,0 +1,56 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+$radius: 10px;
+$transition: 150ms ease;
+
+.admin-sidebar {
+	/* Base styles shared by both link variants */
+	.link {
+		text-decoration: none;
+		border-radius: $radius;
+		color: variables.$main;
+		background: transparent;
+		transition: background-color $transition, color $transition,
+			transform $transition;
+
+		&:hover {
+			background: var(--mantine-color-blue-0);
+			color: var(--mantine-color-violet-9);
+			transform: translateY(-1px);
+		}
+	}
+
+	/* Collapsed state (icon-only) */
+	.linkIcon {
+		display: grid;
+		place-items: center;
+		height: 38px;
+	}
+
+	/* Expanded state (icon + label row) */
+	.linkRow {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px 10px;
+		font-weight: 600;
+	}
+
+	/* Label styling so it doesn’t fight parent color changes */
+	.label {
+		color: var(--mantine-color-gray-8);
+	}
+
+	/* Active state applies to both variants */
+	.active {
+		color: var(--mantine-color-violet-9);
+		background: var(--mantine-color-blue-0);
+
+		&:hover {
+			background: var(--mantine-color-blue-0);
+			color: var(--mantine-color-violet-9);
+		}
+	}
+}

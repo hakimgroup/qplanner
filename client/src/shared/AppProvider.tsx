@@ -14,6 +14,10 @@ import { UserTabModes } from "@/models/general.models";
 
 type Availability = { from: string; to: string } | null;
 
+// ✅ stable empties (same reference across renders)
+const EMPTY_ARR: any[] = [];
+const EMPTY_ARR_SEL: any[] = [];
+
 function toDate(input: unknown): Date | null {
 	if (!input) return null;
 	if (input instanceof Date) return isNaN(input.getTime()) ? null : input;
@@ -32,8 +36,8 @@ function overlapsWithSelected(
 	const hasSelFrom = !!selFrom;
 	const hasSelTo = !!selTo;
 
-	if (!hasSelFrom && !hasSelTo) return true; // no date filter -> no restriction
-	if (!av) return false; // user filtered by date, but campaign has no availability
+	if (!hasSelFrom && !hasSelTo) return true;
+	if (!av) return false;
 
 	const cFrom = toDate(av.from);
 	const cTo = toDate(av.to);
@@ -42,7 +46,6 @@ function overlapsWithSelected(
 	const sFrom = toDate(selFrom as any);
 	const sTo = toDate(selTo as any);
 
-	// Build a wide interval if only one bound given
 	const FAR_PAST = new Date(1900, 0, 1);
 	const FAR_FUTURE = new Date(2999, 11, 31);
 
@@ -60,21 +63,30 @@ function includesAll(
 	source: string[] | undefined,
 	selected: string[]
 ): boolean {
-	if (!selected?.length) return true; // nothing selected → pass
+	if (!selected?.length) return true;
 	if (!source?.length) return false;
-	// OR semantics: pass if there is any intersection
 	return selected.some((x) => source.includes(x));
 }
 
 const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const { unitedView, activePracticeId } = usePractice();
 	const practiceParam = unitedView ? null : activePracticeId;
-	const { data: selections = [] } = useSelections();
-	const [state, setState] = useState(appStateDefault); // full app state
 
-	// Fetch raw campaigns once (or as your hook dictates)
-	const { data: rawCampaigns = [], isFetching } =
-		useAllCampaigns(practiceParam);
+	// 🚫 avoid "= []" default; use stable ref instead
+	const { data: selectionsRaw } = useSelections();
+	const selections = (selectionsRaw ?? EMPTY_ARR_SEL) as any[];
+
+	const [state, setState] = useState(appStateDefault);
+
+	// 🚫 avoid "= []" default; use stable ref instead
+	const campaignsQuery = useAllCampaigns(practiceParam);
+	const rawCampaigns = (campaignsQuery.data ?? EMPTY_ARR) as any[];
+	const isFetching = campaignsQuery.isFetching;
+
+	// TRUE if the user has added any plan
+	const hasPlans = useMemo<boolean>(() => {
+		return selections.length > 0;
+	}, [selections]);
 
 	// Compute filtered campaigns from app-level filters
 	const filteredCampaigns = useMemo(() => {
@@ -92,11 +104,9 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 			String(userSelectedTab ?? "").toLowerCase() ===
 			UserTabModes.Selected;
 
-		return rawCampaigns.filter((c) => {
-			// If we're on the Selected tab, only show items already on plan
+		return rawCampaigns.filter((c: any) => {
 			if (isSelectedTab && !c.selected) return false;
 
-			// Date range (overlap)
 			if (
 				!overlapsWithSelected(
 					c?.availability ?? null,
@@ -106,14 +116,12 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 			)
 				return false;
 
-			// Category facet (OR within selected categories)
 			if (
 				categories?.length &&
 				!categories.includes(String(c?.category ?? ""))
 			)
 				return false;
 
-			// Objectives (OR semantics here)
 			if (
 				!includesAll(
 					c?.objectives as string[] | undefined,
@@ -122,28 +130,45 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 			)
 				return false;
 
-			// Topics (OR semantics here)
 			if (!includesAll(c?.topics as string[] | undefined, topics ?? []))
 				return false;
 
-			// Hide already-selected (only meaningful on Browse; ignore on Selected tab)
 			if (!isSelectedTab && !unitedView && hideSelected && c.selected)
 				return false;
 
 			return true;
 		});
-	}, [rawCampaigns, state.filters, selections, unitedView]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [rawCampaigns, state.filters, unitedView]);
 
-	// Push filtered results + loading flag into global state
+	// Guarded state update to prevent loops/flashes
 	useEffect(() => {
-		setState((prev) => ({
-			...prev,
-			allCampaigns: {
-				loading: isFetching,
-				data: filteredCampaigns,
-			},
-		}));
-	}, [isFetching, filteredCampaigns]);
+		setState((prev) => {
+			const prevAll = prev.allCampaigns;
+
+			const nextLoading = isFetching;
+			const nextHasPlans = hasPlans;
+			const nextData = filteredCampaigns;
+
+			const loadingChanged = prevAll.loading !== nextLoading;
+			const hasPlansChanged = prevAll.hasPlans !== nextHasPlans;
+			const dataChanged = prevAll.data !== nextData; // ref compare (stable due to memo + stable empties)
+
+			if (!loadingChanged && !hasPlansChanged && !dataChanged) {
+				return prev; // no-op
+			}
+
+			return {
+				...prev,
+				allCampaigns: {
+					...prevAll,
+					loading: nextLoading,
+					hasPlans: nextHasPlans,
+					data: nextData,
+				},
+			};
+		});
+	}, [isFetching, filteredCampaigns, hasPlans]);
 
 	const value: AppContextModel = useMemo(
 		() => ({ state, setState }),

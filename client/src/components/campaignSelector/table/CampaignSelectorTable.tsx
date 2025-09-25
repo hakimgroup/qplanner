@@ -6,13 +6,12 @@ import {
 	Title,
 	Text,
 	Select,
-	useMantineTheme,
 	Flex,
 	Button,
 	Badge,
 	Group,
 } from "@mantine/core";
-import { IconEdit, IconLink, IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconEdit, IconPlus, IconSearch } from "@tabler/icons-react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import filtersData from "@/filters.json";
@@ -25,6 +24,8 @@ import Bespoke from "@/components/campaignsSetup/bespoke/Bespoke";
 import Edit from "../Edit";
 import View from "../View";
 import BulkAdd from "../BulkAdd";
+import { formatAvailabilityForUI } from "@/shared/shared.utilities";
+import { usePractice } from "@/shared/PracticeProvider";
 
 type Availability = { from: string; to: string } | null;
 
@@ -39,6 +40,7 @@ const CampaignSelectorTable = () => {
 		state: { filters, allCampaigns },
 	} = useContext(AppContext);
 	const [opened, { open: open, close: close }] = useDisclosure(false);
+	const { unitedView } = usePractice();
 
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
 
@@ -132,20 +134,13 @@ const CampaignSelectorTable = () => {
 			cellRenderer: ({ value }: any) => {
 				const from: Date | null = value?.from ?? null;
 				const to: Date | null = value?.to ?? null;
-				if (!(from instanceof Date) || isNaN(from.getTime()))
-					return <Text size="xs">—</Text>;
-				if (!(to instanceof Date) || isNaN(to.getTime()))
-					return <Text size="xs">—</Text>;
-				const opts: Intl.DateTimeFormatOptions = {
-					day: "2-digit",
-					month: "short",
-				};
-				const year = from.getFullYear();
-				const fromStr = from.toLocaleDateString("en-US", opts);
-				const toStr = to.toLocaleDateString("en-US", opts);
+
 				return (
 					<Text size="xs" c="gray.9" fw={500}>
-						{`${fromStr} - ${toStr}, ${year}`}
+						{formatAvailabilityForUI({
+							from,
+							to,
+						})}
 					</Text>
 				);
 			},
@@ -364,7 +359,7 @@ const CampaignSelectorTable = () => {
 					Showing {totalCount} campaign
 					{totalCount === 1 ? "" : "s"}
 				</Text>
-				{isSelections ? (
+				{isSelections && !unitedView ? (
 					<Bespoke buttonText="Add Campaign" />
 				) : (
 					<Text c="gray.6" size="sm">

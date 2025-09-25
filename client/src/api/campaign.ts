@@ -1,4 +1,4 @@
-import { DatabaseTables } from "@/shared/shared.models";
+import { DatabaseTables, RPCFunctions } from "@/shared/shared.models";
 import { supabase } from "./supabase";
 import { toast } from "sonner";
 import api from "./express";
@@ -50,8 +50,8 @@ export const getAllCampaigns = async (practiceId?: string | null) => {
 
 	const { data, error } =
 		arg === undefined
-			? await supabase.rpc("get_campaigns")
-			: await supabase.rpc("get_campaigns", arg);
+			? await supabase.rpc(RPCFunctions.GetCampaigns)
+			: await supabase.rpc(RPCFunctions.GetCampaigns, arg);
 
 	if (error) throw new Error(error.message);
 
@@ -60,12 +60,7 @@ export const getAllCampaigns = async (practiceId?: string | null) => {
 		throw new Error("Something went wrong");
 	}
 
-	const mapped = data.map((row: any) => ({
-		...row,
-		availability: normalizeAvailability(row.availability),
-	}));
-
-	return mapped as Campaign[];
+	return data as Campaign[];
 };
 
 //Old Layout Calls

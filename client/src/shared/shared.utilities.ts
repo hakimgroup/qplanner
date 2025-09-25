@@ -4,6 +4,7 @@ import { parseISO, format, isValid } from "date-fns";
 
 type State = Record<string, any>;
 type SetState = React.Dispatch<React.SetStateAction<State>>;
+type Availability = { from?: string | Date | null; to?: string | Date | null };
 
 /**
  * Update nested app state by path.
@@ -17,7 +18,6 @@ export function updateState(setState: SetState, path: string, value: any) {
 	});
 }
 
-type Availability = { from: string; to: string } | null;
 export const normalizeAvailability = (input: unknown): Availability => {
 	const MONTH_ABBR_TO_INDEX: Record<string, number> = {
 		Jan: 0,
@@ -73,29 +73,33 @@ export const normalizeAvailability = (input: unknown): Availability => {
 	return { from: fromStr, to: toStr };
 };
 
-export const formatAvailabilityForUI = (av: Availability): string => {
+export const formatAvailabilityForUI = (av?: Availability): string => {
 	if (!av || !av.from || !av.to) return "—";
-	try {
-		const start = parseISO(av.from); // "2024-03-01"
-		const end = parseISO(av.to); // "2024-03-31"
-		const sameYear = start.getFullYear() === end.getFullYear();
 
-		// Same year: "Mar 01 - Mar 31, 2024"
-		if (sameYear) {
-			return `${format(start, "MMM dd")} - ${format(
-				end,
-				"MMM dd, yyyy"
-			)}`;
-		}
+	const toDate =
+		typeof av.to === "string"
+			? parseISO(av.to.trim())
+			: av.to instanceof Date
+			? av.to
+			: null;
+	const fromDate =
+		typeof av.from === "string"
+			? parseISO(av.from.trim())
+			: av.from instanceof Date
+			? av.from
+			: null;
 
-		// Cross-year fallback: "Dec 01, 2024 - Jan 31, 2025"
-		return `${format(start, "MMM dd, yyyy")} - ${format(
-			end,
-			"MMM dd, yyyy"
-		)}`;
-	} catch {
+	if (!fromDate || !toDate || !isValid(fromDate) || !isValid(toDate))
 		return "—";
-	}
+
+	const sameYear = fromDate.getFullYear() === toDate.getFullYear();
+
+	return sameYear
+		? `${format(fromDate, "MMM dd")} - ${format(toDate, "MMM dd, yyyy")}`
+		: `${format(fromDate, "MMM dd, yyyy")} - ${format(
+				toDate,
+				"MMM dd, yyyy"
+		  )}`;
 };
 
 // AuthProvider.tsx (inside file)
@@ -235,4 +239,12 @@ export function formatDateRange(
 	if (formattedTo) return `Until ${formattedTo}`;
 
 	return "";
+}
+
+export function normalizeAllToNull<T extends Record<string, any>>(
+	obj: T
+): {
+	[K in keyof T]: T[K] | null;
+} {
+	return _.mapValues(obj, (v) => (v === "all" ? null : v)) as any;
 }

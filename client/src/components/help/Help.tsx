@@ -1,13 +1,12 @@
 import {
 	ActionIcon,
-	Badge,
+	AspectRatio,
+	Box,
 	Button,
-	Card,
 	Center,
 	Divider,
 	Drawer,
 	Flex,
-	Paper,
 	Stack,
 	Text,
 	Title,
@@ -16,16 +15,19 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import {
 	IconCircleCheck,
-	IconClockHour1,
 	IconHelp,
 	IconLink,
 	IconPlayerPlay,
+	IconPlayerPlayFilled,
 } from "@tabler/icons-react";
 import cl from "./help.module.scss";
 import StyledButton from "../styledButton/StyledButton";
+import { useNavigate } from "react-router-dom";
+import { AppRoutes } from "@/shared/shared.models";
 
 const Help = () => {
 	const T = useMantineTheme();
+	const navigate = useNavigate();
 	const [opened, { open, close }] = useDisclosure(false);
 
 	const topics = [
@@ -60,37 +62,16 @@ const Help = () => {
 					planner.
 				</Text>
 
-				<Card radius={10} className={cl["help-video-card"]}>
-					<Center h={"inherit"} className={cl.content}>
-						<Stack gap={8} align="center">
-							<ActionIcon
-								variant="light"
-								size="input-xl"
-								radius={100}
-								color="violet"
-								onClick={open}
-							>
-								<IconPlayerPlay
-									color={T.colors.blue[3]}
-									size={35}
-								/>
-							</ActionIcon>
-
-							<Text size="sm" fw={500}>
-								Tutorial Video
-							</Text>
-
-							<Badge size="md" color="red.4">
-								<Flex align={"center"} gap={5}>
-									<IconClockHour1 size={15} color="white" />
-									<Text size="xs" fw={500} c={"white"}>
-										60 seconds
-									</Text>
-								</Flex>
-							</Badge>
-						</Stack>
-					</Center>
-				</Card>
+				<AspectRatio ratio={16 / 9} w="100%">
+					<Box className={cl.thumbnail}>
+						<Center className={cl.play}>
+							<IconPlayerPlayFilled
+								size={30}
+								color={T.colors.violet[9]}
+							/>
+						</Center>
+					</Box>
+				</AspectRatio>
 
 				<Stack mt={"lg"} gap={10}>
 					<Text fw={600} size="sm">
@@ -120,8 +101,11 @@ const Help = () => {
 					>
 						Watch Tutorial
 					</Button>
-					<StyledButton rightSection={<IconLink size={14} />}>
-						Go To Full FAQs
+					<StyledButton
+						rightSection={<IconLink size={14} />}
+						onClick={() => navigate(AppRoutes.FAQs)}
+					>
+						FAQs + User Guide
 					</StyledButton>
 				</Stack>
 

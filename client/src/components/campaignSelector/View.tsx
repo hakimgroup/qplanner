@@ -42,11 +42,15 @@ import {
 	isBefore,
 } from "date-fns";
 import { useAddSelection, useDeleteSelection } from "@/hooks/selection.hooks";
-import { SelectionStatus } from "@/shared/shared.models";
+import {
+	AppRoutes,
+	SelectionsSource,
+	SelectionStatus,
+} from "@/shared/shared.models";
 import Status from "../status/Status";
 import Edit from "./Edit";
 import { useDisclosure } from "@mantine/hooks";
-import { usePractice } from "@/shared/PracticeProvider";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
 	mode: "add" | "view";
@@ -58,6 +62,7 @@ interface Props {
 type DateRange = { from: Date | null; to: Date | null };
 
 const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
+	const navigate = useNavigate();
 	const isAdd = mode === "add";
 	const T = useMantineTheme();
 	const [editOpened, { open: openEdit, close: closeEdit }] =
@@ -209,6 +214,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 				),
 				to_date: format(campaign.dateRange.to as Date, "yyyy-MM-dd"),
 				status: SelectionStatus.OnPlan,
+				source: SelectionsSource.Manual,
 			},
 			{
 				onSuccess: () => {
@@ -320,7 +326,6 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 						<StyledButton
 							alignLeft
 							bg={"lime.0"}
-							link={"#"}
 							fullWidth
 							leftSection={
 								<IconShare3
@@ -329,6 +334,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 								/>
 							}
 							style={{ justifyContent: "flex-start" }}
+							onClick={() => navigate(AppRoutes.FAQs)}
 						>
 							Full FAQs
 						</StyledButton>

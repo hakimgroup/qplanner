@@ -1,0 +1,28 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+.guided-result {
+	.result-card {
+		border: 1px solid variables.$sea;
+
+		&::before {
+			content: "";
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			height: 100%;
+			width: 4px;
+			background-color: variables.$red;
+		}
+
+		&.isRemoved {
+			opacity: 0.5;
+			filter: grayscale(100%);
+
+			&::before {
+				background-color: variables.$sea;
+			}
+		}
+	}
+}

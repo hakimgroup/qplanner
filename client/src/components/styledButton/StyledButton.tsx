@@ -3,6 +3,7 @@ import cl from "./styledButton.module.scss";
 
 interface StyledButtonProps extends ButtonProps {
 	link?: string;
+	borderWidth?: number;
 	alignLeft?: boolean;
 	children?: React.ReactNode;
 	onClick?: React.MouseEventHandler<HTMLButtonElement>;
@@ -10,6 +11,7 @@ interface StyledButtonProps extends ButtonProps {
 
 const StyledButton = ({
 	link,
+	borderWidth = 1,
 	alignLeft,
 	children,
 	onClick,
@@ -18,11 +20,10 @@ const StyledButton = ({
 	const commonProps = {
 		className: cl["styled-button"],
 		radius: 10,
-		variant: "subtle" as const,
-		color: "violet",
+		color: "#fff",
 		c: "gray.9",
 		style: {
-			border: "1px solid #e5e7eb",
+			border: `${borderWidth}px solid #e5e7eb`,
 			transition: "all 0.2s",
 		},
 		styles: {

@@ -3,6 +3,15 @@ export enum AppRoutes {
 	Login = "/login",
 	Dashboard = "/dashboard",
 	Admin = "/admin",
+	Plans = "plans",
+	Campaigns = "campaigns",
+	Bespoke = "bespoke",
+	Practices = "practices",
+	PeopleAccess = "people-and-access",
+	Settings = "settings",
+	Help = "help-and-support",
+	Notifications = "notifications",
+	FAQs = "/faqs",
 }
 
 export enum DatabaseTables {
@@ -22,6 +31,8 @@ export enum RPCFunctions {
 	GetCampaigns = "get_campaigns",
 	CreateBespokeSelection = "create_bespoke_selection",
 	AddCampaignsBulk = "add_campaigns_bulk",
+	GetGuidedCampaigns = "get_guided_campaigns",
+	GetPlans = "get_plans",
 }
 
 export enum SelectionStatus {
@@ -31,4 +42,24 @@ export enum SelectionStatus {
 	OnPlan = "onPlan",
 	Cancelled = "cancelled",
 	Confirmed = "confirmed",
+}
+
+export enum SelectionsSource {
+	Manual = "manual",
+	Quick = "quick",
+	Guided = "guided",
+	Admin = "admin",
+}
+
+export enum SelectionTier {
+	Good = "good",
+	Better = "better",
+	Best = "best",
+}
+
+export enum SelectionActivity {
+	Event = "Event",
+	BrandActivations = "Brand Activations",
+	Campaign = "Campaign",
+	Evergreen = "Evergreen",
 }

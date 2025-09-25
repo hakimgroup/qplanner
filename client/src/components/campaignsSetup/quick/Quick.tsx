@@ -8,7 +8,6 @@ import {
 	Divider,
 	Flex,
 	Grid,
-	Group,
 	Modal,
 	Stack,
 	Text,
@@ -26,6 +25,11 @@ import { useState } from "react";
 import cl from "./quick.module.scss";
 import clsx from "clsx";
 import { upperFirst } from "lodash";
+import { usePractice } from "@/shared/PracticeProvider";
+import { useBulkAddCampaigns } from "@/hooks/campaign.hooks";
+import { addDays } from "date-fns";
+import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
+import { toast } from "sonner";
 
 enum Tiers {
 	Good = "good",
@@ -34,9 +38,12 @@ enum Tiers {
 }
 
 const Quick = () => {
-	const [opened, { open, close }] = useDisclosure(false);
 	const T = useMantineTheme();
+	const { activePracticeName } = usePractice();
+	const [opened, { open, close }] = useDisclosure(false);
 	const [tier, setTier] = useState<Tiers>(Tiers.Better);
+	const [selections, setSelections] = useState<string[]>([]);
+	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaigns();
 
 	const tiers = [
 		{
@@ -55,6 +62,12 @@ const Quick = () => {
 				"Always-on: Google Reviews Pack (all year)",
 				"1 seasonal event",
 			],
+			includedCampaigns: [
+				"0006cf24-8903-48a6-a717-e42b901fad2b",
+				"027cb8f0-66d3-4a01-8951-f06b707a416c",
+				"03265f4a-7f0c-4693-a79a-a977ac22117a",
+				"04b2c5b5-e59a-4a41-a818-345b7462dccc",
+			],
 		},
 		{
 			color: "blue.3",
@@ -69,6 +82,15 @@ const Quick = () => {
 				"7 campaigns for the year",
 				"Always-on: Google Reviews Pack + light monthly social (all year)",
 				"1 seasonal event and 1 brand activation",
+			],
+			includedCampaigns: [
+				"06689335-515c-4ab7-8b54-4aba80947a9a",
+				"09dbf1b5-0d43-4ecd-bc68-b8028617ffe1",
+				"0a3d3c5c-760d-416a-ad42-a3fbcae21147",
+				"134b1db8-0e7b-4cca-a983-656295a4433e",
+				"1394c379-47bb-44ea-82a6-d66cc843bfbf",
+				"154a320a-789b-450a-8baa-b7b83fb49b3b",
+				"1f7ec6e5-8bb5-4c26-986a-1a57a29d769a",
 			],
 		},
 		{
@@ -85,8 +107,42 @@ const Quick = () => {
 				"Always-on: Google Reviews Pack + monthly pulses (all year)",
 				"2 seasonal events and 2 brand activations",
 			],
+			includedCampaigns: [
+				"2002ba6c-2d6c-474f-a5f1-e053485746ae",
+				"2204bb97-71df-40b7-b1fb-038496fe58b9",
+				"227f93b6-622c-44ef-80fd-5f0d053e6e59",
+				"229a2614-9c9e-41ee-8f37-27fdd850e0e0",
+				"24000a55-eb0d-4548-adad-c5f442bf96cf",
+				"256ffef6-e104-4067-921b-9e04a8a1b6a2",
+				"2979de53-f683-4647-8f73-3f4b7fb0a56c",
+				"30d21922-d54d-4c21-9933-514daa993035",
+				"30ed5941-21b1-43b0-8dd1-2aab03b9e976",
+				"338d48fd-d0d7-4e0d-bf96-bfbcfdc3a0f6",
+			],
 		},
 	];
+
+	const handleConfirm = () => {
+		bulkAdd(
+			{
+				campaignIds: selections, // array of catalog campaign IDs
+				from: null,
+				to: null,
+				status: SelectionStatus.OnPlan,
+				notes: null,
+				source: SelectionsSource.Quick,
+			},
+			{
+				onSuccess: () => {
+					toast.success("Campaigns added to plan");
+					close(); // cache invalidation is handled inside the hook
+				},
+				onError: (e: any) => {
+					toast.error(e?.message ?? "Failed to add campaigns");
+				},
+			}
+		);
+	};
 
 	return (
 		<>
@@ -109,9 +165,16 @@ const Quick = () => {
 								Quick Populate - Choose Your Tier
 							</Text>
 						</Flex>
-						<Text size="sm" c="gray.6">
+						<Text size="sm" c="gray.8">
 							Select a campaign tier that matches your budget and
-							marketing goals for Downtown Vision Center
+							marketing goals for{" "}
+							<Text span fw={700} c="blue.3">
+								{activePracticeName}.
+							</Text>{" "}
+							<Text span fw={700} c="gray.9">
+								Selecting a tier will pre-populate your 2025
+								calendar; you can edit or remove items anytime.
+							</Text>
 						</Text>
 					</Stack>
 				}
@@ -130,7 +193,10 @@ const Quick = () => {
 									cl["quick-card"],
 									tier === t.name && cl.active
 								)}
-								onClick={() => setTier(t.name)}
+								onClick={() => {
+									setTier(t.name);
+									setSelections(t.includedCampaigns);
+								}}
 							>
 								<Flex
 									align={"center"}
@@ -225,7 +291,12 @@ const Quick = () => {
 
 				<Flex justify={"flex-end"} mt={15} gap={8}>
 					<StyledButton>Cancel</StyledButton>
-					<Button radius={10} color="blue.3">
+					<Button
+						radius={10}
+						color="blue.3"
+						loading={adding}
+						onClick={handleConfirm}
+					>
 						Continue with {upperFirst(tier)}
 					</Button>
 				</Flex>

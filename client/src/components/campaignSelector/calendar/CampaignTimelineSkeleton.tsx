@@ -511,7 +511,8 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 							{plannedCount} campaigns planned
 						</Text>
 					</Badge>
-					<Bespoke buttonText="Add Campaign" />
+
+					{!unitedView && <Bespoke buttonText="Add Campaign" />}
 				</Flex>
 			</Flex>
 

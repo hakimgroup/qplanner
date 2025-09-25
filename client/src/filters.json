@@ -1,9 +1,9 @@
 {
   "categories": [
+    "Event",
     "Brand Activations",
     "Campaign",
-    "Evergreen",
-    "Marketing Suite"
+    "Evergreen"
   ],
   "objectives": [
     "ADV",
@@ -60,6 +60,38 @@
     {
       "label": "Cancelled",
       "value": "cancelled"
+    }
+  ],
+  "sources": [
+    {
+      "label": "Manual",
+      "value": "manual"
+    },
+    {
+      "label": "Quick",
+      "value": "quick"
+    },
+    {
+      "label": "Guided",
+      "value": "guided"
+    },
+    {
+      "label": "Admin",
+      "value": "admin"
+    }
+  ],
+  "tiers": [
+    {
+      "label": "Good",
+      "value": "good"
+    },
+    {
+      "label": "Better",
+      "value": "better"
+    },
+    {
+      "label": "Best",
+      "value": "best"
     }
   ]
 }

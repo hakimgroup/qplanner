@@ -80,6 +80,8 @@ const Table = ({
 					alignItems: "center",
 				},
 			}),
+			wrapText: true, // <-- let the cell wrap
+			autoHeight: true, // <-- let the row grow to fit
 		};
 	}, []);
 

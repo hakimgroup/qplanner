@@ -1,12 +1,24 @@
 import { supabase } from "@/api/supabase";
 import { usePractice } from "@/shared/PracticeProvider";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	useMutation,
+	useQuery,
+	useQueryClient,
+	UseQueryOptions,
+} from "@tanstack/react-query";
 import {
 	AddSelectionInput,
+	PlanRow,
+	PlansFilter,
 	Selection,
 	UpdateSelectionInput,
 } from "@/models/selection.models";
-import { DatabaseTables, SelectionStatus } from "@/shared/shared.models";
+import {
+	DatabaseTables,
+	RPCFunctions,
+	SelectionStatus,
+} from "@/shared/shared.models";
+import { fetchPlans } from "@/api/selections";
 
 const key = (activePracticeId: string | null, unitedView: boolean) => [
 	DatabaseTables.Selections,
@@ -52,6 +64,7 @@ export function useAddSelection(onSuccess?: () => void) {
 				status: input.status ?? SelectionStatus.OnPlan,
 				notes: input.notes ?? null,
 				bespoke: input.bespoke ?? false,
+				source: input.source,
 			};
 			const { data, error } = await supabase
 				.from(DatabaseTables.Selections)
@@ -113,5 +126,17 @@ export function useDeleteSelection() {
 				exact: false,
 			});
 		},
+	});
+}
+
+export function usePlans<TData = PlanRow[]>(
+	filters: PlansFilter = {},
+	options?: UseQueryOptions<PlanRow[], unknown, TData, any[]>
+) {
+	return useQuery<PlanRow[], unknown, TData, any[]>({
+		queryKey: [RPCFunctions.GetPlans, filters],
+		queryFn: () => fetchPlans(filters),
+		refetchOnWindowFocus: false,
+		...options,
 	});
 }

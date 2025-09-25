@@ -8,6 +8,7 @@ export type Practice = { id: string; name: string };
 type PracticeCtx = {
 	practices: Practice[];
 	activePracticeId: string | null;
+	activePracticeName: string | null; // ← NEW
 	setActivePracticeId: (id: string | null) => void;
 	unitedView: boolean;
 	setUnitedView: (v: boolean) => void;
@@ -16,6 +17,7 @@ type PracticeCtx = {
 const PracticeContext = createContext<PracticeCtx>({
 	practices: [],
 	activePracticeId: null,
+	activePracticeName: null, // ← NEW default
 	setActivePracticeId: () => {},
 	unitedView: false,
 	setUnitedView: () => {},
@@ -34,20 +36,22 @@ export const PracticeProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	useEffect(() => {
 		(async () => {
-			// RLS: returns only practices I can access
-			const { data, error } = await supabase
+			// RLS: returns only practices the current user can access
+			const { data } = await supabase
 				.from(DatabaseTables.Practices)
 				.select("id, name")
 				.order("name", { ascending: true });
+
 			const list = (data ?? []) as Practice[];
 			setPractices(list);
 
-			// Default to first practice (alphabetical) for Select view
+			// Default to first practice (alphabetical)
 			if (list.length === 0) {
 				setActive(null);
 				localStorage.removeItem("active_practice_id");
 				return;
 			}
+
 			if (
 				!activePracticeId ||
 				!list.some((p) => p.id === activePracticeId)
@@ -57,7 +61,8 @@ export const PracticeProvider: React.FC<{ children: React.ReactNode }> = ({
 				localStorage.setItem("active_practice_id", first);
 			}
 		})();
-	}, []);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []); // run once on mount (initial bootstrap)
 
 	const setActivePracticeId = (id: string | null) => {
 		setActive(id);
@@ -65,15 +70,24 @@ export const PracticeProvider: React.FC<{ children: React.ReactNode }> = ({
 		else localStorage.removeItem("active_practice_id");
 	};
 
-	const value = useMemo(
+	// Derive active practice name from id (and optionally reflect united view)
+	const activePracticeName = useMemo<string | null>(() => {
+		if (unitedView) return "United View";
+		if (!activePracticeId) return null;
+		const found = practices.find((p) => p.id === activePracticeId);
+		return found?.name ?? null;
+	}, [practices, activePracticeId, unitedView]);
+
+	const value = useMemo<PracticeCtx>(
 		() => ({
 			practices,
 			activePracticeId,
+			activePracticeName, // ← NEW in context value
 			setActivePracticeId,
 			unitedView,
 			setUnitedView,
 		}),
-		[practices, activePracticeId, unitedView]
+		[practices, activePracticeId, activePracticeName, unitedView]
 	);
 
 	return (

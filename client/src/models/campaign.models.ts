@@ -1,4 +1,8 @@
-import { SelectionStatus } from "@/shared/shared.models";
+import {
+	SelectionsSource,
+	SelectionStatus,
+	SelectionTier,
+} from "@/shared/shared.models";
 
 export const OBJECTIVES = [
 	"ADV",
@@ -39,12 +43,15 @@ export interface Campaign {
 	reference_links: string[];
 	status: SelectionStatus;
 	is_bespoke: boolean;
+	custom_events: boolean;
 	selected: boolean;
 	selection_id: string;
 	selection_from_date: string;
 	selection_to_date: string;
 	selection_practice_id: string;
 	notes: string;
+	tier: SelectionTier | null;
+	source: SelectionsSource | null;
 }
 
 export type CreateBespokeInput = {
@@ -65,9 +72,43 @@ export type CreateBespokeInput = {
 
 export type BulkAddCampaignsInput = {
 	campaignIds: string[]; // catalog campaign UUIDs
-	from: Date; // start date
-	to: Date; // end date
+	from?: Date; // start date
+	to?: Date; // end date
 	status?: string; // default 'onPlan'
 	notes?: string | null; // optional notes
 	practiceId?: string | null; // optional override; defaults to activePracticeId
+	source?: SelectionsSource;
+};
+
+export type GuidedCampaign = {
+	id: string;
+	name: string;
+	description: string | null;
+	category: string | null;
+	objectives: string[]; // jsonb[]
+	topics: string[]; // jsonb[]
+	custom_events: boolean | null;
+	more_info_link: string | null;
+	status: string | null;
+	score: number; // computed score
+	already_on_plan: boolean; // novelty flag
+	focus: string;
+	availability: {
+		from: string;
+		to: string;
+		duration: string;
+	};
+};
+
+// Sliders/switches coming from the UI
+export type GuidedParams = {
+	clinical: number; // 0..100
+	frame: number; // 0..100
+	lens: number; // 0..100
+	contact: number; // 0..100
+	kids: boolean;
+	seasonal: boolean;
+	supplierBrand: boolean; // maps to category = 'Brand Activations'
+	eventReady: boolean; // maps to custom_events = true
+	activity: number; // 0..100 (maps to 2..20 in RPC)
 };

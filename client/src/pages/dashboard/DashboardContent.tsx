@@ -1,5 +1,4 @@
 import { Title, Paper, Stack, Group, Flex, Text, Divider } from "@mantine/core";
-import VideoBanner from "../../components/videoBanner/VideoBanner";
 import StyledTabs from "@/components/styledTabs/StyledTabs";
 import { IconCircleFilled } from "@tabler/icons-react";
 import Quick from "@/components/campaignsSetup/quick/Quick";
@@ -11,6 +10,7 @@ import { UserTabModes, ViewModes } from "@/models/general.models";
 import CampaignSelectorCards from "@/components/campaignSelector/cards/CampaignSelector";
 import CampaignSelectorTable from "@/components/campaignSelector/table/CampaignSelectorTable";
 import CampaignSelectorCalendar from "@/components/campaignSelector/calendar/CampaignSelectorCalendar";
+import Banners from "@/components/videoBanner/Banners";
 
 export function DashboardContent() {
 	const {
@@ -36,7 +36,7 @@ export function DashboardContent() {
 	return (
 		<Paper pt={10} h="100%">
 			<Stack gap={25}>
-				<VideoBanner />
+				<Banners />
 				<StyledTabs />
 
 				<Group align="center" justify="space-between">

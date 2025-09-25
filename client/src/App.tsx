@@ -1,9 +1,10 @@
+// App.tsx
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "./styles/app.scss";
 import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import Login from "@/pages/auth/Login";
 import { AppRoutes } from "./shared/shared.models";
 import Nav from "./components/nav/Nav";
@@ -12,30 +13,34 @@ import AppProvider from "./shared/AppProvider";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { RequireAuth } from "./shared/RequireAuth";
 import { PracticeProvider } from "./shared/PracticeProvider";
+import Faqs from "./pages/faqs/Faqs";
+import AdminLayout from "./pages/admin/AdminLayout";
+import Plans from "./pages/admin/adminPages/plans/Plans";
+import PeopleAccess from "./pages/admin/PeopleAccess";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			refetchOnWindowFocus: false,
-		},
-	},
+	defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
 
 export default function App() {
 	const { pathname } = useLocation();
 
-	// Public routes only
-	const publicPages = [
-		{ path: AppRoutes.Home, element: <Login /> }, // swap to <Home /> when you have it
-		{ path: AppRoutes.Login, element: <Login /> },
-	];
+	const publicPages = useMemo(
+		() => [
+			{ path: AppRoutes.Home, element: <Login /> },
+			{ path: AppRoutes.Login, element: <Login /> },
+		],
+		[]
+	);
 
-	// Protected routes (must be authenticated)
-	const privatePages = [
-		{ path: AppRoutes.Dashboard, element: <Dashboard /> },
-		// add any other private routes here
-	];
+	const privatePages = useMemo(
+		() => [
+			{ path: AppRoutes.Dashboard, element: <Dashboard /> },
+			{ path: AppRoutes.FAQs, element: <Faqs /> },
+		],
+		[]
+	);
 
 	const isPublicPath = [AppRoutes.Home, AppRoutes.Login].includes(
 		pathname as AppRoutes
@@ -59,7 +64,7 @@ export default function App() {
 										/>
 									))}
 
-									{/* Private */}
+									{/* Private (simple) */}
 									{privatePages.map((pg) => (
 										<Route
 											key={pg.path}
@@ -72,7 +77,30 @@ export default function App() {
 										/>
 									))}
 
-									{/* Fallback: unknown routes -> login (or home) */}
+									{/* Admin (nested) — NOTE the /* */}
+									<Route
+										path={`${AppRoutes.Admin}/*`} // => "/admin/*"
+										element={
+											<RequireAuth>
+												<AdminLayout />
+											</RequireAuth>
+										}
+									>
+										<Route index element={<Plans />} />{" "}
+										{/* /admin */}
+										<Route
+											path={AppRoutes.Plans}
+											element={<Plans />}
+										/>{" "}
+										{/* /admin/plans */}
+										<Route
+											path={AppRoutes.PeopleAccess}
+											element={<PeopleAccess />}
+										/>{" "}
+										{/* /admin/people-and-access */}
+									</Route>
+
+									{/* Fallback */}
 									<Route
 										path="*"
 										element={

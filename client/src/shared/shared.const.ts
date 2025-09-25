@@ -1,16 +1,35 @@
 import { AppState, UserTabModes, ViewModes } from "@/models/general.models";
+import {
+	SelectionActivity,
+	SelectionsSource,
+	SelectionStatus,
+} from "./shared.models";
 
 export const Colors = {
 	cream: "#f3f4f6",
 };
 
 export const statusColors = {
-	requested: "#ff7f50",
-	live: "#2ed573",
-	inProgress: "#1e90ff",
-	onPlan: "#10ac84",
-	cancelled: "#ff4757",
-	confirmed: "#5352ed",
+	[SelectionStatus.Requested]: "#ff7f50",
+	[SelectionStatus.Live]: "#2ed573",
+	[SelectionStatus.InProgress]: "#1e90ff",
+	[SelectionStatus.OnPlan]: "#10ac84",
+	[SelectionStatus.Cancelled]: "#ff4757",
+	[SelectionStatus.Confirmed]: "#5352ed",
+};
+
+export const activityColors = {
+	[SelectionActivity.Event]: "#ff4757",
+	[SelectionActivity.BrandActivations]: "#ff6348",
+	[SelectionActivity.Campaign]: "#1e90ff",
+	[SelectionActivity.Evergreen]: "#10ac84",
+};
+
+export const sourceColors = {
+	[SelectionsSource.Admin]: "#5352ed",
+	[SelectionsSource.Manual]: "#57606f",
+	[SelectionsSource.Quick]: "#8e44ad",
+	[SelectionsSource.Guided]: "#10ac84",
 };
 
 export const appStateDefault: AppState = {
@@ -28,6 +47,7 @@ export const appStateDefault: AppState = {
 	},
 	allCampaigns: {
 		loading: false,
+		hasPlans: true,
 		data: [],
 	},
 };

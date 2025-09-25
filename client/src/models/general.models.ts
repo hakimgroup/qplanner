@@ -28,6 +28,7 @@ export interface AppState {
 	filters?: Filters;
 	allCampaigns?: {
 		loading: boolean;
+		hasPlans: boolean;
 		data: Campaign[];
 	};
 }

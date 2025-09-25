@@ -7,13 +7,17 @@ import { useContext } from "react";
 
 const StyledTabs = () => {
 	const {
-		state: { filters },
+		state: {
+			filters,
+			allCampaigns: { hasPlans },
+		},
 		setState,
 	} = useContext(AppContext);
 	const { setActivePracticeId, setUnitedView } = usePractice();
 
 	return (
 		<SegmentedControl
+			mt={hasPlans ? 15 : 0}
 			className="styled-tab"
 			radius={10}
 			transitionDuration={500}
