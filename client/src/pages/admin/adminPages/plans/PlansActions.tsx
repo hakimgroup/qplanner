@@ -5,17 +5,18 @@ import {
 	Badge,
 	Card,
 	Drawer,
-	Flex,
 	Group,
+	Loader,
 	Select,
 	Stack,
 	Text,
-	Title,
 	useMantineTheme,
 } from "@mantine/core";
 import { startCase } from "lodash";
 import filtersData from "@/filters.json";
 import StyledButton from "@/components/styledButton/StyledButton";
+import { useUpdateSelection } from "@/hooks/selection.hooks";
+import { toast } from "sonner";
 
 interface Props {
 	row: PlanRow;
@@ -25,6 +26,7 @@ interface Props {
 
 const PlansActions = ({ row, opened, closePanel }: Props) => {
 	const T = useMantineTheme().colors;
+	const { mutate: updateSelection, isPending: saving } = useUpdateSelection();
 
 	return (
 		<Drawer
@@ -79,18 +81,45 @@ const PlansActions = ({ row, opened, closePanel }: Props) => {
 					<Text>{row?.notes ?? "--"}</Text>
 				</Stack>
 
-				<Group gap={10}>
+				<Group gap={10} align="flex-end">
 					<Select
+						w={"100%"}
 						size="sm"
+						label={
+							<Group align="center" justify="space-between">
+								<Text size="sm" fw={500}>
+									Change Status
+								</Text>
+								{saving && <Loader size={20} type="dots" />}
+							</Group>
+						}
 						radius={10}
 						data={[{ label: "Change Status", value: "all" }].concat(
 							filtersData.status
 						)}
 						value={row?.status}
-						onChange={(v) => {}}
+						onChange={(v) => {
+							updateSelection(
+								{
+									id: row.id,
+									patch: { status: v as any },
+								},
+								{
+									onSuccess: () => {
+										toast.success("Changes saved");
+										closePanel();
+									},
+									onError: (e: any) =>
+										toast.error(
+											e?.message ??
+												"Could not save changes"
+										),
+								}
+							);
+						}}
 					/>
 
-					<StyledButton fw={500}>Trigger follow-up</StyledButton>
+					{/* <StyledButton fw={500}>Trigger follow-up</StyledButton> */}
 				</Group>
 			</Stack>
 		</Drawer>

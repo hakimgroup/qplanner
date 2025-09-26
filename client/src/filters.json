@@ -93,5 +93,19 @@
       "label": "Best",
       "value": "best"
     }
+  ],
+  "roles": [
+    {
+      "label": "Practice User",
+      "value": "user"
+    },
+    {
+      "label": "Marketing Admin",
+      "value": "admin"
+    },
+    {
+      "label": "Marketing Super Admin",
+      "value": "super_admin"
+    }
   ]
 }

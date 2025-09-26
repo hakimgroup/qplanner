@@ -16,7 +16,9 @@ import { PracticeProvider } from "./shared/PracticeProvider";
 import Faqs from "./pages/faqs/Faqs";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Plans from "./pages/admin/adminPages/plans/Plans";
-import PeopleAccess from "./pages/admin/PeopleAccess";
+import PeopleAccess from "./pages/admin/adminPages/people/PeopleAccess";
+import RequireAdmin from "./shared/RequireAdmin";
+import RedirectAdminFromDashboard from "./shared/RedirectAdminFromDashboard";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
@@ -36,7 +38,14 @@ export default function App() {
 
 	const privatePages = useMemo(
 		() => [
-			{ path: AppRoutes.Dashboard, element: <Dashboard /> },
+			{
+				path: AppRoutes.Dashboard,
+				element: (
+					<RedirectAdminFromDashboard>
+						<Dashboard />
+					</RedirectAdminFromDashboard>
+				),
+			},
 			{ path: AppRoutes.FAQs, element: <Faqs /> },
 		],
 		[]
@@ -82,22 +91,25 @@ export default function App() {
 										path={`${AppRoutes.Admin}/*`} // => "/admin/*"
 										element={
 											<RequireAuth>
-												<AdminLayout />
+												<RequireAdmin>
+													<AdminLayout />
+												</RequireAdmin>
 											</RequireAuth>
 										}
 									>
 										<Route index element={<Plans />} />{" "}
-										{/* /admin */}
 										<Route
 											path={AppRoutes.Plans}
 											element={<Plans />}
-										/>{" "}
-										{/* /admin/plans */}
+										/>
+										<Route
+											path={AppRoutes.Bespoke}
+											element={<Plans />}
+										/>
 										<Route
 											path={AppRoutes.PeopleAccess}
 											element={<PeopleAccess />}
-										/>{" "}
-										{/* /admin/people-and-access */}
+										/>
 									</Route>
 
 									{/* Fallback */}

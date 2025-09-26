@@ -57,4 +57,5 @@ export type PlansFilter = {
 	category?: string | null;
 	source?: string | null;
 	tier?: string | null;
+	isBespoke?: boolean;
 };

@@ -3,6 +3,7 @@ import {
 	SelectionActivity,
 	SelectionsSource,
 	SelectionStatus,
+	UserRoles,
 } from "./shared.models";
 
 export const Colors = {
@@ -30,6 +31,12 @@ export const sourceColors = {
 	[SelectionsSource.Manual]: "#57606f",
 	[SelectionsSource.Quick]: "#8e44ad",
 	[SelectionsSource.Guided]: "#10ac84",
+};
+
+export const userRoleColors = {
+	[UserRoles.Admin]: "#8e44ad",
+	[UserRoles.User]: "#1e90ff",
+	[UserRoles.SuperAdmin]: "#ff6348",
 };
 
 export const appStateDefault: AppState = {

@@ -1,4 +1,4 @@
-import useUser, { useSignout } from "@/pages/auth/auth.hooks";
+import { useSignout } from "@/pages/auth/auth.hooks";
 import { AppRoutes } from "@/shared/shared.models";
 import { Badge, Box, Button, Divider, Flex, Group, Text } from "@mantine/core";
 import {

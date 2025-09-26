@@ -14,7 +14,10 @@ export default function Dashboard() {
 			/>
 
 			{/* Main content (always fills remaining space) */}
-			<Box style={{ flex: 1, minHeight: "100%" }} pl={20}>
+			<Box
+				style={{ flex: 1, minHeight: "100%" }}
+				ml={collapsed ? 50 : 300}
+			>
 				<DashboardContent />
 			</Box>
 		</Group>

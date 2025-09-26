@@ -493,7 +493,7 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 		h2Groups.reduce((n, g) => n + g.campaigns.length, 0);
 
 	return (
-		<Box p="md">
+		<Box>
 			{/* Year Header And Selector */}
 			<Flex align="center" justify="space-between">
 				<Text

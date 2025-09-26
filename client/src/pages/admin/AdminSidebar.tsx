@@ -20,6 +20,7 @@ import {
 	IconAd2,
 	IconBuildings,
 	IconBell,
+	IconUsers,
 } from "@tabler/icons-react";
 import { AppRoutes } from "@/shared/shared.models";
 import cl from "./admin.module.scss";
@@ -93,7 +94,7 @@ export default function AdminSidebar({
 				{
 					to: `${AppRoutes.Admin}/${AppRoutes.PeopleAccess}`,
 					label: "People and Access",
-					icon: <IconSettings size={18} />,
+					icon: <IconUsers size={18} />,
 				},
 			],
 		},

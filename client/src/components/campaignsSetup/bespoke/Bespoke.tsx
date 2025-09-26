@@ -22,7 +22,7 @@ import { IconCalendar, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useCallback, useMemo, useState } from "react";
 import filtersData from "@/filters.json";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
-import { format, isValid as isValidDate } from "date-fns";
+import { isValid as isValidDate } from "date-fns";
 import { toast } from "sonner";
 import { useCreateBespokeSelection } from "@/hooks/campaign.hooks";
 import { SelectionStatus } from "@/shared/shared.models";

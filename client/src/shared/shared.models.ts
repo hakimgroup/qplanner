@@ -33,6 +33,14 @@ export enum RPCFunctions {
 	AddCampaignsBulk = "add_campaigns_bulk",
 	GetGuidedCampaigns = "get_guided_campaigns",
 	GetPlans = "get_plans",
+	GetUsers = "get_users",
+	UpdateUser = "update_user",
+}
+
+export enum UserRoles {
+	User = "user",
+	Admin = "admin",
+	SuperAdmin = "super_admin",
 }
 
 export enum SelectionStatus {

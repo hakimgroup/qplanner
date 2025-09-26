@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/api/supabase";
 import { DatabaseTables } from "./shared.models";
 
-export type Practice = { id: string; name: string };
+export type Practice = { id: string; name: string; numberOfPlans?: number };
 
 type PracticeCtx = {
 	practices: Practice[];

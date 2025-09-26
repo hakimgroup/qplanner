@@ -16,7 +16,6 @@ export default function AdminLayout() {
 		() => ({
 			marginLeft: sidebarWidth,
 			height: "100vh",
-			overflow: "auto",
 			transition: "margin-left 150ms ease",
 		}),
 		[sidebarWidth]
@@ -31,9 +30,7 @@ export default function AdminLayout() {
 				widthCollapsed={COLLAPSED_WIDTH}
 			/>
 			<Stack style={contentStyle} pt={25} pb={100}>
-				<Box>
-					<Outlet />
-				</Box>
+				<Outlet />
 			</Stack>
 		</Box>
 	);

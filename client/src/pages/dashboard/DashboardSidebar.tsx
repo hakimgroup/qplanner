@@ -28,8 +28,9 @@ export function DashboardSidebar({ collapsed, setCollapsed }: SidebarProps) {
 		<Stack
 			h="100%"
 			gap={25}
-			pt={30}
+			pt={100}
 			pr={10}
+			pl={20}
 			w={collapsed ? 50 : 300}
 			className={cl["dashboard-sidebar"]}
 		>

@@ -104,6 +104,12 @@ export function useUpdateSelection() {
 				queryKey: [DatabaseTables.CampaignsCatalog],
 				exact: false,
 			});
+
+			//Invalidate ALL cached get_plans
+			qc.invalidateQueries({
+				queryKey: [RPCFunctions.GetPlans],
+				exact: false,
+			});
 		},
 	});
 }

@@ -11,7 +11,7 @@ import {
 	ReactNode,
 } from "react";
 import { AppRoutes, DatabaseTables, RPCFunctions } from "./shared.models";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { pushAuthNotice } from "./shared.utilities";
 
 type Role = "user" | "admin" | "super_admin" | null;
@@ -48,6 +48,7 @@ async function fetchWhitelistAndRole(
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const navigate = useNavigate();
+	const { pathname } = useLocation(); // <— NEW
 	const [user, setUser] = useState<User | null>(null);
 	const [role, setRole] = useState<Role>(null);
 	const [loading, setLoading] = useState<boolean>(true); // <- only for initial getSession now
@@ -146,17 +147,24 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 				setRole(role);
 
-				// Redirect only on fresh OAuth sign-in
+				// ✅ Redirect only on fresh OAuth sign-in AND only if you're on an auth page.
+				//    This preserves nested routes (e.g., /admin/people-and-access) on refocus/refresh.
 				if (justSignedInRef.current) {
 					justSignedInRef.current = false;
 					const adminLike =
 						role === "admin" || role === "super_admin";
-					navigate(
-						adminLike ? AppRoutes.Admin : AppRoutes.Dashboard,
-						{
-							replace: true,
-						}
-					);
+					const target = adminLike
+						? AppRoutes.Admin
+						: AppRoutes.Dashboard;
+
+					const isOnAuthPage =
+						pathname === AppRoutes.Home ||
+						pathname === AppRoutes.Login;
+
+					if (isOnAuthPage) {
+						navigate(target, { replace: true });
+					}
+					// If not on an auth page, do nothing → keep current nested route.
 				}
 			} catch (_err) {
 				if (!cancelled) {
@@ -181,7 +189,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 		return () => {
 			cancelled = true;
 		};
-	}, [user, navigate]);
+	}, [user, navigate, pathname]); // include pathname so the "isOnAuthPage" check is current
 
 	// ✅ Loader only during initial bootstrap — no flashes on route changes
 	if (loading) {

@@ -1,8 +1,7 @@
 import { useMantineTheme, rgba, Box } from "@mantine/core";
-import { useMemo } from "react";
-import { AgGridReact } from "ag-grid-react"; // React Data Grid Component
-import { ColDef, themeQuartz } from "ag-grid-community";
-import _ from "lodash";
+import { useMemo, useRef, forwardRef, useImperativeHandle } from "react";
+import { AgGridReact } from "ag-grid-react";
+import { ColDef, CsvExportParams, themeQuartz } from "ag-grid-community";
 
 interface Props {
 	cols: ColDef[];
@@ -16,23 +15,36 @@ interface Props {
 	height?: number;
 	enableSelection?: boolean;
 	onSelect?: (row: any[]) => void;
+	/** Optional defaults for CSV export (overridable when calling exportCsv) */
+	csvDefaults?: Partial<CsvExportParams>;
 }
 
-const Table = ({
-	cols,
-	rows,
-	spacing = 15,
-	rowCentered = true,
-	headerHeight = 45,
-	rowHeight,
-	height = 300,
-	autoHeight,
-	enableSelection,
-	onSelect,
-	loading,
-}: Props) => {
-	const rowBuffer = 0;
+export type TableHandle = {
+	/** Trigger CSV export from parent */
+	exportCsv: (overrides?: Partial<CsvExportParams>) => void;
+	clearSelection?: () => void;
+};
+
+const Table = forwardRef<TableHandle, Props>(function Table(
+	{
+		cols,
+		rows,
+		spacing = 15,
+		rowCentered = true,
+		headerHeight = 45,
+		rowHeight,
+		height = 300,
+		autoHeight,
+		enableSelection,
+		onSelect,
+		loading,
+		csvDefaults,
+	},
+	ref
+) {
+	const gridRef = useRef<AgGridReact<any>>(null);
 	const C = useMantineTheme().colors;
+	const rowBuffer = 0;
 
 	const rowSelection = {
 		mode: enableSelection ? "multiRow" : undefined,
@@ -44,12 +56,12 @@ const Table = ({
 		foregroundColor: C.gray[8],
 		headerTextColor: C.gray[7],
 		headerBackgroundColor: rgba(C.blue[3], 0.05),
-		oddRowBackgroundColor: rgba(C.blue[3], 0.025),
+		oddRowBackgroundColor: rgba(C.blue[3], 0.01),
 		selectedRowBackgroundColor: rgba(C.blue[3], 0.1),
 		headerColumnResizeHandleColor: C.gray[2],
 		wrapperBorder: { color: rgba(C.blue[3], 0.15) },
 		headerRowBorder: { color: rgba(C.blue[3], 0.1) },
-		rowBorder: { color: rgba(C.blue[3], 0.15) },
+		rowBorder: { color: rgba(C.violet[3], 0.3) },
 		rangeSelectionBorderStyle: "none",
 		checkboxBorderRadius: 50,
 		checkboxUncheckedBorderColor: C.blue[3],
@@ -63,9 +75,7 @@ const Table = ({
 		accentColor: C.blue[3],
 	});
 
-	const theme = useMemo(() => {
-		return myTheme;
-	}, []);
+	const theme = useMemo(() => myTheme, []); // themeQuartz.withParams returns stable config
 
 	const defaultColDef = useMemo(() => {
 		return {
@@ -80,14 +90,46 @@ const Table = ({
 					alignItems: "center",
 				},
 			}),
-			wrapText: true, // <-- let the cell wrap
-			autoHeight: true, // <-- let the row grow to fit
+			wrapText: true,
+			autoHeight: true,
 		};
-	}, []);
+	}, [rowCentered]);
+
+	// Expose exportCsv to parent
+	useImperativeHandle(ref, () => ({
+		exportCsv: (overrides?: Partial<CsvExportParams>) => {
+			const api = gridRef.current?.api;
+			if (!api) return;
+
+			// Default CSV params (can be overridden by caller)
+			const baseParams: CsvExportParams = {
+				fileName: "table.csv",
+				allColumns: true,
+				onlySelected: false,
+				columnSeparator: ",",
+				// Fallback to unwrap simple React nodes (e.g., Mantine <Text>)
+				processCellCallback: (params) => {
+					const v = params.value;
+					if (v && typeof v === "object" && "props" in v) {
+						return (v as any).props?.children ?? "";
+					}
+					return v ?? "";
+				},
+				...(csvDefaults || {}),
+				...(overrides || {}),
+			};
+
+			api.exportDataAsCsv(baseParams);
+		},
+		clearSelection: () => {
+			gridRef.current?.api?.deselectAll();
+		},
+	}));
 
 	return (
 		<Box h={height} w={"100%"}>
 			<AgGridReact
+				ref={gridRef}
 				domLayout={autoHeight ? "autoHeight" : "normal"}
 				animateRows={false}
 				loading={loading}
@@ -96,12 +138,13 @@ const Table = ({
 				rowData={rows}
 				rowBuffer={rowBuffer}
 				rowModelType="clientSide"
-				// rowHeight={80}
 				headerHeight={headerHeight}
+				// rowHeight can be provided if you want fixed height; autoHeight is already on.
+				// rowHeight={rowHeight}
 				rowSelection={rowSelection as any}
 				columnDefs={cols}
 				onSelectionChanged={(event) => {
-					onSelect(event.selectedNodes.map((d) => d.data));
+					onSelect?.(event.selectedNodes.map((d) => d.data));
 				}}
 				onCellValueChanged={(event) =>
 					console.log(`New Cell Value: ${event.value}`)
@@ -110,6 +153,6 @@ const Table = ({
 			/>
 		</Box>
 	);
-};
+});
 
 export default Table;

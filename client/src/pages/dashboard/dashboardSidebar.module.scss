@@ -6,6 +6,11 @@
 	border-right: 1px solid variables.$sea;
 	transition: width 0.03s ease;
 	overflow-x: hidden;
+	z-index: 5;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
 
 	&::-webkit-scrollbar {
 		width: 11px;
