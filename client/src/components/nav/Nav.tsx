@@ -82,7 +82,13 @@ const Nav = () => {
 
 				{!isAdmin && (
 					<Flex align={"center"} gap={15}>
-						<Badge variant="outline" color="gray.1">
+						<Badge
+							variant="light"
+							color="gray.6"
+							size="lg"
+							radius={10}
+							p={17}
+						>
 							<Text size="xs" fw={600} c={"gray.9"}>
 								{user?.identities[0].identity_data.first_name}{" "}
 								{user?.identities[0].identity_data.last_name}
