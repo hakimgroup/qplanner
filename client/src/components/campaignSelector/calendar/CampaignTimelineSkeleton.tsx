@@ -10,6 +10,8 @@ import {
 	Badge,
 	Card,
 	rgba,
+	Stack,
+	Spoiler,
 } from "@mantine/core";
 import { IconCircleFilled, IconGridDots } from "@tabler/icons-react";
 import { Fragment, useContext, useMemo, useState } from "react";
@@ -19,6 +21,8 @@ import { format } from "date-fns";
 import { Campaign } from "@/models/campaign.models";
 import Edit from "../Edit";
 import { isEmpty } from "lodash";
+import { status } from "@/filters.json";
+import Event from "@/components/campaignsSetup/event/Event";
 
 /** =========================
  *  CONFIG & TYPES
@@ -304,6 +308,7 @@ function CampaignRow({
 				radius={10}
 				bg={rgba(Colors.cream, 0.5)}
 				style={{ overflow: "visible" }}
+				shadow="xs"
 			>
 				<Flex align="center">
 					<Group
@@ -512,77 +517,133 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 						</Text>
 					</Badge>
 
-					{!unitedView && <Bespoke buttonText="Add Campaign" />}
+					{!unitedView && (
+						<Group gap={10}>
+							<Bespoke />
+							<Event />
+						</Group>
+					)}
 				</Flex>
 			</Flex>
 
-			<Flex mt="lg" direction="column" gap="xl">
+			<Stack mt="lg" gap="xl">
 				{/* ---------- H1 ---------- */}
-				<Box>
-					<Flex align="center" mb="sm" gap={"sm"}>
-						<Logo isSmall text="H1" />
-						<Text size="xl" fw={600}>
-							First Half - 2025
+				<Spoiler
+					maxHeight={645}
+					showLabel={
+						<Text fw={700} size="sm" c="red">
+							Show all campaigns &#8594;
 						</Text>
-					</Flex>
+					}
+					hideLabel={
+						<Text fw={700} size="sm" c="red" mt={10}>
+							Minimize view &#8594;
+						</Text>
+					}
+				>
+					<Box>
+						<Flex align="center" mb="sm" gap={"sm"}>
+							<Logo isSmall text="H1" />
+							<Text size="xl" fw={600}>
+								First Half - 2025
+							</Text>
+						</Flex>
 
-					<QuarterRow
-						mode={mode}
-						color="blue.3"
-						year={2025}
-						startMonth0={0}
-					/>
-					<MonthRow
-						mode={mode}
-						labels={monthsH1}
-						year={2025}
-						startMonth0={0}
-					/>
-
-					{h1Groups.map((g) => (
-						<CampaignRow
-							key={g.id}
+						<QuarterRow
 							mode={mode}
-							group={g}
-							rangeStartISO="2025-01-01"
-							rangeEndISO="2025-06-30"
+							color="blue.3"
+							year={2025}
+							startMonth0={0}
 						/>
-					))}
-				</Box>
+						<MonthRow
+							mode={mode}
+							labels={monthsH1}
+							year={2025}
+							startMonth0={0}
+						/>
+
+						{h1Groups.map((g) => (
+							<CampaignRow
+								key={g.id}
+								mode={mode}
+								group={g}
+								rangeStartISO="2025-01-01"
+								rangeEndISO="2025-06-30"
+							/>
+						))}
+					</Box>
+				</Spoiler>
 
 				{/* ---------- H2 ---------- */}
-				<Box>
-					<Flex align="center" mb="sm" gap={"sm"}>
-						<Logo isSmall text="H2" />
-						<Text size="xl" fw={600}>
-							Second Half - 2025
+				<Spoiler
+					maxHeight={645}
+					showLabel={
+						<Text fw={700} size="sm" c="red">
+							Show all campaigns &#8594;
 						</Text>
-					</Flex>
+					}
+					hideLabel={
+						<Text fw={700} size="sm" c="red" mt={10}>
+							Minimize view &#8594;
+						</Text>
+					}
+				>
+					<Box>
+						<Flex align="center" mb="sm" gap={"sm"}>
+							<Logo isSmall text="H2" />
+							<Text size="xl" fw={600}>
+								Second Half - 2025
+							</Text>
+						</Flex>
 
-					<QuarterRow
-						mode={mode}
-						color="red.5"
-						year={2025}
-						startMonth0={6}
-					/>
-					<MonthRow
-						mode={mode}
-						labels={monthsH2}
-						year={2025}
-						startMonth0={6}
-					/>
-
-					{h2Groups.map((g) => (
-						<CampaignRow
-							key={g.id}
+						<QuarterRow
 							mode={mode}
-							group={g}
-							rangeStartISO="2025-07-01"
-							rangeEndISO="2025-12-31"
+							color="red.5"
+							year={2025}
+							startMonth0={6}
 						/>
-					))}
-				</Box>
-			</Flex>
+						<MonthRow
+							mode={mode}
+							labels={monthsH2}
+							year={2025}
+							startMonth0={6}
+						/>
+
+						{h2Groups.map((g) => (
+							<CampaignRow
+								key={g.id}
+								mode={mode}
+								group={g}
+								rangeStartISO="2025-07-01"
+								rangeEndISO="2025-12-31"
+							/>
+						))}
+					</Box>
+				</Spoiler>
+
+				<Card
+					radius={10}
+					bg={rgba(Colors.cream, 0.5)}
+					style={{ overflow: "visible" }}
+					shadow="xs"
+				>
+					<Text size="sm" fw={700}>
+						Campaign Status Legend
+					</Text>
+
+					<Flex mt={20} gap={20}>
+						{status.map((st) => (
+							<Group key={st.value} align="center" gap={8}>
+								<IconCircleFilled
+									size={15}
+									color={statusColors[st.value]}
+								/>
+								<Text size="xs">{st.label}</Text>
+							</Group>
+						))}
+					</Flex>
+				</Card>
+			</Stack>
 		</Box>
 	);
 }

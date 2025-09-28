@@ -64,4 +64,11 @@ export const theme = createTheme({
 	shadows: {
 		xs: "0px 1px 5px 0px rgba(139, 0, 255, 0.08)",
 	},
+	breakpoints: {
+		xs: "36em",
+		sm: "48em",
+		md: "62em",
+		lg: "80em",
+		xl: "88em",
+	},
 });

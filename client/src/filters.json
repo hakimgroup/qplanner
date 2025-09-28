@@ -36,6 +36,26 @@
     "Product photography",
     "Brochures"
   ],
+  "eventAssets": [
+    "Event Banners",
+    "Email Invitations",
+    "Event Programs",
+    "Photography",
+    "Promotional Materials",
+    "Refreshments Branding",
+    "Social media assets",
+    "Press Releases",
+    "Signage",
+    "Video Content",
+    "Awards/Certificates",
+    "Gift Bags"
+  ],
+  "eventTypes": [
+    "Brand Event",
+    "Practice Reopening Event",
+    "Anniversary Event",
+    "For Sale"
+  ],
   "status": [
     {
       "label": "On Plan",

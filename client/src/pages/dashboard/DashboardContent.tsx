@@ -1,4 +1,13 @@
-import { Title, Paper, Stack, Group, Flex, Text, Divider } from "@mantine/core";
+import {
+	Title,
+	Paper,
+	Stack,
+	Group,
+	Flex,
+	Text,
+	Divider,
+	Card,
+} from "@mantine/core";
 import StyledTabs from "@/components/styledTabs/StyledTabs";
 import { IconCircleFilled } from "@tabler/icons-react";
 import Quick from "@/components/campaignsSetup/quick/Quick";

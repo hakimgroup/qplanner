@@ -1,6 +1,17 @@
-import { Badge, Button, Card, Flex, Stack, Text, Title } from "@mantine/core";
+import {
+	Badge,
+	Box,
+	Button,
+	Card,
+	Flex,
+	Group,
+	Stack,
+	Text,
+	Title,
+	useMatches,
+} from "@mantine/core";
 import cl from "./campaignCard.module.scss";
-import { IconPencil, IconPlus } from "@tabler/icons-react";
+import { IconCalendarCheck, IconPencil, IconPlus } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import StyledButton from "@/components/styledButton/StyledButton";
 import View from "../View";
@@ -15,6 +26,7 @@ import { SelectionStatus } from "@/shared/shared.models";
 import AppContext from "@/shared/AppContext";
 import { UserTabModes } from "@/models/general.models";
 import clsx from "clsx";
+import { format } from "date-fns";
 
 const CampaignCard = (c: Campaign) => {
 	const [viewMode, setViewMode] = useState("view");
@@ -25,6 +37,11 @@ const CampaignCard = (c: Campaign) => {
 		state: { filters },
 	} = useContext(AppContext);
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
+	const mih = useMatches({
+		base: 430,
+		md: 480,
+		lg: 470,
+	});
 
 	const Objectives = ({ noTitle = false }) => (
 		<Stack gap={5}>
@@ -66,20 +83,33 @@ const CampaignCard = (c: Campaign) => {
 				radius={10}
 				className={clsx(
 					cl["campaign-card"],
-					c.selected && cl.isSelected
+					c.selected && cl.isSelected,
+					c.is_event && cl.isEvent
 				)}
+				mih={mih}
 				onClick={open}
 			>
 				<Stack gap={15}>
 					{c.selected && (
-						<Flex
-							justify={"flex-end"}
-							pos={"absolute"}
-							top={8}
-							left={0}
-							pr={8}
-							w={"100%"}
-						>
+						<Flex justify={"space-between"} w={"100%"}>
+							{c.is_event ? (
+								<Group gap={10}>
+									<Badge
+										color="violet"
+										size="lg"
+										leftSection={
+											<IconCalendarCheck size={15} />
+										}
+									>
+										Event
+									</Badge>
+									<Text c="violet" size="sm" fw={700}>
+										{c?.event_type}
+									</Text>
+								</Group>
+							) : (
+								<Box></Box>
+							)}
 							<Status
 								status={
 									!isSelections
@@ -90,7 +120,7 @@ const CampaignCard = (c: Campaign) => {
 						</Flex>
 					)}
 
-					<Stack gap={3}>
+					<Stack gap={3} mt={c.selected ? -10 : "auto"}>
 						<Title order={5} fw={600}>
 							{c.name}
 						</Title>
@@ -101,17 +131,23 @@ const CampaignCard = (c: Campaign) => {
 
 					<Stack gap={5}>
 						<Text size="sm" fw={500} c={"blue.3"}>
-							{c.selected ? "Scheduled For" : "Availability"}
+							{c.is_event
+								? "Event Day"
+								: c.selected
+								? "Scheduled For"
+								: "Availability"}
 						</Text>
 						<Text size="xs" c={"gray.6"} fw={600}>
-							{formatAvailabilityForUI(
-								c.selected
-									? {
-											from: c.selection_from_date,
-											to: c.selection_to_date,
-									  }
-									: c.availability
-							)}
+							{c.is_event
+								? format(c.selection_from_date, "MMMM dd, yyyy")
+								: formatAvailabilityForUI(
+										c.selected
+											? {
+													from: c.selection_from_date,
+													to: c.selection_to_date,
+											  }
+											: c.availability
+								  )}
 						</Text>
 					</Stack>
 
@@ -143,18 +179,26 @@ const CampaignCard = (c: Campaign) => {
 						w={"100%"}
 					>
 						<StyledButton
+							variant={c.is_event ? "light" : "subtle"}
+							color="violet"
 							onClick={(e) => {
 								e.stopPropagation();
 								setViewMode("view");
 								open();
 							}}
 						>
-							View Details
+							View {c.is_event && <>Event</>} Details
 						</StyledButton>
 
 						{c.selected ? (
 							<Button
-								color={isSelections ? "blue.3" : "red.4"}
+								color={
+									c.is_event
+										? "violet"
+										: isSelections
+										? "blue.3"
+										: "red.4"
+								}
 								leftSection={<IconPencil size={14} />}
 								onClick={(e) => {
 									e.stopPropagation();

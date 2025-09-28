@@ -285,7 +285,7 @@ const Bespoke = ({
 
 						<Stack gap={10}>
 							<Text size="md" c="gray.9" fw={500}>
-								Category
+								Categories
 							</Text>
 							<Chip.Group
 								multiple

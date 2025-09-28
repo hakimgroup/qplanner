@@ -3,10 +3,12 @@ import { supabase } from "@/api/supabase";
 import {
 	BulkAddCampaignsInput,
 	Campaign,
+	CreateBespokeEventInput,
 	CreateBespokeInput,
 	GuidedCampaign,
 	GuidedParams,
 } from "@/models/campaign.models";
+import { useAuth } from "@/shared/AuthProvider";
 import { usePractice } from "@/shared/PracticeProvider";
 import { DatabaseTables, RPCFunctions } from "@/shared/shared.models";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,10 +20,11 @@ const key = (practiceId?: string | null) => [
 ];
 
 export const useAllCampaigns = (practiceId?: string | null, enabled = true) => {
+	const { user } = useAuth();
 	return useQuery<Campaign[]>({
 		queryKey: [DatabaseTables.CampaignsCatalog, practiceId],
 		queryFn: () => getAllCampaigns(practiceId),
-		enabled,
+		enabled: Boolean(user),
 	});
 };
 
@@ -203,5 +206,47 @@ export function useGuidedCampaigns<TData = GuidedCampaign[]>(
 				already_on_plan: !!row.already_on_plan,
 			})) as GuidedCampaign[];
 		},
+	});
+}
+
+export function useCreateBespokeEvent() {
+	const qc = useQueryClient();
+	const { activePracticeId } = usePractice();
+
+	return useMutation({
+		mutationFn: async (input: CreateBespokeEventInput) => {
+			const practiceId = input.practiceId ?? activePracticeId;
+
+			// RPC expects a DATE; send YYYY-MM-DD
+			const p_event_date = format(input.eventDate, "yyyy-MM-dd");
+
+			const { data, error } = await supabase.rpc(
+				RPCFunctions.CreateBespokeEvent,
+				{
+					p_practice: practiceId,
+					p_event_type: input.eventType,
+					p_title: input.title,
+					p_description: input.description,
+					p_event_date, // yyyy-MM-dd
+					p_objectives: input.objectives ?? [],
+					p_topics: input.topics ?? [],
+					p_assets: input.assets ?? [],
+					p_requirements: input.requirements ?? null,
+					p_notes: input.notes ?? null,
+					p_reference_links: input.links ?? [],
+				}
+			);
+
+			if (error) throw error;
+			// RPC returns the new selection_id (uuid)
+			return data as string;
+		},
+		onSuccess: async (selectionId) => {
+			// Refresh merged campaigns for the current practice context
+			await qc.invalidateQueries({
+				queryKey: [DatabaseTables.CampaignsCatalog, activePracticeId],
+			});
+		},
+		onError: (e) => {},
 	});
 }

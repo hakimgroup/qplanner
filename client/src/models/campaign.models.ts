@@ -52,6 +52,10 @@ export interface Campaign {
 	notes: string;
 	tier: SelectionTier | null;
 	source: SelectionsSource | null;
+	is_event: boolean;
+	event_type: string;
+	event_date: string;
+	requirements: string;
 }
 
 export type CreateBespokeInput = {
@@ -68,6 +72,20 @@ export type CreateBespokeInput = {
 	more_info_link?: string | null;
 	reference_links?: string[];
 	assets?: unknown; // any JSON-serializable shape (jsonb)
+};
+
+export type CreateBespokeEventInput = {
+	practiceId?: string | null; // defaults to active practice if omitted
+	eventType: string; // e.g. "Trunk Show"
+	title: string;
+	description: string;
+	eventDate: Date; // single-day event
+	objectives?: string[]; // jsonb array
+	topics?: string[]; // jsonb array
+	assets?: string[]; // jsonb array
+	requirements?: string | null;
+	notes?: string | null; // stored on selection
+	links?: string[];
 };
 
 export type BulkAddCampaignsInput = {

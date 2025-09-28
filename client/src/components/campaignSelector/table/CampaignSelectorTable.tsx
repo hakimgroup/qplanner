@@ -26,6 +26,7 @@ import View from "../View";
 import BulkAdd from "../BulkAdd";
 import { formatAvailabilityForUI } from "@/shared/shared.utilities";
 import { usePractice } from "@/shared/PracticeProvider";
+import Event from "@/components/campaignsSetup/event/Event";
 
 type Availability = { from: string; to: string } | null;
 
@@ -100,13 +101,24 @@ const CampaignSelectorTable = () => {
 		{
 			field: "section",
 			headerName: "Activity",
-			cellRenderer: ({ value }: any) => (
-				<Badge variant="outline" color="gray.1">
-					<Text size="xs" fw={500} c={"gray.9"}>
-						{value ?? "—"}
-					</Text>
-				</Badge>
-			),
+			cellRenderer: ({ value }: any) => {
+				const isEvent = value === "Event";
+
+				return (
+					<Badge
+						variant={isEvent ? "filled" : "outline"}
+						color={isEvent ? "violet" : "gray.1"}
+					>
+						<Text
+							size="xs"
+							fw={500}
+							c={isEvent ? "violet.0" : "gray.9"}
+						>
+							{value ?? "—"}
+						</Text>
+					</Badge>
+				);
+			},
 		},
 		{
 			field: "objectives",
@@ -195,7 +207,11 @@ const CampaignSelectorTable = () => {
 									<Button
 										size="xs"
 										radius={10}
-										color="red.4"
+										color={
+											data?.category === "Event"
+												? "violet"
+												: "red.4"
+										}
 										leftSection={<IconEdit size={14} />}
 										onClick={() =>
 											setMode({ type: "edit", id })
@@ -339,7 +355,12 @@ const CampaignSelectorTable = () => {
 					onChange={(e) => setQuery(e.currentTarget.value)}
 				/>
 
-				{!isSelections && <Bespoke />}
+				{!isSelections && (
+					<Group gap={10}>
+						<Bespoke />
+						<Event />
+					</Group>
+				)}
 
 				{isSelections && (
 					<Select
@@ -360,7 +381,10 @@ const CampaignSelectorTable = () => {
 					{totalCount === 1 ? "" : "s"}
 				</Text>
 				{isSelections && !unitedView ? (
-					<Bespoke buttonText="Add Campaign" />
+					<Group gap={10}>
+						<Bespoke />
+						<Event />
+					</Group>
 				) : (
 					<Text c="gray.6" size="sm">
 						Sorted by name (A-Z)

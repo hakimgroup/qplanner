@@ -124,7 +124,9 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
 					const to: Date | null = p?.data?.end ?? null;
 					return (
 						<Text size="xs" c="gray.9" fw={500}>
-							{formatAvailabilityForUI({ from, to })}
+							{p.data.category === "Event"
+								? format(from, "MMMM dd, yyyy")
+								: formatAvailabilityForUI({ from, to })}
 						</Text>
 					);
 				},

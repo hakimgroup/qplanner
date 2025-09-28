@@ -1,17 +1,14 @@
 import { Colors, statusColors } from "@/shared/shared.const";
 import {
-	Modal,
 	Stack,
 	Flex,
 	Title,
 	Card,
 	Group,
-	Select,
 	Textarea,
 	Button,
 	useMantineTheme,
 	Text,
-	SelectProps,
 	Badge,
 	Drawer,
 	Divider,
@@ -20,12 +17,10 @@ import {
 	IconEdit,
 	IconCalendar,
 	IconTrash,
-	IconCheck,
-	IconCircleFilled,
+	IconCalendarCheck,
 } from "@tabler/icons-react";
 import CampaignDates from "../campaignDates/CampaignDates";
 import StyledButton from "../styledButton/StyledButton";
-import filterData from "@/filters.json";
 import { useEffect, useMemo, useState } from "react";
 import {
 	differenceInCalendarDays,
@@ -80,24 +75,6 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 	const { mutate: updateSelection, isPending: saving } = useUpdateSelection();
 	const { mutate: deleteSelection, isPending: removing } =
 		useDeleteSelection();
-
-	// ---- Select option renderer (kept)
-	const renderSelectOption: SelectProps["renderOption"] = ({
-		option,
-		checked,
-	}) => (
-		<Group gap="xs">
-			{checked && (
-				<IconCheck style={{ marginInlineStart: "auto" }} size={15} />
-			)}
-			<IconCircleFilled
-				style={{ marginInlineStart: "auto" }}
-				size={10}
-				color={statusColors[option.value as keyof typeof statusColors]}
-			/>
-			{option.label}
-		</Group>
-	);
 
 	// ---- Header chip examples (kept, but derive from selection if provided)
 	const Objectives = () => {
@@ -194,7 +171,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 					<Flex align={"center"} gap={7}>
 						<IconEdit color={T.colors.blue[3]} size={22} />
 						<Title order={4} fw={600}>
-							Edit Campaign
+							Edit {s?.is_event ? "Event" : "Campaign"}
 						</Title>
 					</Flex>
 
@@ -215,6 +192,31 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 			overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
 		>
 			<Stack gap={20}>
+				{s?.is_event && (
+					<Card
+						p={10}
+						radius={10}
+						bg={"violet.0"}
+						style={{
+							border: `1px solid ${T.colors.violet[1]}`,
+						}}
+						shadow="xs"
+					>
+						<Group align="center" justify="space-between">
+							<Badge
+								color="violet"
+								size="lg"
+								leftSection={<IconCalendarCheck size={15} />}
+							>
+								Event
+							</Badge>
+							<Text c="violet" size="sm" fw={700}>
+								{s?.event_type}
+							</Text>
+						</Group>
+					</Card>
+				)}
+
 				<Card radius={10} bg={Colors.cream}>
 					<Stack gap={7}>
 						<Text fw={500}>{s?.name}</Text>
@@ -230,26 +232,20 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 
 				<Divider size={"xs"} color="gray.1" />
 
-				{/* <Select
-					radius={10}
-					label="Status"
-					data={filterData.status}
-					renderOption={renderSelectOption}
-					value={statusValue}
-					onChange={setStatusValue as any}
-				/> */}
-
 				<Text size="sm" c={"gray.9"} fw={600}>
-					Campaign Dates
+					{s?.is_event ? "Event Date" : "Campaign Dates"}
 				</Text>
 
 				<CampaignDates
+					isSingleDate={s?.is_event}
 					icon={<IconCalendar size={16} />}
 					dateRange={campaign.dateRange}
 					onChange={(range) =>
 						setCampaign({ ...campaign, dateRange: range })
 					}
-					startLabel="Start Date"
+					startLabel={
+						s?.is_event ? "Update Event Date" : "Start Date"
+					}
 					endLabel="End Date"
 					inputSize="sm"
 					labelSize="sm"
@@ -308,7 +304,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 						<StyledButton onClick={closeModal}>Cancel</StyledButton>
 						<Button
 							radius={10}
-							color="blue.3"
+							color={s?.is_event ? "violet" : "blue.3"}
 							onClick={handleSave}
 							loading={saving}
 							disabled={!canSave}

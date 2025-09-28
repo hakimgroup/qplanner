@@ -20,6 +20,7 @@ import {
 	IconEdit,
 	IconX,
 	IconMinus,
+	IconCalendarCheck,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import CampaignDates from "../campaignDates/CampaignDates";
@@ -258,20 +259,56 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 				overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
 			>
 				<Stack gap={20} pb={20}>
+					{c?.is_event && (
+						<Card
+							p={10}
+							radius={10}
+							bg={"violet.0"}
+							style={{
+								border: `1px solid ${T.colors.violet[1]}`,
+							}}
+							shadow="xs"
+						>
+							<Group align="center" justify="space-between">
+								<Badge
+									color="violet"
+									size="lg"
+									leftSection={
+										<IconCalendarCheck size={15} />
+									}
+								>
+									Event
+								</Badge>
+								<Text c="violet" size="sm" fw={700}>
+									{c?.event_type}
+								</Text>
+							</Group>
+						</Card>
+					)}
+
 					<Text c={"gray.7"} maw={400}>
 						{firstSentence(c.description)}
 					</Text>
 
 					<Stack gap={5}>
-						<Text c={"gray.9"} size="sm">
-							Availability
+						<Text
+							c={c.is_event ? "violet" : "gray.9"}
+							size="sm"
+							fw={700}
+						>
+							{c?.is_event ? "Event Day" : "Availability"}
 						</Text>
 
 						<Text size="sm" fw={500}>
-							{formatDateRange(
-								c.availability?.from,
-								c.availability?.to
-							)}
+							{c.is_event
+								? format(
+										c?.selection_from_date,
+										"MMMM dd, yyyy"
+								  )
+								: formatDateRange(
+										c.availability?.from,
+										c.availability?.to
+								  )}
 						</Text>
 					</Stack>
 

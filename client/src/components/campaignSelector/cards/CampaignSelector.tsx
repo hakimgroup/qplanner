@@ -9,6 +9,8 @@ import {
 	Center,
 	ThemeIcon,
 	Flex,
+	Card,
+	useMatches,
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import CampaignCard from "./CampaignCard";
@@ -20,6 +22,7 @@ import Bespoke from "../../campaignsSetup/bespoke/Bespoke";
 import { useDebouncedValue } from "@mantine/hooks";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { usePractice } from "@/shared/PracticeProvider";
+import Event from "@/components/campaignsSetup/event/Event";
 
 const CampaignSelectorCards = () => {
 	const {
@@ -29,6 +32,11 @@ const CampaignSelectorCards = () => {
 		},
 	} = useContext(AppContext);
 	const { unitedView } = usePractice();
+	const spanCol = useMatches({
+		base: 12,
+		md: 6,
+		lg: 4,
+	});
 
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
 
@@ -54,7 +62,7 @@ const CampaignSelectorCards = () => {
 
 	return (
 		<Stack gap={20} className={cl["campaign-selector"]}>
-			<Flex justify={"space-between"} align={"flex-end"}>
+			<Flex justify={"space-between"} align={"center"}>
 				<Stack gap={5}>
 					<Title order={3}>
 						{isSelections
@@ -67,7 +75,12 @@ const CampaignSelectorCards = () => {
 							: "Browse and add campaigns to this practice plan"}
 					</Text>
 				</Stack>
-				{!unitedView && <Bespoke />}
+				{!unitedView && (
+					<Group gap={10}>
+						<Bespoke />
+						<Event />
+					</Group>
+				)}
 			</Flex>
 
 			<TextInput
@@ -138,12 +151,28 @@ const CampaignSelectorCards = () => {
 				{!loading && viewCampaigns.length > 0 && (
 					<>
 						{viewCampaigns.map((c: any) => (
-							<Grid.Col span={4} key={c.id}>
+							<Grid.Col span={spanCol} key={c.id}>
 								<CampaignCard {...c} />
 							</Grid.Col>
 						))}
 					</>
 				)}
+
+				<Grid.Col span={12}>
+					<Card>
+						<Stack align="center">
+							<Text c={"gray.6"}>
+								Can't find what you need? Create a custom
+								campaign or event.
+							</Text>
+
+							<Group gap={10}>
+								<Bespoke buttonText="Add bespoke campaign" />
+								<Event buttonText="Create bespoke event" />
+							</Group>
+						</Stack>
+					</Card>
+				</Grid.Col>
 			</Grid>
 		</Stack>
 	);

@@ -2,13 +2,14 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/api/supabase";
 import { DatabaseTables } from "./shared.models";
+import { useAuth } from "./AuthProvider"; // ← use auth to know if signed in
 
 export type Practice = { id: string; name: string; numberOfPlans?: number };
 
 type PracticeCtx = {
 	practices: Practice[];
 	activePracticeId: string | null;
-	activePracticeName: string | null; // ← NEW
+	activePracticeName: string | null;
 	setActivePracticeId: (id: string | null) => void;
 	unitedView: boolean;
 	setUnitedView: (v: boolean) => void;
@@ -17,7 +18,7 @@ type PracticeCtx = {
 const PracticeContext = createContext<PracticeCtx>({
 	practices: [],
 	activePracticeId: null,
-	activePracticeName: null, // ← NEW default
+	activePracticeName: null,
 	setActivePracticeId: () => {},
 	unitedView: false,
 	setUnitedView: () => {},
@@ -28,19 +29,38 @@ export const usePractice = () => useContext(PracticeContext);
 export const PracticeProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
+	const { user } = useAuth(); // ← signed-in user (null when logged out)
+
 	const [practices, setPractices] = useState<Practice[]>([]);
 	const [activePracticeId, setActive] = useState<string | null>(() =>
 		localStorage.getItem("active_practice_id")
 	);
 	const [unitedView, setUnitedView] = useState<boolean>(false);
 
+	// Fetch practices only when user is signed in
 	useEffect(() => {
-		(async () => {
-			// RLS: returns only practices the current user can access
-			const { data } = await supabase
+		let cancelled = false;
+
+		async function loadPractices() {
+			// If no user, don't fetch; also clear state to avoid stale access
+			if (!user) {
+				setPractices([]);
+				setActive(null);
+				localStorage.removeItem("active_practice_id");
+				return;
+			}
+
+			const { data, error } = await supabase
 				.from(DatabaseTables.Practices)
 				.select("id, name")
 				.order("name", { ascending: true });
+
+			if (cancelled) return;
+
+			if (error) {
+				// keep prior state if fetch fails; optionally log
+				return;
+			}
 
 			const list = (data ?? []) as Practice[];
 			setPractices(list);
@@ -60,9 +80,14 @@ export const PracticeProvider: React.FC<{ children: React.ReactNode }> = ({
 				setActive(first);
 				localStorage.setItem("active_practice_id", first);
 			}
-		})();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []); // run once on mount (initial bootstrap)
+		}
+
+		loadPractices();
+		return () => {
+			cancelled = true;
+		};
+		// Re-run when auth user changes
+	}, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const setActivePracticeId = (id: string | null) => {
 		setActive(id);
@@ -82,7 +107,7 @@ export const PracticeProvider: React.FC<{ children: React.ReactNode }> = ({
 		() => ({
 			practices,
 			activePracticeId,
-			activePracticeName, // ← NEW in context value
+			activePracticeName,
 			setActivePracticeId,
 			unitedView,
 			setUnitedView,

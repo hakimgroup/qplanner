@@ -21,6 +21,9 @@ interface CampaignDatesProps {
 	/** Optional bounds: when BOTH are provided, user can only pick within [minDate, maxDate] */
 	minDate?: Date;
 	maxDate?: Date;
+
+	/** NEW: when true, show only the "from" input and use it as both from & to */
+	isSingleDate?: boolean;
 }
 
 const CampaignDates = ({
@@ -39,6 +42,7 @@ const CampaignDates = ({
 	gap = 15,
 	minDate,
 	maxDate,
+	isSingleDate = false,
 }: CampaignDatesProps) => {
 	const hasBounds = !!minDate && !!maxDate;
 
@@ -57,6 +61,12 @@ const CampaignDates = ({
 	const handleFromChange = (d: Date | null) => {
 		let nextFrom = clampToBounds(d ? startOfDay(d) : d);
 		let nextTo = norm(dateRange.to);
+
+		if (isSingleDate) {
+			// In single-date mode, use the chosen date for both from & to
+			onChange({ from: nextFrom, to: nextFrom });
+			return;
+		}
 
 		// Always enforce start <= end if both present
 		if (nextFrom && nextTo && isAfter(nextFrom, nextTo)) {
@@ -111,25 +121,29 @@ const CampaignDates = ({
 				/>
 
 				{/* spacer for variant 2 (filters style) */}
-				{gap < 15 && <Box w={10}></Box>}
+				{!isSingleDate && gap < 15 && <Box w={10}></Box>}
 
-				<DateInput
-					w="100%"
-					pointer
-					size={inputSize}
-					radius={10}
-					valueFormat="DD MMM YYYY"
-					leftSection={icon}
-					value={dateRange.to}
-					onChange={handleToChange}
-					label={
-						<Text size={labelSize} c="gray.9" fw={500}>
-							{endLabel}
-						</Text>
-					}
-					placeholder={endPlaceholder}
-					{...(hasBounds ? { minDate: minN!, maxDate: maxN! } : {})}
-				/>
+				{!isSingleDate && (
+					<DateInput
+						w="100%"
+						pointer
+						size={inputSize}
+						radius={10}
+						valueFormat="DD MMM YYYY"
+						leftSection={icon}
+						value={dateRange.to}
+						onChange={handleToChange}
+						label={
+							<Text size={labelSize} c="gray.9" fw={500}>
+								{endLabel}
+							</Text>
+						}
+						placeholder={endPlaceholder}
+						{...(hasBounds
+							? { minDate: minN!, maxDate: maxN! }
+							: {})}
+					/>
+				)}
 			</Flex>
 		</Stack>
 	);

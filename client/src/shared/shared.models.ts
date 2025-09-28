@@ -30,6 +30,7 @@ export enum RPCFunctions {
 	UnAssignUserFromPractice = "unassign_user_from_practice",
 	GetCampaigns = "get_campaigns",
 	CreateBespokeSelection = "create_bespoke_selection",
+	CreateBespokeEvent = "create_bespoke_event",
 	AddCampaignsBulk = "add_campaigns_bulk",
 	GetGuidedCampaigns = "get_guided_campaigns",
 	GetPlans = "get_plans",

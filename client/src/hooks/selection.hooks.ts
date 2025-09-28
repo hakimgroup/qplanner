@@ -19,6 +19,7 @@ import {
 	SelectionStatus,
 } from "@/shared/shared.models";
 import { fetchPlans } from "@/api/selections";
+import { useAuth } from "@/shared/AuthProvider";
 
 const key = (activePracticeId: string | null, unitedView: boolean) => [
 	DatabaseTables.Selections,
@@ -27,10 +28,11 @@ const key = (activePracticeId: string | null, unitedView: boolean) => [
 
 export function useSelections() {
 	const { activePracticeId, unitedView } = usePractice();
+	const { user } = useAuth();
 
 	return useQuery({
 		queryKey: key(activePracticeId, unitedView),
-		enabled: unitedView || !!activePracticeId,
+		enabled: Boolean(user && (unitedView || !!activePracticeId)),
 		queryFn: async (): Promise<Selection[]> => {
 			let q = supabase.from(DatabaseTables.Selections).select();
 

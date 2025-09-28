@@ -20,7 +20,7 @@ export const statusColors = {
 };
 
 export const activityColors = {
-	[SelectionActivity.Event]: "#ff4757",
+	[SelectionActivity.Event]: "#7b2eda",
 	[SelectionActivity.BrandActivations]: "#ff6348",
 	[SelectionActivity.Campaign]: "#1e90ff",
 	[SelectionActivity.Evergreen]: "#10ac84",
