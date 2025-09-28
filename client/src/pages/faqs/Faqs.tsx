@@ -173,7 +173,29 @@ const Faqs = () => {
 
 					<Group gap={10}>
 						<StyledButton>Contact Support</StyledButton>
-						<StyledButton>Request Feature</StyledButton>
+					</Group>
+				</Stack>
+			</Card>
+
+			<Card
+				w={"100%"}
+				radius={10}
+				style={{ border: `1px solid ${T.blue[0]}` }}
+				mt={30}
+				pb={30}
+			>
+				<Stack gap={20}>
+					<Stack gap={5}>
+						<Title order={3}>Help us improve</Title>
+						<Text size="sm" c="gray.7">
+							If you'd like something added to the platform, we're
+							always interested in getting feedback.
+						</Text>
+					</Stack>
+
+					<Group gap={10}>
+						<StyledButton>Leave Feedback</StyledButton>
+						<StyledButton>Request a Feature</StyledButton>
 					</Group>
 				</Stack>
 			</Card>
