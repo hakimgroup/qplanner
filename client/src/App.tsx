@@ -18,7 +18,6 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Plans from "./pages/admin/adminPages/plans/Plans";
 import PeopleAccess from "./pages/admin/adminPages/people/PeopleAccess";
 import RequireAdmin from "./shared/RequireAdmin";
-import RedirectAdminFromDashboard from "./shared/RedirectAdminFromDashboard";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
@@ -40,11 +39,7 @@ export default function App() {
 		() => [
 			{
 				path: AppRoutes.Dashboard,
-				element: (
-					<RedirectAdminFromDashboard>
-						<Dashboard />
-					</RedirectAdminFromDashboard>
-				),
+				element: <Dashboard />,
 			},
 			{ path: AppRoutes.FAQs, element: <Faqs /> },
 		],

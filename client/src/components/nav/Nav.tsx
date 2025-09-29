@@ -20,6 +20,7 @@ import {
 	IconLogout,
 	IconSettings,
 	IconUser,
+	IconUserShield,
 } from "@tabler/icons-react";
 import cl from "./nav.module.scss";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -37,18 +38,43 @@ const Nav = () => {
 	const { pathname } = useLocation();
 	const { user, isAdmin } = useAuth();
 	const name = `${user?.identities[0].identity_data.first_name} ${user?.identities[0].identity_data.last_name}`;
+	const isUserView = [AppRoutes.Dashboard, AppRoutes.FAQs].includes(
+		pathname as any
+	);
+	const { title, description } = useNavPreset();
+	// const notDashboard = pathname !== AppRoutes.Dashboard;
+	const notDashboard = ![AppRoutes.Dashboard, AppRoutes.Admin].includes(
+		pathname as any
+	);
 
 	//APIs
 	const { mutate: signout } = useSignout();
 
-	const { title, description } = useNavPreset();
-	const notDashboard = pathname !== AppRoutes.Dashboard;
+	//Components
+	const AdminNavigate = () => (
+		<Button
+			color="violet"
+			variant="light"
+			size="xs"
+			fw={700}
+			leftSection={<IconUserShield size={14} stroke={3} />}
+			onClick={() => {
+				if (!isUserView) {
+					navigate(AppRoutes.Dashboard);
+				} else {
+					navigate(AppRoutes.Admin);
+				}
+			}}
+		>
+			{isUserView ? "Admin" : "User"} View
+		</Button>
+	);
 
 	return (
 		<nav className={cl.nav}>
 			<Flex justify={"space-between"} align={"center"}>
 				<Flex align={"center"} gap={15}>
-					{notDashboard && !isAdmin && (
+					{notDashboard && (
 						<>
 							<StyledButton
 								borderWidth={0}
@@ -81,7 +107,7 @@ const Nav = () => {
 						</Box>
 					</Flex>
 
-					{!notDashboard && (
+					{pathname === AppRoutes.Dashboard && (
 						<>
 							<Box h={"30px"}>
 								<Divider
@@ -97,8 +123,10 @@ const Nav = () => {
 					)}
 				</Flex>
 
-				{!isAdmin && (
+				{isUserView && (
 					<Flex align={"center"} gap={15}>
+						{isAdmin && <AdminNavigate />}
+
 						<Badge
 							variant="light"
 							color="gray.6"
@@ -137,8 +165,9 @@ const Nav = () => {
 					</Flex>
 				)}
 
-				{isAdmin && (
+				{isAdmin && !isUserView && (
 					<Group gap={30}>
+						<AdminNavigate />
 						<Notification />
 						<Menu shadow="md" position="bottom-end">
 							<Menu.Target>
