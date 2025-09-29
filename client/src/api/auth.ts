@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { supabase } from "./supabase";
-import { DatabaseTables } from "@/shared/shared.models";
+import { AppRoutes, DatabaseTables } from "@/shared/shared.models";
 import { Practice } from "@/shared/PracticeProvider";
 
 export const signin = async () => {
@@ -28,6 +28,33 @@ export const signout = async () => {
 		throw error;
 	}
 };
+
+export async function signOutSafe(redirectTo: string = AppRoutes.Login) {
+	try {
+		// 1) Check current session
+		const { data } = await supabase.auth.getSession();
+		const hasSession = !!data.session;
+
+		if (hasSession) {
+			// 2) Try global sign-out first (logs out all devices)
+			const { error } = await supabase.auth.signOut({ scope: "global" });
+			if (error && error.code !== "session_not_found") {
+				// Unknown error → fall back to local
+				await supabase.auth.signOut({ scope: "local" });
+			}
+		} else {
+			// No session on server → clear local tokens silently
+			await supabase.auth.signOut({ scope: "local" });
+		}
+	} catch {
+		// Any unexpected issue → still clear local cache
+		await supabase.auth.signOut({ scope: "local" });
+	} finally {
+		// Your app-specific cleanup here if needed
+		// e.g., reset stores, clear query cache, etc.
+		window.location.replace(redirectTo);
+	}
+}
 
 export type Role = "user" | "admin" | "super_admin";
 export type AllowedUser = {

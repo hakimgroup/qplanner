@@ -31,6 +31,7 @@ import Help from "../help/Help";
 import Notification from "../notification/Notification";
 import StyledButton from "../styledButton/StyledButton";
 import { useNavPreset } from "@/shared/shared.hooks";
+import { signOutSafe } from "@/api/auth";
 
 const Nav = () => {
 	const T = useMantineTheme();
@@ -48,7 +49,7 @@ const Nav = () => {
 	);
 
 	//APIs
-	const { mutate: signout } = useSignout();
+	// const { mutate: signout } = useSignout();
 
 	//Components
 	const AdminNavigate = () => (
@@ -158,7 +159,7 @@ const Nav = () => {
 							color="violet"
 							c="gray.8"
 							leftSection={<IconLogout size={18} />}
-							onClick={() => signout()}
+							onClick={() => signOutSafe()}
 						>
 							Logout
 						</Button>
@@ -218,7 +219,7 @@ const Nav = () => {
 
 								<Menu.Item
 									color="red"
-									onClick={() => signout()}
+									onClick={() => signOutSafe()}
 									leftSection={<IconLogout size={14} />}
 								>
 									Logout
