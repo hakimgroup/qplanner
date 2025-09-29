@@ -132,22 +132,20 @@ const CampaignCard = (c: Campaign) => {
 					<Stack gap={5}>
 						<Text size="sm" fw={500} c={"blue.3"}>
 							{c.is_event
-								? "Event Day"
+								? "Event Period"
 								: c.selected
 								? "Scheduled For"
 								: "Availability"}
 						</Text>
 						<Text size="xs" c={"gray.6"} fw={600}>
-							{c.is_event
-								? format(c.selection_from_date, "MMMM dd, yyyy")
-								: formatAvailabilityForUI(
-										c.selected
-											? {
-													from: c.selection_from_date,
-													to: c.selection_to_date,
-											  }
-											: c.availability
-								  )}
+							{formatAvailabilityForUI(
+								c.selected
+									? {
+											from: c.selection_from_date,
+											to: c.selection_to_date,
+									  }
+									: c.availability
+							)}
 						</Text>
 					</Stack>
 

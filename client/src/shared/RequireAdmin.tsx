@@ -6,20 +6,15 @@ import { AppRoutes } from "@/shared/shared.models";
 
 type Props = { children: ReactNode };
 
-/**
- * Wrap admin-only pages with <RequireAdmin>...</RequireAdmin>.
- * If the user is not an admin, they’re redirected to the Dashboard.
- * Assumes authentication is already enforced (e.g., with <RequireAuth>).
- */
 export default function RequireAdmin({ children }: Props) {
-	const { isAdmin, loading } = useAuth();
+	const { loading, isAdmin, role } = useAuth();
 	const location = useLocation();
 
-	// While the auth context is bootstrapping, render nothing (or a small placeholder if you prefer)
-	if (loading) return null;
+	// Wait until auth bootstraps and role resolves to avoid false redirects on refresh
+	if (loading || role === null) return null;
 
+	// Non-admins are redirected to Dashboard
 	if (!isAdmin) {
-		// not an admin -> send to dashboard, preserving where they came from
 		return (
 			<Navigate
 				to={AppRoutes.Dashboard}
@@ -29,5 +24,6 @@ export default function RequireAdmin({ children }: Props) {
 		);
 	}
 
+	// Admins can view the page
 	return <>{children}</>;
 }

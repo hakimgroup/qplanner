@@ -26,6 +26,7 @@ html {
 //Mantine UI Config
 //Combobox Select
 .mantine-Select-input,
+.mantine-MultiSelect-input,
 .mantine-TextInput-input,
 .mantine-Textarea-input,
 .mantine-Chip-label {
@@ -33,6 +34,7 @@ html {
 }
 
 .mantine-Select-dropdown,
+.mantine-MultiSelect-dropdown,
 .mantine-Combobox-dropdown {
 	border-color: variables.$sea;
 	border-radius: 10px;

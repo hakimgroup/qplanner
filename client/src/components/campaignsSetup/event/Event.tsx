@@ -20,17 +20,17 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { IconCalendar, IconPlus, IconTrash } from "@tabler/icons-react";
 import filtersData from "@/filters.json";
-import { DateInput } from "@mantine/dates";
 import { useState, useMemo } from "react";
 import { useForm } from "@mantine/form";
 import { toast } from "sonner";
 import { useCreateBespokeEvent } from "@/hooks/campaign.hooks";
+import CampaignDates from "@/components/campaignDates/CampaignDates";
 
 type FormValues = {
 	eventType: string;
 	title: string;
 	description: string;
-	eventDate: Date | null;
+	dateRange: { from: Date | null; to: Date | null }; // ← range instead of single date
 	objectives: string[];
 	topics: string[];
 	assets: string[];
@@ -42,7 +42,7 @@ const initialValues: FormValues = {
 	eventType: "",
 	title: "",
 	description: "",
-	eventDate: null,
+	dateRange: { from: null, to: null }, // ← init range
 	objectives: [],
 	topics: [],
 	assets: [],
@@ -68,10 +68,14 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 			title: (v) => (!!v?.trim() ? null : "Event title is required"),
 			description: (v) =>
 				!!v?.trim() ? null : "Event description is required",
-			eventDate: (v) =>
-				v instanceof Date && !isNaN(+v)
+			dateRange: ({ from, to }) =>
+				from instanceof Date &&
+				!isNaN(+from) &&
+				to instanceof Date &&
+				!isNaN(+to) &&
+				+from <= +to
 					? null
-					: "Event date is required",
+					: "Valid start and end dates are required",
 			objectives: (arr) =>
 				Array.isArray(arr) && arr.length > 0
 					? null
@@ -125,7 +129,6 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 			return;
 		}
 
-		// Keep the composed notes for readability, but also send links explicitly
 		const extra: string[] = [];
 		if (cleanedLinks.length)
 			extra.push(`Links:\n${cleanedLinks.join("\n")}`);
@@ -138,7 +141,8 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 				eventType: values.eventType,
 				title: values.title,
 				description: values.description,
-				eventDate: values.eventDate as Date,
+				eventFromDate: values.dateRange.from as Date,
+				eventToDate: values.dateRange.to as Date,
 				objectives: values.objectives,
 				topics: values.topics,
 				assets: values.assets,
@@ -163,8 +167,11 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 		!!form.values.eventType?.trim() &&
 		!!form.values.title?.trim() &&
 		!!form.values.description?.trim() &&
-		form.values.eventDate instanceof Date &&
-		!isNaN(+form.values.eventDate) &&
+		form.values.dateRange.from instanceof Date &&
+		!isNaN(+form.values.dateRange.from!) &&
+		form.values.dateRange.to instanceof Date &&
+		!isNaN(+form.values.dateRange.to!) &&
+		+form.values.dateRange.from! <= +form.values.dateRange.to! &&
 		form.values.objectives.length > 0 &&
 		form.values.topics.length > 0 &&
 		form.values.assets.length > 0 &&
@@ -270,23 +277,30 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 							{...form.getInputProps("description")}
 						/>
 
+						{/* Date Range */}
 						<Stack gap={10}>
 							<Text size="md" c="gray.9" fw={500}>
-								Event Date
+								Event Dates
 							</Text>
 
-							<DateInput
-								pointer
-								radius={10}
-								valueFormat="DD MMM YYYY"
-								leftSection={<IconCalendar size={16} />}
-								placeholder="Select event date"
-								value={form.values.eventDate}
-								onChange={(d) =>
-									form.setFieldValue("eventDate", d)
+							<CampaignDates
+								icon={<IconCalendar size={16} />}
+								dateRange={form.values.dateRange}
+								onChange={(range) =>
+									form.setFieldValue("dateRange", range)
 								}
-								error={form.errors.eventDate}
+								startLabel="Start Date"
+								endLabel="End Date"
+								inputSize="md"
+								labelSize="sm"
+								titleLabelSize="sm"
+								hideTitleIcon
 							/>
+							{form.errors.dateRange && (
+								<Text size="xs" c="red.6" mt={6}>
+									{form.errors.dateRange as any}
+								</Text>
+							)}
 						</Stack>
 
 						<Stack gap={10}>

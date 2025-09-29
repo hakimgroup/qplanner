@@ -1,6 +1,9 @@
 import { PlanRow } from "@/models/selection.models";
 import { statusColors } from "@/shared/shared.const";
-import { formatDateRange } from "@/shared/shared.utilities";
+import {
+	formatDateRange,
+	getReferenceLinkLabel,
+} from "@/shared/shared.utilities";
 import {
 	Badge,
 	Card,
@@ -17,6 +20,8 @@ import filtersData from "@/filters.json";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { useUpdateSelection } from "@/hooks/selection.hooks";
 import { toast } from "sonner";
+import { IconShare3, IconMinus } from "@tabler/icons-react";
+import { c } from "vite/dist/node/types.d-aGj9QkWt";
 
 interface Props {
 	row: PlanRow;
@@ -81,9 +86,34 @@ const PlansActions = ({ row, opened, closePanel }: Props) => {
 					<Text>{row?.notes ?? "--"}</Text>
 				</Stack>
 
+				<Stack gap={5}>
+					<Text fz={"h6"} fw={500}>
+						More Information
+					</Text>
+
+					<Stack mt={10} gap={10}>
+						{row?.reference_links?.map((rl: string, i: number) => (
+							<StyledButton
+								alignLeft
+								bg={"violet.0"}
+								key={rl}
+								link={rl}
+								leftSection={
+									<IconShare3 size={18} color={T.gray[9]} />
+								}
+							>
+								{getReferenceLinkLabel(rl, i)}
+							</StyledButton>
+						))}
+
+						{!row?.reference_links?.length && (
+							<IconMinus size={20} />
+						)}
+					</Stack>
+				</Stack>
+
 				<Group gap={10} align="flex-end">
 					<Select
-						w={"100%"}
 						size="sm"
 						label={
 							<Group align="center" justify="space-between">
@@ -119,7 +149,7 @@ const PlansActions = ({ row, opened, closePanel }: Props) => {
 						}}
 					/>
 
-					{/* <StyledButton fw={500}>Trigger follow-up</StyledButton> */}
+					<StyledButton fw={500}>Trigger follow-up</StyledButton>
 				</Group>
 			</Stack>
 		</Drawer>

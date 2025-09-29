@@ -18,6 +18,9 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Plans from "./pages/admin/adminPages/plans/Plans";
 import PeopleAccess from "./pages/admin/adminPages/people/PeopleAccess";
 import RequireAdmin from "./shared/RequireAdmin";
+import AdminCampaigns from "./pages/admin/adminPages/campaigns/AdminCampaigns";
+import { TierProvider } from "./shared/TierProvider";
+import NotificationsCenter from "./pages/notificationsCenter/NotificationsCenter";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
@@ -41,6 +44,10 @@ export default function App() {
 				path: AppRoutes.Dashboard,
 				element: <Dashboard />,
 			},
+			{
+				path: AppRoutes.NotificationsCenter,
+				element: <NotificationsCenter />,
+			},
 			{ path: AppRoutes.FAQs, element: <Faqs /> },
 		],
 		[]
@@ -53,75 +60,81 @@ export default function App() {
 	return (
 		<Suspense fallback={null}>
 			<QueryClientProvider client={queryClient}>
-				<PracticeProvider>
-					<AppProvider>
-						<div className="app">
-							{!isPublicPath && <Nav />}
-							<main>
-								<Routes>
-									{/* Public */}
-									{publicPages.map((pg) => (
-										<Route
-											key={pg.path}
-											path={pg.path}
-											element={pg.element}
-										/>
-									))}
+				<TierProvider>
+					<PracticeProvider>
+						<AppProvider>
+							<div className="app">
+								{!isPublicPath && <Nav />}
+								<main>
+									<Routes>
+										{/* Public */}
+										{publicPages.map((pg) => (
+											<Route
+												key={pg.path}
+												path={pg.path}
+												element={pg.element}
+											/>
+										))}
 
-									{/* Private (simple) */}
-									{privatePages.map((pg) => (
+										{/* Private (simple) */}
+										{privatePages.map((pg) => (
+											<Route
+												key={pg.path}
+												path={pg.path}
+												element={
+													<RequireAuth>
+														{pg.element}
+													</RequireAuth>
+												}
+											/>
+										))}
+
+										{/* Admin (nested) — NOTE the /* */}
 										<Route
-											key={pg.path}
-											path={pg.path}
+											path={`${AppRoutes.Admin}/*`} // => "/admin/*"
 											element={
 												<RequireAuth>
-													{pg.element}
+													<RequireAdmin>
+														<AdminLayout />
+													</RequireAdmin>
 												</RequireAuth>
 											}
-										/>
-									))}
-
-									{/* Admin (nested) — NOTE the /* */}
-									<Route
-										path={`${AppRoutes.Admin}/*`} // => "/admin/*"
-										element={
-											<RequireAuth>
-												<RequireAdmin>
-													<AdminLayout />
-												</RequireAdmin>
-											</RequireAuth>
-										}
-									>
-										<Route index element={<Plans />} />{" "}
-										<Route
-											path={AppRoutes.Plans}
-											element={<Plans />}
-										/>
-										<Route
-											path={AppRoutes.Bespoke}
-											element={<Plans />}
-										/>
-										<Route
-											path={AppRoutes.PeopleAccess}
-											element={<PeopleAccess />}
-										/>
-									</Route>
-
-									{/* Fallback */}
-									<Route
-										path="*"
-										element={
-											<Navigate
-												to={AppRoutes.Login}
-												replace
+										>
+											<Route index element={<Plans />} />{" "}
+											<Route
+												path={AppRoutes.Plans}
+												element={<Plans />}
 											/>
-										}
-									/>
-								</Routes>
-							</main>
-						</div>
-					</AppProvider>
-				</PracticeProvider>
+											<Route
+												path={AppRoutes.Campaigns}
+												element={<AdminCampaigns />}
+											/>
+											<Route
+												path={AppRoutes.Bespoke}
+												element={<Plans />}
+											/>
+											<Route
+												path={AppRoutes.PeopleAccess}
+												element={<PeopleAccess />}
+											/>
+										</Route>
+
+										{/* Fallback */}
+										<Route
+											path="*"
+											element={
+												<Navigate
+													to={AppRoutes.Login}
+													replace
+												/>
+											}
+										/>
+									</Routes>
+								</main>
+							</div>
+						</AppProvider>
+					</PracticeProvider>
+				</TierProvider>
 			</QueryClientProvider>
 		</Suspense>
 	);

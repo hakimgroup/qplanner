@@ -11,11 +11,18 @@ import {
 	Text,
 	TextInput,
 	useMantineTheme,
+	Select,
+	ActionIcon,
 } from "@mantine/core";
 import { find, upperFirst } from "lodash";
 import { roles } from "@/filters.json";
 import { usePractice } from "@/shared/PracticeProvider";
-import { IconCircle, IconCircleFilled, IconSearch } from "@tabler/icons-react";
+import {
+	IconCircleFilled,
+	IconEdit,
+	IconSearch,
+	IconX,
+} from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { useDebouncedValue } from "@mantine/hooks";
 import { useUpdateUser } from "@/pages/auth/auth.hooks";
@@ -23,7 +30,6 @@ import { useUpdateUser } from "@/pages/auth/auth.hooks";
 interface Props {
 	row: AllowedUser;
 	opened: boolean;
-
 	mode?: string;
 	closePanel: () => void;
 }
@@ -33,13 +39,20 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 	const T = useMantineTheme().colors;
 	const { practices } = usePractice();
 	const name = `${upperFirst(row?.first_name)} ${upperFirst(row?.last_name)}`;
+
 	const [query, setQuery] = useState("");
 	const [debounced] = useDebouncedValue(query, 150);
 	const [assignedPractices, setAssignedPractices] = useState(
 		row?.assigned_practices?.map((p) => p.id)
 	);
 
-	//API
+	// NEW: role editing state
+	const [editingRole, setEditingRole] = useState(false);
+	const [roleValue, setRoleValue] = useState<string | null>(
+		row?.role ?? null
+	);
+
+	// API
 	const { mutate: updateUser, isPending } = useUpdateUser();
 
 	const filteredPractices = useMemo(() => {
@@ -73,11 +86,11 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 		>
 			<Stack h={"100%"}>
 				<Text fw={700}>User Details</Text>
+
 				<Stack gap={0}>
 					<Text size="sm" fw={500}>
 						Name
 					</Text>
-
 					<Text size="sm" c="gray.8">
 						{name}
 					</Text>
@@ -87,7 +100,6 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 					<Text size="sm" fw={500}>
 						Email
 					</Text>
-
 					<Text size="sm" c="gray.8">
 						{row?.email}
 					</Text>
@@ -98,20 +110,57 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 						Role
 					</Text>
 
-					<Badge
-						variant="light"
-						color={userRoleColors[row?.role]}
-						size="sm"
-						fw={700}
-						style={{ border: `1px solid ${T.blue[0]}` }}
-					>
-						{find(roles, { value: row?.role })?.label}
-					</Badge>
+					{isView ? (
+						<Badge
+							variant="light"
+							color={userRoleColors[row?.role]}
+							size="sm"
+							fw={700}
+							style={{ border: `1px solid ${T.blue[0]}` }}
+						>
+							{find(roles, { value: row?.role })?.label}
+						</Badge>
+					) : editingRole ? (
+						<Select
+							size="xs"
+							radius="md"
+							data={roles}
+							value={roleValue}
+							onChange={(v) => setRoleValue(v)}
+							placeholder="Select role"
+							styles={{ input: { maxWidth: 220 } }}
+						/>
+					) : (
+						<Flex align="center" gap={2}>
+							<Badge
+								variant="light"
+								color={userRoleColors[row?.role]}
+								size="sm"
+								fw={700}
+								style={{ border: `1px solid ${T.blue[0]}` }}
+							>
+								{find(roles, { value: row?.role })?.label}
+							</Badge>
+
+							{/* Clickable “x” to switch to role Select */}
+							<ActionIcon
+								size="sm"
+								variant="subtle"
+								onClick={() => setEditingRole(true)}
+								aria-label="Change role"
+								title="Change role"
+								color="red.4"
+							>
+								<IconEdit size={14} stroke={3} />
+							</ActionIcon>
+						</Flex>
+					)}
 				</Stack>
 
 				<Text mt={10} fw={700}>
 					Practice Access
 				</Text>
+
 				{!isView && (
 					<TextInput
 						radius={10}
@@ -123,6 +172,7 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 						onChange={(e) => setQuery(e.currentTarget.value)}
 					/>
 				)}
+
 				<Card
 					radius={10}
 					style={{
@@ -150,9 +200,9 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 										</Text>
 									</Flex>
 									{p.numberOfPlans > 0 && (
-										<Text size="xs" fw={700} c="green.9">
-											{p.numberOfPlans} plans already
-											under this practice
+										<Text size="xs" fw={500} c="green.9">
+											{p.numberOfPlans} planned activities
+											already under this practice
 										</Text>
 									)}
 								</Stack>
@@ -171,9 +221,11 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 									</Text>
 								) : (
 									filteredPractices.map((p, i) => {
-										let numberOfPlans = find(
+										const numberOfPlans = find(
 											row?.assigned_practices,
-											{ id: p.id }
+											{
+												id: p.id,
+											}
 										)?.numberOfPlans;
 										return (
 											<Checkbox
@@ -195,7 +247,6 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 															size="xs"
 															c="gray.4"
 														>
-															{/* simple visual code; retains existing look */}
 															PR0
 															{i < 9
 																? `0${i + 1}`
@@ -204,13 +255,14 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 														{numberOfPlans > 0 && (
 															<Text
 																size="xs"
-																fw={700}
+																fw={500}
 																c="green.9"
 															>
 																{numberOfPlans}{" "}
-																plans already
-																under this
-																practice
+																planned
+																activities
+																already under
+																this practice
 															</Text>
 														)}
 													</Stack>
@@ -223,21 +275,26 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 						</Checkbox.Group>
 					)}
 				</Card>
+
 				{!isView && (
 					<Button
 						fullWidth
 						loading={isPending}
-						onClick={() =>
-							updateUser(
-								{
-									id: row?.id,
-									assigned_practices: assignedPractices,
-								},
-								{
-									onSuccess: closePanel,
-								}
-							)
-						}
+						onClick={() => {
+							// Build payload; include role only if changed or explicitly picked
+							const payload: any = {
+								id: row?.id,
+								assigned_practices: assignedPractices,
+							};
+							if (
+								editingRole &&
+								roleValue &&
+								roleValue !== row.role
+							) {
+								payload.role = roleValue;
+							}
+							updateUser(payload, { onSuccess: closePanel });
+						}}
 					>
 						Save Changes
 					</Button>

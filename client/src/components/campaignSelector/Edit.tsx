@@ -233,20 +233,17 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 				<Divider size={"xs"} color="gray.1" />
 
 				<Text size="sm" c={"gray.9"} fw={600}>
-					{s?.is_event ? "Event Date" : "Campaign Dates"}
+					{s?.is_event ? "Event Dates" : "Campaign Dates"}
 				</Text>
 
 				<CampaignDates
-					isSingleDate={s?.is_event}
 					icon={<IconCalendar size={16} />}
 					dateRange={campaign.dateRange}
 					onChange={(range) =>
 						setCampaign({ ...campaign, dateRange: range })
 					}
-					startLabel={
-						s?.is_event ? "Update Event Date" : "Start Date"
-					}
-					endLabel="End Date"
+					startLabel={s?.is_event ? "Event Start Date" : "Start Date"}
+					endLabel={s?.is_event ? "Event End Date" : "Start Date"}
 					inputSize="sm"
 					labelSize="sm"
 					titleLabelSize="sm"

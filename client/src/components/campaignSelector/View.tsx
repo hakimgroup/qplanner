@@ -296,14 +296,14 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 							size="sm"
 							fw={700}
 						>
-							{c?.is_event ? "Event Day" : "Availability"}
+							{c?.is_event ? "Event Dates" : "Availability"}
 						</Text>
 
 						<Text size="sm" fw={500}>
-							{c.is_event
-								? format(
-										c?.selection_from_date,
-										"MMMM dd, yyyy"
+							{c.selected
+								? formatDateRange(
+										c.selection_from_date,
+										c.selection_to_date
 								  )
 								: formatDateRange(
 										c.availability?.from,

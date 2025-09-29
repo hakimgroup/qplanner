@@ -246,5 +246,63 @@ export function normalizeAllToNull<T extends Record<string, any>>(
 ): {
 	[K in keyof T]: T[K] | null;
 } {
-	return _.mapValues(obj, (v) => (v === "all" ? null : v)) as any;
+	return _.mapValues(obj, (v) => {
+		if (v === "all") return null;
+		if (Array.isArray(v) && v.length === 0) return null;
+		return v;
+	}) as any;
+}
+
+// shared/shared.utilities.ts
+export type CampaignSearchable = {
+	name?: string | null;
+	description?: string | null;
+	selection_practice_name?: string | null;
+	category?: string | null;
+	status?: string | null;
+	objectives?: string[] | null;
+	topics?: string[] | null;
+	// You can pass more fields via extraKeys if needed (e.g., "campaign")
+	[k: string]: any;
+};
+
+export function filterCampaignsByQuery<T extends CampaignSearchable>(
+	rows: T[],
+	query: string,
+	opts?: { extraKeys?: (keyof T | string)[] }
+): T[] {
+	const norm = (v: unknown) => String(v ?? "").toLowerCase();
+	const q = query.trim().toLowerCase();
+	if (!q) return rows || [];
+
+	const extra = opts?.extraKeys ?? [];
+
+	return (rows || []).filter((row) => {
+		const name = norm(row.name);
+		const desc = norm(row.description);
+		const practice = norm(row.selection_practice_name);
+		const category = norm(row.category);
+		const status = norm(row.status);
+
+		const objectives = Array.isArray(row.objectives)
+			? row.objectives.map(norm).join(" ")
+			: "";
+		const topics = Array.isArray(row.topics)
+			? row.topics.map(norm).join(" ")
+			: "";
+
+		// allow extra keys (e.g., "campaign" label used in table row mapping)
+		const extraHit = extra.some((k) => norm((row as any)?.[k]).includes(q));
+
+		return (
+			name.includes(q) ||
+			desc.includes(q) ||
+			practice.includes(q) ||
+			category.includes(q) ||
+			status.includes(q) ||
+			objectives.includes(q) ||
+			topics.includes(q) ||
+			extraHit
+		);
+	});
 }

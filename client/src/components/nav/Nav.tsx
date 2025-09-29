@@ -43,13 +43,9 @@ const Nav = () => {
 		pathname as any
 	);
 	const { title, description } = useNavPreset();
-	// const notDashboard = pathname !== AppRoutes.Dashboard;
 	const notDashboard = ![AppRoutes.Dashboard, AppRoutes.Admin].includes(
 		pathname as any
 	);
-
-	//APIs
-	// const { mutate: signout } = useSignout();
 
 	//Components
 	const AdminNavigate = () => (
@@ -142,6 +138,8 @@ const Nav = () => {
 
 						{!notDashboard && (
 							<>
+								<Notification />
+
 								<Help />
 
 								<StyledButton

@@ -4,6 +4,9 @@ import { AppRoutes, DatabaseTables } from "@/shared/shared.models";
 import { Practice } from "@/shared/PracticeProvider";
 
 export const signin = async () => {
+	// mark that we are intentionally starting OAuth now
+	sessionStorage.setItem("oauth_just_signed_in", "1");
+
 	const { data, error } = await supabase.auth.signInWithOAuth({
 		provider: "azure",
 		options: {
@@ -24,6 +27,8 @@ export const signout = async () => {
 	const { error } = await supabase.auth.signOut();
 
 	if (error) {
+		// clear the flag if the kick-off failed
+		sessionStorage.removeItem("oauth_just_signed_in");
 		toast.error(error.message);
 		throw error;
 	}

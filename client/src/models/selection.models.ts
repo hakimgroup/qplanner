@@ -49,10 +49,11 @@ export type PlanRow = {
 	end: string; // date (YYYY-MM-DD)
 	updated_at: string; // ISO timestamp
 	notes: string;
+	reference_links: string[];
 };
 
 export type PlansFilter = {
-	practiceId?: string | null;
+	practiceIds?: string[] | null;
 	status?: string | null;
 	category?: string | null;
 	source?: string | null;

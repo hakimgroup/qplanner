@@ -5,12 +5,12 @@ import { supabase } from "./supabase";
 export async function fetchPlans(
 	filters: PlansFilter = {}
 ): Promise<PlanRow[]> {
-	const { practiceId, status, category, source, tier, isBespoke } = filters;
+	const { practiceIds, status, category, source, tier, isBespoke } = filters;
 
 	const { data, error } = await supabase.rpc(
 		RPCFunctions.GetPlans ?? "get_plans",
 		{
-			p_practice_id: practiceId ?? null,
+			p_practice_ids: practiceIds ?? null,
 			p_status: status ?? null,
 			p_category: category ?? null,
 			p_source: source ?? null,

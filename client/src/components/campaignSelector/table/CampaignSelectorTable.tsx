@@ -23,8 +23,10 @@ import Table from "@/components/table/Table";
 import Bespoke from "@/components/campaignsSetup/bespoke/Bespoke";
 import Edit from "../Edit";
 import View from "../View";
-import BulkAdd from "../BulkAdd";
-import { formatAvailabilityForUI } from "@/shared/shared.utilities";
+import {
+	filterCampaignsByQuery,
+	formatAvailabilityForUI,
+} from "@/shared/shared.utilities";
 import { usePractice } from "@/shared/PracticeProvider";
 import Event from "@/components/campaignsSetup/event/Event";
 
@@ -40,7 +42,6 @@ const CampaignSelectorTable = () => {
 	const {
 		state: { filters, allCampaigns },
 	} = useContext(AppContext);
-	const [opened, { open: open, close: close }] = useDisclosure(false);
 	const { unitedView } = usePractice();
 
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
@@ -65,32 +66,27 @@ const CampaignSelectorTable = () => {
 	// Column Definitions (defensive renderers)
 	const colDefs: ColDef[] = [
 		{
+			field: "selection_practice_name",
+			headerName: "Practice",
+			hide: !unitedView,
+			cellRenderer: ({ value }: any) => (
+				<Text size="sm" fw={500}>
+					{value}
+				</Text>
+			),
+		},
+		{
 			field: "campaign",
-			resizable: true,
-			flex: 1,
+			width: 300,
 			cellRenderer: (p: any) => {
 				const name = p?.value ?? "—";
 				const desc = p?.data?.description ?? "";
 				return (
-					<Stack gap={0}>
-						<Text
-							size="xs"
-							fw={600}
-							lineClamp={1}
-							truncate={"end"}
-							maw={isSelections ? 260 : 240}
-							title={name}
-						>
+					<Stack gap={5}>
+						<Text size="xs" fw={600} lineClamp={1}>
 							{name}
 						</Text>
-						<Text
-							size="xs"
-							c="gray.5"
-							lineClamp={1}
-							truncate={"end"}
-							maw={isSelections ? 260 : 240}
-							title={desc}
-						>
+						<Text size="xs" c="gray.5" title={desc} lineClamp={1}>
 							{desc || "—"}
 						</Text>
 					</Stack>
@@ -101,6 +97,7 @@ const CampaignSelectorTable = () => {
 		{
 			field: "section",
 			headerName: "Activity",
+			width: 150,
 			cellRenderer: ({ value }: any) => {
 				const isEvent = value === "Event";
 
@@ -122,6 +119,7 @@ const CampaignSelectorTable = () => {
 		},
 		{
 			field: "objectives",
+			flex: 1,
 			cellRenderer: ({ value }: any) => (
 				<BadgeList items={Array.isArray(value) ? value : []} />
 			),
@@ -141,6 +139,7 @@ const CampaignSelectorTable = () => {
 		{
 			field: "availableDates",
 			headerName: "Availability",
+			flex: 1,
 			sortable: false,
 			filter: false,
 			cellRenderer: ({ value }: any) => {
@@ -159,6 +158,7 @@ const CampaignSelectorTable = () => {
 		},
 		{
 			field: "status",
+			flex: 1,
 			sortable: false,
 			filter: false,
 			cellRenderer: ({ value }: any) => {
@@ -176,6 +176,7 @@ const CampaignSelectorTable = () => {
 		{
 			field: "actions",
 			headerClass: "ag-right-aligned-header",
+			...(unitedView && { pinned: "right" }),
 			sortable: false,
 			filter: false,
 			cellRenderer: ({ data }: any) => {
@@ -297,17 +298,12 @@ const CampaignSelectorTable = () => {
 	const viewRows = useMemo(() => {
 		const rows = Array.isArray(rowData) ? rowData : [];
 
-		// search
-		const q = debounced.trim().toLowerCase();
-		const searched = q
-			? rows.filter((r) =>
-					String(r?.campaign ?? "")
-						.toLowerCase()
-						.includes(q)
-			  )
-			: rows;
+		// text search across all standard fields + the "campaign" label from the table rows
+		const searched = filterCampaignsByQuery(rows, debounced, {
+			extraKeys: ["campaign"],
+		});
 
-		// status filter (only when on Selected tab and a status picked)
+		// status filter (only on Selected tab)
 		const s = (statusValue || "all").toLowerCase();
 		if (isSelections && s !== "all") {
 			return searched.filter(
@@ -321,15 +317,6 @@ const CampaignSelectorTable = () => {
 
 	return (
 		<Stack gap={20} pb={50}>
-			<BulkAdd
-				opened={opened}
-				selections={selectedRows}
-				closeModal={() => {
-					setSelectedRows([]);
-					close();
-				}}
-			/>
-
 			{isSelections && (
 				<Stack gap={5}>
 					<Title order={3}>Your Practice Campaigns</Title>

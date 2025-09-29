@@ -13,6 +13,7 @@ import { usePractice } from "@/shared/PracticeProvider";
 import { DatabaseTables, RPCFunctions } from "@/shared/shared.models";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const key = (practiceId?: string | null) => [
 	DatabaseTables.CampaignsCatalog,
@@ -217,9 +218,6 @@ export function useCreateBespokeEvent() {
 		mutationFn: async (input: CreateBespokeEventInput) => {
 			const practiceId = input.practiceId ?? activePracticeId;
 
-			// RPC expects a DATE; send YYYY-MM-DD
-			const p_event_date = format(input.eventDate, "yyyy-MM-dd");
-
 			const { data, error } = await supabase.rpc(
 				RPCFunctions.CreateBespokeEvent,
 				{
@@ -227,7 +225,11 @@ export function useCreateBespokeEvent() {
 					p_event_type: input.eventType,
 					p_title: input.title,
 					p_description: input.description,
-					p_event_date, // yyyy-MM-dd
+					p_event_from_date: format(
+						input.eventFromDate,
+						"yyyy-MM-dd"
+					),
+					p_event_to_date: format(input.eventToDate, "yyyy-MM-dd"),
 					p_objectives: input.objectives ?? [],
 					p_topics: input.topics ?? [],
 					p_assets: input.assets ?? [],
@@ -248,5 +250,139 @@ export function useCreateBespokeEvent() {
 			});
 		},
 		onError: (e) => {},
+	});
+}
+
+type Filters = {
+	category?: string | null;
+	status?: string | null;
+	// tier?: "good" | "better" | "best" | null;
+	tier?: string | null;
+	q?: string | null;
+};
+
+export function useCampaignsCatalog(filters?: Filters) {
+	return useQuery({
+		queryKey: ["campaigns_catalog", filters],
+		queryFn: async () => {
+			let q = supabase
+				.from(DatabaseTables.CampaignsCatalog)
+				.select("*")
+				.order("name", { ascending: true });
+
+			if (filters?.category) q = q.eq("category", filters.category);
+			if (filters?.status) q = q.eq("status", filters.status);
+			if (filters?.tier) q = q.eq("tier", filters.tier);
+
+			const { data, error } = await q;
+			if (error) throw error;
+
+			// local search across few fields (client-side)
+			const needle = (filters?.q ?? "").trim().toLowerCase();
+			if (!needle) return data;
+			return (data ?? []).filter((r: any) => {
+				const inTxt = (s?: string) =>
+					String(s ?? "")
+						.toLowerCase()
+						.includes(needle);
+				const inArr = (a?: any[]) =>
+					Array.isArray(a)
+						? a.some((x) =>
+								String(x).toLowerCase().includes(needle)
+						  )
+						: false;
+				return (
+					inTxt(r.name) ||
+					inTxt(r.description) ||
+					inTxt(r.category) ||
+					inArr(r.objectives) ||
+					inArr(r.topics)
+				);
+			});
+		},
+	});
+}
+
+export function useUpdateCampaignTier() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: async ({
+			id,
+			tier,
+		}: {
+			id: string;
+			tier: string | null;
+		}) => {
+			const { error } = await supabase
+				.from(DatabaseTables.CampaignsCatalog)
+				.update({ tier })
+				.eq("id", id);
+			if (error) throw error;
+		},
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["campaigns_catalog"] });
+			toast.success("Tier updated");
+		},
+		onError: (e: any) => toast.error(e?.message ?? "Failed to update tier"),
+	});
+}
+
+export function useBulkUpdateCampaignTier() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: async ({ ids, tier }: { ids: string[]; tier: string }) => {
+			if (!ids.length) return;
+			const { error } = await supabase
+				.from(DatabaseTables.CampaignsCatalog)
+				.update({ tier })
+				.in("id", ids);
+			if (error) throw error;
+		},
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["campaigns_catalog"] });
+			toast.success("Tier set for selected");
+		},
+		onError: (e: any) => toast.error(e?.message ?? "Failed to bulk update"),
+	});
+}
+
+export function useUpsertCatalogCampaign() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: async (payload: any) => {
+			const body = {
+				name: payload.name,
+				description: payload.description,
+				category: payload.category,
+				tier: payload.tier,
+				status: payload.status ?? "Available",
+				objectives: payload.objectives ?? [],
+				topics: payload.topics ?? [],
+				availability: payload.availability ?? null,
+				more_info_link: payload.more_info_link ?? null,
+			};
+
+			const query = payload.id
+				? supabase
+						.from(DatabaseTables.CampaignsCatalog)
+						.update(body)
+						.eq("id", payload.id)
+						.select()
+						.single()
+				: supabase
+						.from(DatabaseTables.CampaignsCatalog)
+						.insert(body)
+						.select()
+						.single();
+
+			const { data, error } = await query;
+			if (error) throw error;
+			return data;
+		},
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["campaigns_catalog"] });
+			toast.success("Campaign saved");
+		},
+		onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
 	});
 }

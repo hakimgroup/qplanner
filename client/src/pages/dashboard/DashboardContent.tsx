@@ -20,11 +20,13 @@ import CampaignSelectorCards from "@/components/campaignSelector/cards/CampaignS
 import CampaignSelectorTable from "@/components/campaignSelector/table/CampaignSelectorTable";
 import CampaignSelectorCalendar from "@/components/campaignSelector/calendar/CampaignSelectorCalendar";
 import Banners from "@/components/videoBanner/Banners";
+import { usePractice } from "@/shared/PracticeProvider";
 
 export function DashboardContent() {
 	const {
 		state: { filters },
 	} = useContext(AppContext);
+	const { activePracticeName, unitedView } = usePractice();
 
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
 
@@ -51,8 +53,10 @@ export function DashboardContent() {
 				<Group align="center" justify="space-between">
 					<Stack gap={5}>
 						<Title order={3}>
-							Downtown Vision Center -{" "}
-							{isSelections ? "Selections" : "Select Campaigns"}
+							{unitedView ? "All" : activePracticeName}
+							{isSelections
+								? " Selections"
+								: " - Select Campaigns"}
 						</Title>
 						<Flex align={"center"} gap={20}>
 							<Text size="sm" c={"gray.8"}>

@@ -197,7 +197,7 @@ const Guided = () => {
 						<Text size="sm" c="gray.6">
 							Answer a few questions to get personalized campaign
 							recommendations for{" "}
-							<Text size="sm" fw={700} c="blue.3">
+							<Text size="sm" span fw={700} c="blue.3">
 								{activePracticeName}
 							</Text>
 						</Text>

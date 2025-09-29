@@ -12,6 +12,7 @@ export enum AppRoutes {
 	Help = "help-and-support",
 	Notifications = "notifications",
 	FAQs = "/faqs",
+	NotificationsCenter = "/notifications-center",
 }
 
 export enum DatabaseTables {

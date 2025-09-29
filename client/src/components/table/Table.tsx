@@ -47,7 +47,7 @@ const Table = forwardRef<TableHandle, Props>(function Table(
 	const rowBuffer = 0;
 
 	const rowSelection = {
-		mode: enableSelection ? "multiRow" : undefined,
+		mode: "multiRow",
 		headerCheckbox: true,
 	};
 
@@ -141,7 +141,11 @@ const Table = forwardRef<TableHandle, Props>(function Table(
 				headerHeight={headerHeight}
 				// rowHeight can be provided if you want fixed height; autoHeight is already on.
 				// rowHeight={rowHeight}
-				rowSelection={rowSelection as any}
+				columnTypes={{
+					text: { filter: "agTextColumnFilter" },
+				}}
+				// rowSelection={rowSelection as any}
+				{...((enableSelection ? { rowSelection } : {}) as any)}
 				columnDefs={cols}
 				onSelectionChanged={(event) => {
 					onSelect?.(event.selectedNodes.map((d) => d.data));

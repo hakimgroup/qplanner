@@ -21,7 +21,7 @@ import {
 	IconTarget,
 	IconTrendingUp,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import cl from "./quick.module.scss";
 import clsx from "clsx";
 import { upperFirst } from "lodash";
@@ -30,6 +30,7 @@ import { useBulkAddCampaigns } from "@/hooks/campaign.hooks";
 import { addDays } from "date-fns";
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
 import { toast } from "sonner";
+import { useTiers } from "@/shared/TierProvider";
 
 enum Tiers {
 	Good = "good",
@@ -40,9 +41,12 @@ enum Tiers {
 const Quick = () => {
 	const T = useMantineTheme();
 	const { activePracticeName } = usePractice();
+	const { goodIds, betterIds, bestIds, loading, refresh } = useTiers();
 	const [opened, { open, close }] = useDisclosure(false);
 	const [tier, setTier] = useState<Tiers>(Tiers.Better);
 	const [selections, setSelections] = useState<string[]>([]);
+
+	//APIs
 	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaigns();
 
 	const tiers = [
@@ -62,12 +66,7 @@ const Quick = () => {
 				"Always-on: Google Reviews Pack (all year)",
 				"1 seasonal event",
 			],
-			includedCampaigns: [
-				"0006cf24-8903-48a6-a717-e42b901fad2b",
-				"027cb8f0-66d3-4a01-8951-f06b707a416c",
-				"03265f4a-7f0c-4693-a79a-a977ac22117a",
-				"04b2c5b5-e59a-4a41-a818-345b7462dccc",
-			],
+			includedCampaigns: goodIds,
 		},
 		{
 			color: "blue.3",
@@ -83,15 +82,7 @@ const Quick = () => {
 				"Always-on: Google Reviews Pack + light monthly social (all year)",
 				"1 seasonal event and 1 brand activation",
 			],
-			includedCampaigns: [
-				"06689335-515c-4ab7-8b54-4aba80947a9a",
-				"09dbf1b5-0d43-4ecd-bc68-b8028617ffe1",
-				"0a3d3c5c-760d-416a-ad42-a3fbcae21147",
-				"134b1db8-0e7b-4cca-a983-656295a4433e",
-				"1394c379-47bb-44ea-82a6-d66cc843bfbf",
-				"154a320a-789b-450a-8baa-b7b83fb49b3b",
-				"1f7ec6e5-8bb5-4c26-986a-1a57a29d769a",
-			],
+			includedCampaigns: betterIds,
 		},
 		{
 			color: "grape.8",
@@ -102,11 +93,7 @@ const Quick = () => {
 			description: "Maximum impact with always-on strategy",
 			numberOfCampaigns: 10,
 			numberOfEvents: 4,
-			inclusions: [
-				"10 campaigns for the year",
-				"Always-on: Google Reviews Pack + monthly pulses (all year)",
-				"2 seasonal events and 2 brand activations",
-			],
+			inclusions: bestIds,
 			includedCampaigns: [
 				"2002ba6c-2d6c-474f-a5f1-e053485746ae",
 				"2204bb97-71df-40b7-b1fb-038496fe58b9",
@@ -143,6 +130,10 @@ const Quick = () => {
 			}
 		);
 	};
+
+	useEffect(() => {
+		refresh();
+	}, []);
 
 	return (
 		<>

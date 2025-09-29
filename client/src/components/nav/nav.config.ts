@@ -13,4 +13,8 @@ export const Nav_Presets = {
 		title: "Admin Dashboard",
 		description: "Marketing Campaign Management",
 	},
+	[AppRoutes.NotificationsCenter]: {
+		title: "Notifications Center",
+		description: "Campaigns Notifications Management",
+	},
 };

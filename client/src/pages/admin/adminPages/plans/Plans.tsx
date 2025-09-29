@@ -3,6 +3,7 @@ import {
 	Card,
 	Grid,
 	Group,
+	MultiSelect,
 	Select,
 	Stack,
 	Text,
@@ -29,7 +30,7 @@ const Plans = () => {
 	const { practices } = usePractice();
 	const plansRef = useRef<PlansTableHandle>(null);
 	const [plansFilters, setPlansFilters] = useState<PlansFilter>({
-		practiceId: "all",
+		practiceIds: [],
 		status: "all",
 		category: "all",
 		source: "all",
@@ -71,11 +72,13 @@ const Plans = () => {
 	return (
 		<Stack gap={25}>
 			<Stack gap={0}>
-				<Title order={1}>{isBespokeRoute ? "Bespoke" : "Plans"}</Title>
+				<Title order={1}>
+					{isBespokeRoute ? "Bespoke" : "Planned Activities"}
+				</Title>
 				<Text c="gray.6">
 					{isBespokeRoute
 						? "Filtered list of bespoke plan items for easy triage"
-						: "Master table of all plan items across practices"}
+						: "Master table of all planned activities across practices"}
 				</Text>
 			</Stack>
 
@@ -103,10 +106,11 @@ const Plans = () => {
 							/>
 						</Grid.Col>
 						<Grid.Col span={2}>
-							<Select
+							<MultiSelect
 								size="sm"
 								searchable
 								radius={10}
+								placeholder="Select Practices"
 								data={[
 									{ label: "All Practices", value: "all" },
 								].concat(
@@ -115,11 +119,11 @@ const Plans = () => {
 										value: p.id,
 									}))
 								)}
-								value={plansFilters.practiceId}
+								value={plansFilters.practiceIds}
 								onChange={(v) =>
 									setPlansFilters({
 										...plansFilters,
-										practiceId: v ?? "all",
+										practiceIds: v ?? null,
 									})
 								}
 							/>
@@ -174,6 +178,10 @@ const Plans = () => {
 											{
 												label: "All Sources",
 												value: "all",
+											},
+											{
+												label: "Bespoke",
+												value: "bespoke",
 											},
 										].concat(filtersData.sources)}
 										value={plansFilters.source}

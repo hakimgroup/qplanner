@@ -18,7 +18,7 @@ type Role = "user" | "admin" | "super_admin" | null;
 
 interface AuthContextModel {
 	user: User | null;
-	loading: boolean; // now: ONLY initial bootstrap loading
+	loading: boolean;
 	userError: boolean;
 	role: Role;
 	isAdmin: boolean;
@@ -32,7 +32,6 @@ const AuthContext = createContext<AuthContextModel>({
 });
 export const useAuth = () => useContext(AuthContext);
 
-// Single fetch for whitelist + role (reduces API calls)
 async function fetchWhitelistAndRole(
 	email: string
 ): Promise<{ allowed: boolean; role: Role }> {
@@ -48,18 +47,16 @@ async function fetchWhitelistAndRole(
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const navigate = useNavigate();
-	const { pathname } = useLocation(); // <— NEW
+	const { pathname } = useLocation();
 	const [user, setUser] = useState<User | null>(null);
 	const [role, setRole] = useState<Role>(null);
-	const [loading, setLoading] = useState<boolean>(true); // <- only for initial getSession now
+	const [loading, setLoading] = useState<boolean>(true);
 	const [userError, setUserError] = useState<boolean>(false);
 
-	// Flags to prevent redundant checks & redirects
 	const justSignedInRef = useRef(false);
 	const lastCheckedUserIdRef = useRef<string | null>(null);
 	const linkedOnceRef = useRef<boolean>(false);
 
-	// 1) Initialize session and subscribe to auth changes
 	useEffect(() => {
 		let mounted = true;
 
@@ -70,7 +67,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 			if (error) setUserError(true);
 			setUser(data.session?.user ?? null);
-			setLoading(false); // ✅ only initial bootstrap shows loader
+			setLoading(false);
 		})();
 
 		const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -79,7 +76,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 				if (event === "SIGNED_IN") {
 					justSignedInRef.current = true;
-					// reset dedupe flags for newly signed-in user
 					lastCheckedUserIdRef.current = null;
 					linkedOnceRef.current = false;
 				}
@@ -99,18 +95,14 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 		};
 	}, []);
 
-	// 2) When a user appears, do whitelist/role/link once per user (no page loader here)
 	useEffect(() => {
 		let cancelled = false;
 
 		async function checkOncePerUser() {
 			const uid = user?.id ?? null;
 			const email = user?.email ?? null;
-
-			// No user -> nothing to check
 			if (!uid || !email) return;
 
-			// De-dupe: if we already checked this user id and no fresh sign-in, skip
 			if (
 				lastCheckedUserIdRef.current === uid &&
 				!justSignedInRef.current
@@ -134,12 +126,11 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 					return;
 				}
 
-				// Link only once per session (idempotent on DB, but avoid extra RPCs)
 				if (!linkedOnceRef.current) {
 					try {
 						await supabase.rpc(RPCFunctions.LinkUser);
 					} catch {
-						// Non-fatal; ignore
+						// ignore
 					} finally {
 						linkedOnceRef.current = true;
 					}
@@ -147,24 +138,29 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 				setRole(role);
 
-				// ✅ Redirect only on fresh OAuth sign-in AND only if you're on an auth page.
-				//    This preserves nested routes (e.g., /admin/people-and-access) on refocus/refresh.
+				// ⭐ Redirect ONLY on fresh sign-in:
 				if (justSignedInRef.current) {
 					justSignedInRef.current = false;
-					const adminLike =
-						role === "admin" || role === "super_admin";
-					const target = adminLike
-						? AppRoutes.Admin
-						: AppRoutes.Dashboard;
 
-					const isOnAuthPage =
-						pathname === AppRoutes.Home ||
-						pathname === AppRoutes.Login;
+					const startedOAuthHere =
+						sessionStorage.getItem("oauth_just_signed_in") === "1";
+					// only redirect if we really just kicked off OAuth from this tab
+					if (startedOAuthHere) {
+						sessionStorage.removeItem("oauth_just_signed_in");
 
-					if (isOnAuthPage) {
-						navigate(target, { replace: true });
+						const adminLike =
+							role === "admin" || role === "super_admin";
+						const target = adminLike
+							? AppRoutes.Admin
+							: AppRoutes.Dashboard;
+
+						const alreadyOnAdmin = pathname.startsWith(
+							AppRoutes.Admin
+						);
+						if (!(adminLike && alreadyOnAdmin)) {
+							navigate(target, { replace: true });
+						}
 					}
-					// If not on an auth page, do nothing → keep current nested route.
 				}
 			} catch (_err) {
 				if (!cancelled) {
@@ -180,7 +176,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 					}
 				}
 			} finally {
-				// Mark this user as checked (regardless of outcome) to prevent re-running on route changes
 				lastCheckedUserIdRef.current = uid;
 			}
 		}
@@ -189,9 +184,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 		return () => {
 			cancelled = true;
 		};
-	}, [user, navigate, pathname]); // include pathname so the "isOnAuthPage" check is current
+	}, [user, navigate, pathname]);
 
-	// ✅ Loader only during initial bootstrap — no flashes on route changes
 	if (loading) {
 		return (
 			<LoadingOverlay
@@ -206,7 +200,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 		<AuthContext.Provider
 			value={{
 				user,
-				loading, // now strictly "bootstrapping" state
+				loading,
 				userError,
 				role,
 				isAdmin: role === "admin" || role === "super_admin",

@@ -15,9 +15,12 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconBell, IconCircleCheck, IconFileText } from "@tabler/icons-react";
 import SingleNotification from "./SingleNotification";
 import StyledButton from "../styledButton/StyledButton";
+import { useNavigate } from "react-router-dom";
+import { AppRoutes } from "@/shared/shared.models";
 
 const Notification = () => {
 	const T = useMantineTheme();
+	const navigate = useNavigate();
 	const [opened, { open, close }] = useDisclosure(false);
 
 	const notifications = [
@@ -43,7 +46,19 @@ const Notification = () => {
 
 	return (
 		<>
-			<Menu shadow="md" width={320} position="bottom-end">
+			<Indicator inline label="5" size={19} color="red" offset={5}>
+				<ActionIcon
+					variant="subtle"
+					size="lg"
+					radius={10}
+					color="violet"
+					onClick={() => navigate(AppRoutes.NotificationsCenter)}
+				>
+					<IconBell color={T.colors.gray[9]} size={18} />
+				</ActionIcon>
+			</Indicator>
+
+			{/* <Menu shadow="md" width={320} position="bottom-end">
 				<Menu.Target>
 					<Indicator
 						inline
@@ -145,10 +160,10 @@ const Notification = () => {
 						</Card>
 					</Menu.Item>
 				</Menu.Dropdown>
-			</Menu>
+			</Menu> */}
 
 			{/* Single Notification Pop-Up */}
-			<Modal
+			{/* <Modal
 				opened={opened}
 				onClose={close}
 				title={
@@ -162,7 +177,7 @@ const Notification = () => {
 				overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
 			>
 				<SingleNotification />
-			</Modal>
+			</Modal> */}
 		</>
 	);
 };

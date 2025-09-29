@@ -39,7 +39,6 @@ export interface Campaign {
 	objectives: Objective[]; // e.g. ["Conversion", "ADV"]
 	topics: Topic[]; // e.g. ["Frame", "Lens"]
 	availability: Availability | null; // e.g. { from: "Sep", to: "Oct" } or null
-	more_info_link: string;
 	reference_links: string[];
 	status: SelectionStatus;
 	is_bespoke: boolean;
@@ -49,12 +48,12 @@ export interface Campaign {
 	selection_from_date: string;
 	selection_to_date: string;
 	selection_practice_id: string;
+	selection_practice_name: string;
 	notes: string;
 	tier: SelectionTier | null;
 	source: SelectionsSource | null;
 	is_event: boolean;
 	event_type: string;
-	event_date: string;
 	requirements: string;
 }
 
@@ -79,7 +78,8 @@ export type CreateBespokeEventInput = {
 	eventType: string; // e.g. "Trunk Show"
 	title: string;
 	description: string;
-	eventDate: Date; // single-day event
+	eventFromDate: Date;
+	eventToDate: Date;
 	objectives?: string[]; // jsonb array
 	topics?: string[]; // jsonb array
 	assets?: string[]; // jsonb array

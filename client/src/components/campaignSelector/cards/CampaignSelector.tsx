@@ -23,6 +23,7 @@ import { useDebouncedValue } from "@mantine/hooks";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { usePractice } from "@/shared/PracticeProvider";
 import Event from "@/components/campaignsSetup/event/Event";
+import { filterCampaignsByQuery } from "@/shared/shared.utilities";
 
 const CampaignSelectorCards = () => {
 	const {
@@ -47,15 +48,9 @@ const CampaignSelectorCards = () => {
 	// Safe default for campaigns array
 	const campaigns = filteredAppCampaigns ?? [];
 
-	// Apply local name search
+	// Apply local search across: name, description, practice name, category, objectives, topics, status
 	const viewCampaigns = useMemo(() => {
-		const q = debounced.trim().toLowerCase();
-		if (!q) return campaigns;
-		return campaigns.filter((c: any) =>
-			String(c?.name ?? "")
-				.toLowerCase()
-				.includes(q)
-		);
+		return filterCampaignsByQuery(campaigns, debounced);
 	}, [campaigns, debounced]);
 
 	const handleClearSearch = () => setQuery("");
