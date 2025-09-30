@@ -5,27 +5,36 @@ import {
 	Divider,
 	Flex,
 	Grid,
+	Group,
 	Stack,
 	Text,
 } from "@mantine/core";
 import cl from "./guided.module.scss";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { IconCircleCheck, IconTrash } from "@tabler/icons-react";
-import { GuidedCampaign } from "@/models/campaign.models";
+import { Campaign, GuidedCampaign } from "@/models/campaign.models";
 import { BadgeList } from "@/components/badgeList/BadgeList";
 import { useBulkAddCampaigns } from "@/hooks/campaign.hooks";
 import { toast } from "sonner";
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { UserTabModes } from "@/models/general.models";
+import AppContext from "@/shared/AppContext";
+import { updateState } from "@/shared/shared.utilities";
+import View from "@/components/campaignSelector/View";
+import { isEmpty } from "lodash";
 
 interface Props {
-	data: GuidedCampaign[];
+	data: Campaign[];
+	closeModal: () => void;
 	goBack: () => void;
 }
 
-const GuidedResult = ({ data, goBack }: Props) => {
+const GuidedResult = ({ data, goBack, closeModal }: Props) => {
+	const { setState } = useContext(AppContext);
 	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaigns();
 	const [dt, setDt] = useState(data);
+	const [selection, setSelection] = useState<Campaign>(null);
 
 	const handleConfirm = () => {
 		bulkAdd(
@@ -40,7 +49,12 @@ const GuidedResult = ({ data, goBack }: Props) => {
 			{
 				onSuccess: () => {
 					toast.success("Campaigns added to plan");
-					goBack(); // cache invalidation is handled inside the hook
+					closeModal();
+					updateState(
+						setState,
+						"filters.userSelectedTab",
+						UserTabModes.Selected
+					);
 				},
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Failed to add campaigns");
@@ -124,23 +138,33 @@ const GuidedResult = ({ data, goBack }: Props) => {
 											size="lg"
 											fz={"xs"}
 										>
-											{d.availability.duration}
+											{d.duration}
 										</Badge>
 									</Stack>
 
-									<StyledButton
-										size="xs"
-										leftSection={<IconTrash size={14} />}
-										onClick={() => {
-											setDt(
-												dt.filter(
-													(it) => d.id !== it.id
-												)
-											);
-										}}
-									>
-										Remove Selection
-									</StyledButton>
+									<Flex gap={8}>
+										<StyledButton
+											size="xs"
+											leftSection={
+												<IconTrash size={14} />
+											}
+											onClick={() => {
+												setDt(
+													dt.filter(
+														(it) => d.id !== it.id
+													)
+												);
+											}}
+										>
+											Remove Selection
+										</StyledButton>
+										<StyledButton
+											size="xs"
+											onClick={() => setSelection(d)}
+										>
+											View Details
+										</StyledButton>
+									</Flex>
 								</Stack>
 							</Grid.Col>
 						</Grid>
@@ -160,6 +184,15 @@ const GuidedResult = ({ data, goBack }: Props) => {
 					Add {dt.length} Campaigns
 				</Button>
 			</Flex>
+
+			{!isEmpty(selection) && (
+				<View
+					opened
+					c={selection}
+					mode="view"
+					closeDrawer={() => setSelection(null)}
+				/>
+			)}
 		</Stack>
 	);
 };

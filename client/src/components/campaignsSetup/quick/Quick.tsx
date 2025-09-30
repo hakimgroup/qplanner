@@ -21,16 +21,18 @@ import {
 	IconTarget,
 	IconTrendingUp,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import cl from "./quick.module.scss";
 import clsx from "clsx";
 import { upperFirst } from "lodash";
 import { usePractice } from "@/shared/PracticeProvider";
 import { useBulkAddCampaigns } from "@/hooks/campaign.hooks";
-import { addDays } from "date-fns";
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
 import { toast } from "sonner";
 import { useTiers } from "@/shared/TierProvider";
+import AppContext from "@/shared/AppContext";
+import { updateState } from "@/shared/shared.utilities";
+import { UserTabModes } from "@/models/general.models";
 
 enum Tiers {
 	Good = "good",
@@ -40,11 +42,12 @@ enum Tiers {
 
 const Quick = () => {
 	const T = useMantineTheme();
+	const { setState } = useContext(AppContext);
 	const { activePracticeName } = usePractice();
 	const { goodIds, betterIds, bestIds, loading, refresh } = useTiers();
 	const [opened, { open, close }] = useDisclosure(false);
-	const [tier, setTier] = useState<Tiers>(Tiers.Better);
-	const [selections, setSelections] = useState<string[]>([]);
+	const [tier, setTier] = useState<Tiers>(null);
+	const [selections, setSelections] = useState(null);
 
 	//APIs
 	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaigns();
@@ -116,6 +119,11 @@ const Quick = () => {
 				onSuccess: () => {
 					toast.success("Campaigns added to plan");
 					close(); // cache invalidation is handled inside the hook
+					updateState(
+						setState,
+						"filters.userSelectedTab",
+						UserTabModes.Selected
+					);
 				},
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Failed to add campaigns");
@@ -279,6 +287,7 @@ const Quick = () => {
 						radius={10}
 						color="blue.3"
 						loading={adding}
+						disabled={!tier}
 						onClick={handleConfirm}
 					>
 						Continue with {upperFirst(tier)}

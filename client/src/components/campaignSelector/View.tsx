@@ -360,7 +360,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 							)}
 						</Stack>
 
-						{!isAdd && (
+						{/* {!isAdd && (
 							<StyledButton
 								alignLeft
 								bg={"lime.0"}
@@ -376,7 +376,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 							>
 								Full FAQs
 							</StyledButton>
-						)}
+						)} */}
 					</Stack>
 
 					{c.selected && (

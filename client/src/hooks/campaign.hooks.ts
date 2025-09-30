@@ -150,7 +150,7 @@ function keyGuided(params?: GuidedParams, practiceId?: string | null) {
 	] as const;
 }
 
-export function useGuidedCampaigns<TData = GuidedCampaign[]>(
+export function useGuidedCampaigns<TData = Campaign[]>(
 	params: GuidedParams | undefined,
 	enabled: boolean = false,
 	onSuccess: () => void
@@ -167,7 +167,7 @@ export function useGuidedCampaigns<TData = GuidedCampaign[]>(
 			params.activity,
 		].every((v) => typeof v === "number");
 
-	return useQuery<GuidedCampaign[], unknown, TData>({
+	return useQuery<Campaign[], unknown, TData>({
 		queryKey: keyGuided(params, activePracticeId),
 		enabled: enabled && isParamsReady,
 		refetchOnWindowFocus: false,
@@ -203,7 +203,7 @@ export function useGuidedCampaigns<TData = GuidedCampaign[]>(
 				objectives: Array.isArray(row.objectives) ? row.objectives : [],
 				topics: Array.isArray(row.topics) ? row.topics : [],
 				already_on_plan: !!row.already_on_plan,
-			})) as GuidedCampaign[];
+			})) as Campaign[];
 		},
 	});
 }

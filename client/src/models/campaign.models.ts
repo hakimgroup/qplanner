@@ -55,6 +55,8 @@ export interface Campaign {
 	is_event: boolean;
 	event_type: string;
 	requirements: string;
+	focus?: string;
+	duration?: string;
 }
 
 export type CreateBespokeInput = {

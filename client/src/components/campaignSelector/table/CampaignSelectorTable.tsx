@@ -253,6 +253,22 @@ const CampaignSelectorTable = () => {
 								Add
 							</Button>
 						)}
+						<Edit
+							selection={data}
+							opened={mode.type === "edit" && mode.id === id}
+							closeModal={() => setMode({ type: null, id: null })}
+						/>{" "}
+						<View
+							c={data}
+							mode={mode.type as any}
+							opened={
+								(mode.type === "view" || mode.type === "add") &&
+								mode.id === id
+							}
+							closeDrawer={() =>
+								setMode({ type: null, id: null })
+							}
+						/>
 					</Flex>
 				);
 			},

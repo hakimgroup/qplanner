@@ -20,11 +20,14 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { IconCalendar, IconPlus, IconTrash } from "@tabler/icons-react";
 import filtersData from "@/filters.json";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useContext } from "react";
 import { useForm } from "@mantine/form";
 import { toast } from "sonner";
 import { useCreateBespokeEvent } from "@/hooks/campaign.hooks";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
+import { UserTabModes } from "@/models/general.models";
+import AppContext from "@/shared/AppContext";
+import { updateState } from "@/shared/shared.utilities";
 
 type FormValues = {
 	eventType: string;
@@ -56,6 +59,7 @@ const urlish = (s: string) =>
 	);
 
 const Event = ({ buttonText = "Bespoke Event" }) => {
+	const { setState } = useContext(AppContext);
 	const [opened, { open, close }] = useDisclosure(false);
 	const T = useMantineTheme();
 	const [links, setLinks] = useState<string[]>([""]);
@@ -155,6 +159,11 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 					toast.success("Event created");
 					handleReset();
 					close();
+					updateState(
+						setState,
+						"filters.userSelectedTab",
+						UserTabModes.Selected
+					);
 				},
 				onError: (e) => {
 					toast.error(e?.message ?? "Failed to create event");
@@ -174,8 +183,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 		+form.values.dateRange.from! <= +form.values.dateRange.to! &&
 		form.values.objectives.length > 0 &&
 		form.values.topics.length > 0 &&
-		form.values.assets.length > 0 &&
-		!!form.values.notes?.trim();
+		form.values.assets.length > 0;
 
 	const canSubmit = requiredFilled && !creating;
 

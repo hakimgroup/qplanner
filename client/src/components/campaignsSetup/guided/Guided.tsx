@@ -27,7 +27,6 @@ import { upperFirst } from "lodash";
 import { useState } from "react";
 import GuidedResult from "./GuidedResult";
 import { useGuidedCampaigns } from "@/hooks/campaign.hooks";
-import { SelectionsSource } from "@/shared/shared.models";
 
 const StyledSlider = ({
 	i = 0,
@@ -213,6 +212,10 @@ const Guided = () => {
 						data={data}
 						goBack={() => {
 							closeResults();
+						}}
+						closeModal={() => {
+							closeResults();
+							close();
 						}}
 					/>
 				)}
