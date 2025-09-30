@@ -69,7 +69,6 @@ const Bespoke = ({
 		validate: {
 			title: (v) => (!v.trim() ? "Title is required" : null),
 			description: (v) => (!v.trim() ? "Description is required" : null),
-			notes: (v) => (!v.trim() ? "Notes are required" : null),
 			dateRange: ({ from, to }) => {
 				if (!from || !to) return "Start and end dates are required";
 				if (!isValidDate(from) || !isValidDate(to))
@@ -418,7 +417,6 @@ const Bespoke = ({
 						</Stack>
 
 						<Textarea
-							withAsterisk
 							resize="vertical"
 							radius={10}
 							label="Additional Notes"
