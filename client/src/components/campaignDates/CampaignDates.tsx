@@ -24,7 +24,7 @@ interface CampaignDatesProps {
 	minDate?: Date;
 	maxDate?: Date;
 
-	/** NEW: when true, show only the "from" input and use it as both from & to */
+	/** When true, show only the "from" input and use it as both from & to */
 	isSingleDate?: boolean;
 }
 
@@ -66,12 +66,11 @@ const CampaignDates = ({
 		let nextTo = norm(dateRange.to);
 
 		if (isSingleDate) {
-			// In single-date mode, use the chosen date for both from & to
 			onChange({ from: nextFrom, to: nextFrom });
 			return;
 		}
 
-		// Always enforce start <= end if both present
+		// Enforce start <= end
 		if (nextFrom && nextTo && isAfter(nextFrom, nextTo)) {
 			nextTo = nextFrom;
 		}
@@ -83,13 +82,40 @@ const CampaignDates = ({
 		let nextTo = clampToBounds(d ? startOfDay(d) : d);
 		let nextFrom = norm(dateRange.from);
 
-		// Always enforce end >= start if both present
+		// Enforce end >= start
 		if (nextFrom && nextTo && isBefore(nextTo, nextFrom)) {
 			nextFrom = nextTo;
 		}
 
 		onChange({ from: nextFrom, to: nextTo });
 	};
+
+	// ---- Dynamic picker constraints (disable dates outside range) ----
+	const fromVal = norm(dateRange.from);
+	const toVal = norm(dateRange.to);
+
+	// For the START picker:
+	//  - min is global min
+	//  - max is the earlier of (global max, selected end date if present)
+	const startMinDate = hasBounds ? (minN as Date) : undefined;
+	const startMaxDate =
+		toVal && maxN
+			? isBefore(toVal, maxN)
+				? toVal
+				: (maxN as Date)
+			: toVal || (hasBounds ? (maxN as Date) : undefined);
+
+	// For the END picker:
+	//  - min is the later of (global min, selected start date if present)
+	//  - max is global max
+	const endMinDate =
+		fromVal && minN
+			? isAfter(fromVal, minN)
+				? fromVal
+				: (minN as Date)
+			: fromVal || (hasBounds ? (minN as Date) : undefined);
+
+	const endMaxDate = hasBounds ? (maxN as Date) : undefined;
 
 	return (
 		<Stack gap={5}>
@@ -124,11 +150,12 @@ const CampaignDates = ({
 						</Group>
 					}
 					placeholder={startPlaceholder}
-					{...(hasBounds ? { minDate: minN!, maxDate: maxN! } : {})}
+					minDate={startMinDate}
+					maxDate={startMaxDate}
 				/>
 
 				{/* spacer for variant 2 (filters style) */}
-				{!isSingleDate && gap < 15 && <Box w={10}></Box>}
+				{!isSingleDate && gap < 15 && <Box w={10} />}
 
 				{!isSingleDate && (
 					<DateInput
@@ -152,9 +179,8 @@ const CampaignDates = ({
 							</Group>
 						}
 						placeholder={endPlaceholder}
-						{...(hasBounds
-							? { minDate: minN!, maxDate: maxN! }
-							: {})}
+						minDate={endMinDate}
+						maxDate={endMaxDate}
 					/>
 				)}
 			</Flex>

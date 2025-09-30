@@ -71,7 +71,6 @@ const CampaignSelectorTable = () => {
 			hide: !unitedView,
 			minWidth: 160,
 			width: 230,
-			tooltipField: "selection_practice_name",
 			cellRenderer: ({ value }: any) => (
 				<Text size="sm" fw={500} title={value ?? ""}>
 					{value}
@@ -134,8 +133,6 @@ const CampaignSelectorTable = () => {
 			minWidth: 200,
 			sortable: false,
 			filter: false,
-			tooltipValueGetter: (p) =>
-				Array.isArray(p.value) ? p.value.join(", ") : "",
 			cellRenderer: ({ value }: any) => (
 				<BadgeList items={Array.isArray(value) ? value : []} />
 			),
@@ -148,8 +145,6 @@ const CampaignSelectorTable = () => {
 			minWidth: 200,
 			sortable: false,
 			filter: false,
-			tooltipValueGetter: (p) =>
-				Array.isArray(p.value) ? p.value.join(", ") : "",
 			cellRenderer: ({ value }: any) => (
 				<BadgeList
 					items={Array.isArray(value) ? value : []}
@@ -175,7 +170,6 @@ const CampaignSelectorTable = () => {
 					to: to ? new Date(to) : null,
 				});
 			},
-			tooltipValueGetter: (p) => p.value ?? "",
 			cellRenderer: ({ value }: any) => (
 				<Text size="xs" c="gray.9" fw={500} title={value ?? ""}>
 					{value ?? "—"}
@@ -190,7 +184,6 @@ const CampaignSelectorTable = () => {
 			minWidth: 140,
 			sortable: false,
 			filter: false,
-			tooltipValueGetter: (p) => p?.value ?? "",
 			cellRenderer: ({ value }: any) => {
 				const v = value ?? "Available";
 				const found = find(filtersData.status, { value: v });
