@@ -69,21 +69,29 @@ const CampaignSelectorTable = () => {
 			field: "selection_practice_name",
 			headerName: "Practice",
 			hide: !unitedView,
+			minWidth: 160,
+			width: 230,
+			tooltipField: "selection_practice_name",
 			cellRenderer: ({ value }: any) => (
-				<Text size="sm" fw={500}>
+				<Text size="sm" fw={500} title={value ?? ""}>
 					{value}
 				</Text>
 			),
+			// optional: keep it visible when wide tables scroll
+			pinned: unitedView ? "left" : undefined,
 		},
+
 		{
 			field: "campaign",
-			width: 300,
+			headerName: "Campaign",
+			flex: 2, // grows, but never below minWidth
+			minWidth: 280,
 			cellRenderer: (p: any) => {
 				const name = p?.value ?? "—";
 				const desc = p?.data?.description ?? "";
 				return (
 					<Stack gap={5}>
-						<Text size="xs" fw={600} lineClamp={1}>
+						<Text size="xs" fw={600} lineClamp={1} title={name}>
 							{name}
 						</Text>
 						<Text size="xs" c="gray.5" title={desc} lineClamp={1}>
@@ -97,10 +105,11 @@ const CampaignSelectorTable = () => {
 		{
 			field: "section",
 			headerName: "Activity",
-			width: 150,
+			width: 170,
+			minWidth: 130,
+			tooltipField: "section",
 			cellRenderer: ({ value }: any) => {
 				const isEvent = value === "Event";
-
 				return (
 					<Badge
 						variant={isEvent ? "filled" : "outline"}
@@ -117,16 +126,30 @@ const CampaignSelectorTable = () => {
 				);
 			},
 		},
+
 		{
 			field: "objectives",
+			headerName: "Objectives",
 			flex: 1,
+			minWidth: 200,
+			sortable: false,
+			filter: false,
+			tooltipValueGetter: (p) =>
+				Array.isArray(p.value) ? p.value.join(", ") : "",
 			cellRenderer: ({ value }: any) => (
 				<BadgeList items={Array.isArray(value) ? value : []} />
 			),
 		},
+
 		{
 			field: "topics",
 			headerName: "Categories",
+			flex: 1,
+			minWidth: 200,
+			sortable: false,
+			filter: false,
+			tooltipValueGetter: (p) =>
+				Array.isArray(p.value) ? p.value.join(", ") : "",
 			cellRenderer: ({ value }: any) => (
 				<BadgeList
 					items={Array.isArray(value) ? value : []}
@@ -136,31 +159,38 @@ const CampaignSelectorTable = () => {
 				/>
 			),
 		},
+
 		{
 			field: "availableDates",
-			headerName: "Availability",
-			flex: 1,
+			headerName: "Dates",
+			width: 190,
+			minWidth: 160,
 			sortable: false,
 			filter: false,
-			cellRenderer: ({ value }: any) => {
-				const from: Date | null = value?.from ?? null;
-				const to: Date | null = value?.to ?? null;
-
-				return (
-					<Text size="xs" c="gray.9" fw={500}>
-						{formatAvailabilityForUI({
-							from,
-							to,
-						})}
-					</Text>
-				);
+			valueGetter: (p) => {
+				const from = p?.data?.availableDates?.from ?? null;
+				const to = p?.data?.availableDates?.to ?? null;
+				return formatAvailabilityForUI({
+					from: from ? new Date(from) : null,
+					to: to ? new Date(to) : null,
+				});
 			},
+			tooltipValueGetter: (p) => p.value ?? "",
+			cellRenderer: ({ value }: any) => (
+				<Text size="xs" c="gray.9" fw={500} title={value ?? ""}>
+					{value ?? "—"}
+				</Text>
+			),
 		},
+
 		{
 			field: "status",
-			flex: 1,
+			headerName: "Status",
+			width: 150,
+			minWidth: 140,
 			sortable: false,
 			filter: false,
+			tooltipValueGetter: (p) => p?.value ?? "",
 			cellRenderer: ({ value }: any) => {
 				const v = value ?? "Available";
 				const found = find(filtersData.status, { value: v });
@@ -173,86 +203,57 @@ const CampaignSelectorTable = () => {
 				);
 			},
 		},
+
 		{
 			field: "actions",
-			headerClass: "ag-right-aligned-header",
-			...(unitedView && { pinned: "right" }),
+			headerName: "Actions",
+			pinned: "right",
+			lockPinned: true,
+			width: 210,
+			minWidth: 190,
 			sortable: false,
 			filter: false,
 			cellRenderer: ({ data }: any) => {
 				const id = data?.id ?? null;
 				if (!id) return null;
 				return (
-					<>
-						<Flex
-							justify="flex-end"
-							align="center"
-							gap={0}
-							w={"inherit"}
-							pr={isSelections ? 0 : 60}
+					<Flex justify="flex-end" align="center" gap={8} w="inherit">
+						<Button
+							variant="subtle"
+							color="violet"
+							radius={10}
+							size="xs"
+							c="gray.9"
+							onClick={() => setMode({ type: "view", id })}
 						>
-							<Flex align="center" gap={8}>
-								<Button
-									variant="subtle"
-									color="violet"
-									radius={10}
-									size="xs"
-									c="gray.9"
-									onClick={() =>
-										setMode({ type: "view", id })
-									}
-								>
-									View
-								</Button>
-								{isSelections || data.selected ? (
-									<Button
-										size="xs"
-										radius={10}
-										color={
-											data?.category === "Event"
-												? "violet"
-												: "red.4"
-										}
-										leftSection={<IconEdit size={14} />}
-										onClick={() =>
-											setMode({ type: "edit", id })
-										}
-									>
-										Edit
-									</Button>
-								) : (
-									<Button
-										size="xs"
-										radius={10}
-										color="blue.3"
-										leftSection={<IconPlus size={14} />}
-										onClick={() =>
-											setMode({ type: "add", id })
-										}
-									>
-										Add
-									</Button>
-								)}
-							</Flex>
-						</Flex>
-
-						<Edit
-							selection={data}
-							opened={mode.type === "edit" && mode.id === id}
-							closeModal={() => setMode({ type: null, id: null })}
-						/>
-						<View
-							c={data}
-							mode={mode.type as any}
-							opened={
-								(mode.type === "view" || mode.type === "add") &&
-								mode.id === id
-							}
-							closeDrawer={() =>
-								setMode({ type: null, id: null })
-							}
-						/>
-					</>
+							View
+						</Button>
+						{isSelections || data.selected ? (
+							<Button
+								size="xs"
+								radius={10}
+								color={
+									data?.category === "Event"
+										? "violet"
+										: "red.4"
+								}
+								leftSection={<IconEdit size={14} />}
+								onClick={() => setMode({ type: "edit", id })}
+							>
+								Edit
+							</Button>
+						) : (
+							<Button
+								size="xs"
+								radius={10}
+								color="blue.3"
+								leftSection={<IconPlus size={14} />}
+								onClick={() => setMode({ type: "add", id })}
+							>
+								Add
+							</Button>
+						)}
+					</Flex>
 				);
 			},
 		},

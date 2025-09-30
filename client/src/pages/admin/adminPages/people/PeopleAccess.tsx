@@ -7,6 +7,7 @@ import {
 	Select,
 	TextInput,
 	useMantineTheme,
+	Group,
 } from "@mantine/core";
 import filtersData from "@/filters.json";
 import { IconSearch } from "@tabler/icons-react";
@@ -14,9 +15,14 @@ import { useDebouncedValue } from "@mantine/hooks";
 import { useMemo, useState } from "react";
 import PeopleAccessTable from "./PeopleAccessTable";
 import useUsers from "@/pages/auth/auth.hooks";
+import AddUserModal from "./AddUserModal";
+import { useAuth } from "@/shared/AuthProvider";
+import { UserRoles } from "@/shared/shared.models";
+import AllowedUsersCsvUploader from "./AllowedUsersCsvUploader";
 
 const PeopleAccess = () => {
 	const T = useMantineTheme().colors;
+	const { role: signedInUserRole } = useAuth();
 	const [role, setRole] = useState("all");
 
 	// Local search (debounced)
@@ -104,12 +110,21 @@ const PeopleAccess = () => {
 				shadow="xs"
 			>
 				<Stack gap={30}>
-					<Title order={3}>
-						Users{" "}
-						<Text span fz={"h3"} fw={700} c={"blue.3"}>
-							({filteredUsers?.length ?? 0})
-						</Text>
-					</Title>
+					<Group justify="space-between">
+						<Title order={3}>
+							Users{" "}
+							<Text span fz={"h3"} fw={700} c={"blue.3"}>
+								({filteredUsers?.length ?? 0})
+							</Text>
+						</Title>
+
+						{signedInUserRole === UserRoles.SuperAdmin && (
+							<Group>
+								<AddUserModal />
+								<AllowedUsersCsvUploader />
+							</Group>
+						)}
+					</Group>
 					<PeopleAccessTable
 						users={filteredUsers}
 						loading={isFetching}

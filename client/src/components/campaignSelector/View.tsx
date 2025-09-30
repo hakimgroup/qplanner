@@ -360,21 +360,23 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 							)}
 						</Stack>
 
-						<StyledButton
-							alignLeft
-							bg={"lime.0"}
-							fullWidth
-							leftSection={
-								<IconShare3
-									size={18}
-									color={T.colors.gray[9]}
-								/>
-							}
-							style={{ justifyContent: "flex-start" }}
-							onClick={() => navigate(AppRoutes.FAQs)}
-						>
-							Full FAQs
-						</StyledButton>
+						{!isAdd && (
+							<StyledButton
+								alignLeft
+								bg={"lime.0"}
+								fullWidth
+								leftSection={
+									<IconShare3
+										size={18}
+										color={T.colors.gray[9]}
+									/>
+								}
+								style={{ justifyContent: "flex-start" }}
+								onClick={() => navigate(AppRoutes.FAQs)}
+							>
+								Full FAQs
+							</StyledButton>
+						)}
 					</Stack>
 
 					{c.selected && (
@@ -414,7 +416,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 						</>
 					)}
 
-					{isAdd && !addOpened && (
+					{!addOpened && !c.selected && (
 						<>
 							<Divider size={"xs"} color="gray.1" />
 							<Button

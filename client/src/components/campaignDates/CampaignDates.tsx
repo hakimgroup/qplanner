@@ -2,6 +2,7 @@ import { Stack, Flex, Text, Group, Box, MantineSize } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { ReactNode } from "react";
 import { startOfDay, isAfter, isBefore } from "date-fns";
+import { IconAsterisk } from "@tabler/icons-react";
 
 interface CampaignDatesProps {
 	title?: string;
@@ -17,6 +18,7 @@ interface CampaignDatesProps {
 	titleLabelSize?: MantineSize;
 	inputSize?: MantineSize;
 	gap?: number;
+	required?: boolean;
 
 	/** Optional bounds: when BOTH are provided, user can only pick within [minDate, maxDate] */
 	minDate?: Date;
@@ -43,6 +45,7 @@ const CampaignDates = ({
 	minDate,
 	maxDate,
 	isSingleDate = false,
+	required = false,
 }: CampaignDatesProps) => {
 	const hasBounds = !!minDate && !!maxDate;
 
@@ -105,6 +108,7 @@ const CampaignDates = ({
 				<DateInput
 					w="100%"
 					pointer
+					clearable
 					size={inputSize}
 					radius={10}
 					valueFormat="DD MMM YYYY"
@@ -112,9 +116,12 @@ const CampaignDates = ({
 					value={dateRange.from}
 					onChange={handleFromChange}
 					label={
-						<Text size={labelSize} c="gray.9" fw={500}>
-							{startLabel}
-						</Text>
+						<Group align="flex-start" gap={3}>
+							<Text size={labelSize} c="gray.9" fw={500}>
+								{startLabel}
+							</Text>
+							{required && <IconAsterisk size={9} color="red" />}
+						</Group>
 					}
 					placeholder={startPlaceholder}
 					{...(hasBounds ? { minDate: minN!, maxDate: maxN! } : {})}
@@ -127,6 +134,7 @@ const CampaignDates = ({
 					<DateInput
 						w="100%"
 						pointer
+						clearable
 						size={inputSize}
 						radius={10}
 						valueFormat="DD MMM YYYY"
@@ -134,9 +142,14 @@ const CampaignDates = ({
 						value={dateRange.to}
 						onChange={handleToChange}
 						label={
-							<Text size={labelSize} c="gray.9" fw={500}>
-								{endLabel}
-							</Text>
+							<Group align="flex-start" gap={3}>
+								<Text size={labelSize} c="gray.9" fw={500}>
+									{endLabel}
+								</Text>
+								{required && (
+									<IconAsterisk size={9} color="red" />
+								)}
+							</Group>
 						}
 						placeholder={endPlaceholder}
 						{...(hasBounds

@@ -111,14 +111,10 @@ const Plans = () => {
 								searchable
 								radius={10}
 								placeholder="Select Practices"
-								data={[
-									{ label: "All Practices", value: "all" },
-								].concat(
-									practices.map((p) => ({
-										label: p.name,
-										value: p.id,
-									}))
-								)}
+								data={practices.map((p) => ({
+									label: p.name,
+									value: p.id,
+								}))}
 								value={plansFilters.practiceIds}
 								onChange={(v) =>
 									setPlansFilters({
@@ -193,7 +189,7 @@ const Plans = () => {
 										}
 									/>
 								</Grid.Col>
-								<Grid.Col span={1.5}>
+								{/* <Grid.Col span={1.5}>
 									<Select
 										size="sm"
 										radius={10}
@@ -211,7 +207,7 @@ const Plans = () => {
 											})
 										}
 									/>
-								</Grid.Col>
+								</Grid.Col> */}
 								<Grid.Col span={1.5}>
 									<StyledButton
 										leftSection={<IconDownload size={16} />}

@@ -1,4 +1,3 @@
-import { useSignout } from "@/pages/auth/auth.hooks";
 import { AppRoutes } from "@/shared/shared.models";
 import {
 	Avatar,
@@ -32,12 +31,14 @@ import Notification from "../notification/Notification";
 import StyledButton from "../styledButton/StyledButton";
 import { useNavPreset } from "@/shared/shared.hooks";
 import { signOutSafe } from "@/api/auth";
+import { startCase } from "lodash";
+import { userRoleColors } from "@/shared/shared.const";
 
 const Nav = () => {
 	const T = useMantineTheme();
 	const navigate = useNavigate();
 	const { pathname } = useLocation();
-	const { user, isAdmin } = useAuth();
+	const { user, isAdmin, role } = useAuth();
 	const name = `${user?.identities[0].identity_data.first_name} ${user?.identities[0].identity_data.last_name}`;
 	const isUserView = [AppRoutes.Dashboard, AppRoutes.FAQs].includes(
 		pathname as any
@@ -181,7 +182,9 @@ const Nav = () => {
 										<Text size="sm" fw={600}>
 											{name}
 										</Text>
-										<Badge color="red.4">Admin</Badge>
+										<Badge color={userRoleColors[role]}>
+											{startCase(role)}
+										</Badge>
 									</Stack>
 								</Group>
 							</Menu.Target>

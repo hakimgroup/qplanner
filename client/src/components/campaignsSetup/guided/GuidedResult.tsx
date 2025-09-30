@@ -16,6 +16,7 @@ import { BadgeList } from "@/components/badgeList/BadgeList";
 import { useBulkAddCampaigns } from "@/hooks/campaign.hooks";
 import { toast } from "sonner";
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
+import { useState } from "react";
 
 interface Props {
 	data: GuidedCampaign[];
@@ -24,6 +25,7 @@ interface Props {
 
 const GuidedResult = ({ data, goBack }: Props) => {
 	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaigns();
+	const [dt, setDt] = useState(data);
 
 	const handleConfirm = () => {
 		bulkAdd(
@@ -70,7 +72,7 @@ const GuidedResult = ({ data, goBack }: Props) => {
 			<Divider size={"xs"} color="gray.1" />
 
 			<Stack gap={10}>
-				{data.map((d) => (
+				{dt.map((d) => (
 					<Card
 						radius={10}
 						p={15}
@@ -129,6 +131,13 @@ const GuidedResult = ({ data, goBack }: Props) => {
 									<StyledButton
 										size="xs"
 										leftSection={<IconTrash size={14} />}
+										onClick={() => {
+											setDt(
+												dt.filter(
+													(it) => d.id !== it.id
+												)
+											);
+										}}
 									>
 										Remove Selection
 									</StyledButton>
@@ -148,7 +157,7 @@ const GuidedResult = ({ data, goBack }: Props) => {
 					leftSection={<IconCircleCheck size={18} />}
 					onClick={handleConfirm}
 				>
-					Add {data.length} Campaigns
+					Add {dt.length} Campaigns
 				</Button>
 			</Flex>
 		</Stack>

@@ -1,4 +1,5 @@
 // NotificationsComingSoonLight.tsx
+import { AppRoutes } from "@/shared/shared.models";
 import {
 	Badge,
 	Box,
@@ -13,6 +14,7 @@ import {
 	useMantineTheme,
 } from "@mantine/core";
 import { IconBell, IconSparkles } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
 	onPrimary?: () => void; // e.g., go back to Dashboard
@@ -28,6 +30,7 @@ export default function NotificationsComingSoonLight({
 	secondaryLabel = "View roadmap",
 }: Props) {
 	const T = useMantineTheme().colors;
+	const navigate = useNavigate();
 
 	return (
 		<Box component="section" bg="#fafafa">
@@ -119,7 +122,10 @@ export default function NotificationsComingSoonLight({
 
 					{/* Actions (optional) */}
 					<Group gap="sm" mt={6}>
-						<Button radius="md" onClick={onPrimary}>
+						<Button
+							radius="md"
+							onClick={() => navigate(AppRoutes.Dashboard)}
+						>
 							{primaryLabel}
 						</Button>
 						{onSecondary && (

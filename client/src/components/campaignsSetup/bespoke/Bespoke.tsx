@@ -18,7 +18,12 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
-import { IconCalendar, IconPlus, IconTrash } from "@tabler/icons-react";
+import {
+	IconAsterisk,
+	IconCalendar,
+	IconPlus,
+	IconTrash,
+} from "@tabler/icons-react";
 import { useCallback, useMemo, useState } from "react";
 import filtersData from "@/filters.json";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
@@ -122,7 +127,6 @@ const Bespoke = ({
 
 		// Choose first non-empty link for more_info_link (optional)
 		const cleanedLinks = links.map((l) => l.trim()).filter(Boolean);
-		const more_info_link = cleanedLinks[0] ?? null;
 
 		// Compose contextual notes (keep user-entered notes prominent)
 		const extraParts: string[] = [];
@@ -147,7 +151,6 @@ const Bespoke = ({
 				notes: composedNotes,
 				objectives, // string[] -> jsonb via supabase client
 				topics,
-				more_info_link,
 				assets, // jsonb
 				reference_links: cleanedLinks,
 			},
@@ -225,6 +228,7 @@ const Bespoke = ({
 						/>
 
 						<CampaignDates
+							required
 							title="Preferred Dates"
 							icon={<IconCalendar size={16} />}
 							dateRange={form.values.dateRange}
@@ -245,9 +249,13 @@ const Bespoke = ({
 						)}
 
 						<Stack gap={10}>
-							<Text size="md" c="gray.9" fw={500}>
-								Objectives
-							</Text>
+							<Group align="flex-start" gap={3}>
+								<Text size="md" c="gray.9" fw={500}>
+									Objectives
+								</Text>
+								<IconAsterisk size={9} color="red" />
+							</Group>
+
 							<Chip.Group
 								multiple
 								value={form.values.objectives}
@@ -284,9 +292,12 @@ const Bespoke = ({
 						</Stack>
 
 						<Stack gap={10}>
-							<Text size="md" c="gray.9" fw={500}>
-								Categories
-							</Text>
+							<Group align="flex-start" gap={3}>
+								<Text size="md" c="gray.9" fw={500}>
+									Categories
+								</Text>
+								<IconAsterisk size={9} color="red" />
+							</Group>
 							<Chip.Group
 								multiple
 								value={form.values.topics}
@@ -321,9 +332,12 @@ const Bespoke = ({
 						</Stack>
 
 						<Stack gap={10}>
-							<Text size="md" c="gray.9" fw={500}>
-								Required Assets
-							</Text>
+							<Group align="flex-start" gap={3}>
+								<Text size="md" c="gray.9" fw={500}>
+									Required Assets
+								</Text>
+								<IconAsterisk size={9} color="red" />
+							</Group>
 							<Checkbox.Group
 								value={form.values.assets}
 								onChange={(v) =>

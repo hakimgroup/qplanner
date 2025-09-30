@@ -21,6 +21,7 @@ import {
 	IconBuildings,
 	IconBell,
 	IconUsers,
+	IconLogs,
 } from "@tabler/icons-react";
 import { AppRoutes } from "@/shared/shared.models";
 import cl from "./admin.module.scss";
@@ -95,6 +96,11 @@ export default function AdminSidebar({
 					to: `${AppRoutes.Admin}/${AppRoutes.PeopleAccess}`,
 					label: "People and Access",
 					icon: <IconUsers size={18} />,
+				},
+				{
+					to: `${AppRoutes.Admin}/${AppRoutes.AuditLogs}`,
+					label: "Audit Logs",
+					icon: <IconLogs size={18} />,
 				},
 			],
 		},

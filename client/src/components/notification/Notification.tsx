@@ -46,7 +46,14 @@ const Notification = () => {
 
 	return (
 		<>
-			<Indicator inline label="5" size={19} color="red" offset={5}>
+			<Indicator
+				inline
+				label="5"
+				size={19}
+				color="red"
+				offset={5}
+				disabled
+			>
 				<ActionIcon
 					variant="subtle"
 					size="lg"

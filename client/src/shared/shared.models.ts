@@ -8,6 +8,7 @@ export enum AppRoutes {
 	Bespoke = "bespoke",
 	Practices = "practices",
 	PeopleAccess = "people-and-access",
+	AuditLogs = "audit-logs",
 	Settings = "settings",
 	Help = "help-and-support",
 	Notifications = "notifications",

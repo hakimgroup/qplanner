@@ -48,7 +48,6 @@ export const useCreateBespokeSelection = () => {
 				notes = null,
 				objectives = [],
 				topics = [],
-				more_info_link = null,
 				assets = [],
 				reference_links,
 			} = input;
@@ -68,7 +67,6 @@ export const useCreateBespokeSelection = () => {
 					p_notes: notes,
 					p_objectives: objectives, // supabase js client serializes to jsonb
 					p_topics: topics,
-					p_more_info_link: more_info_link,
 					p_assets: assets,
 					p_reference_links: reference_links,
 				}

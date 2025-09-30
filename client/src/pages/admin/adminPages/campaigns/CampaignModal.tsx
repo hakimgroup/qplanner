@@ -13,13 +13,15 @@ import {
 	ActionIcon,
 	Grid,
 } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
+// ⬇️ Removed DateInput import
+// import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import filtersData from "@/filters.json";
 import { useUpsertCatalogCampaign } from "@/hooks/campaign.hooks";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { useState } from "react";
+import CampaignDates from "@/components/campaignDates/CampaignDates";
 
 type Props = {
 	opened: boolean;
@@ -145,20 +147,20 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 						/>
 					</SimpleGrid>
 
-					<SimpleGrid cols={{ base: 1, sm: 2 }}>
-						<DateInput
-							radius={10}
-							label="From"
-							value={form.values.from}
-							onChange={(d) => form.setFieldValue("from", d)}
-						/>
-						<DateInput
-							radius={10}
-							label="To"
-							value={form.values.to}
-							onChange={(d) => form.setFieldValue("to", d)}
-						/>
-					</SimpleGrid>
+					<CampaignDates
+						dateRange={{
+							from: form.values.from,
+							to: form.values.to,
+						}}
+						onChange={({ from, to }) => {
+							form.setFieldValue("from", from);
+							form.setFieldValue("to", to);
+						}}
+						startLabel="From"
+						endLabel="To"
+						inputSize="sm"
+						gap={20}
+					/>
 
 					<Select
 						radius={10}

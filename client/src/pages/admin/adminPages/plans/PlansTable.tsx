@@ -38,27 +38,42 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
 		const colDefs: ColDef[] = [
 			{
 				field: "practice",
-				flex: 1,
+				headerName: "Practice",
+				flex: 1.2, // grows on wide screens
+				minWidth: 200, // but never collapse below this
+				tooltipField: "practice",
 				cellRenderer: ({ value }) => (
-					<Text size="sm" c="gray.9">
+					<Text size="sm" c="gray.9" title={value ?? ""}>
 						{value}
 					</Text>
 				),
 			},
+
 			{
 				field: "campaign",
-				width: 250,
+				headerName: "Campaign",
+				flex: 2, // primary text column can grow
+				minWidth: 260,
+				tooltipField: "campaign",
 				cellRenderer: ({ value }) => (
-					<Text size="sm" c="gray.9">
+					<Text
+						size="sm"
+						c="gray.9"
+						title={value ?? ""}
+						lineClamp={1}
+					>
 						{value}
 					</Text>
 				),
 			},
+
 			{
 				field: "category",
 				headerName: "Activity",
+				width: 160,
+				minWidth: 140,
 				sortable: false,
-				width: 180,
+				tooltipField: "category",
 				cellRenderer: ({ value }) => (
 					<Badge
 						variant="light"
@@ -71,10 +86,13 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
 					</Badge>
 				),
 			},
+
 			{
 				field: "source",
+				headerName: "Source",
+				width: 130,
+				minWidth: 120,
 				sortable: false,
-				width: 120,
 				cellRenderer: ({ value }) => (
 					<Badge
 						variant="light"
@@ -87,10 +105,13 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
 					</Badge>
 				),
 			},
+
 			{
 				field: "status",
+				headerName: "Status",
+				width: 160,
+				minWidth: 140,
 				sortable: false,
-				width: 170,
 				cellRenderer: ({ value }) => (
 					<Badge
 						variant="light"
@@ -103,61 +124,76 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
 					</Badge>
 				),
 			},
-			{
-				field: "from",
-				headerName: "From",
-				hide: true,
-			},
-			{
-				field: "end",
-				headerName: "To",
-				hide: true,
-			},
+
+			// keep raw dates hidden (useful if you filter later)
+			{ field: "from", headerName: "From", hide: true },
+			{ field: "end", headerName: "To", hide: true },
+
 			{
 				field: "av",
-				headerName: "Availability",
-				width: 190,
+				headerName: "Dates",
+				width: 200,
+				minWidth: 180,
 				sortable: false,
 				filter: false,
-				cellRenderer: (p) => {
-					const from: Date | null = p?.data?.from ?? null;
-					const to: Date | null = p?.data?.end ?? null;
-					return (
-						<Text size="xs" c="gray.9" fw={500}>
-							{p.data.category === "Event"
-								? format(from, "MMMM dd, yyyy")
-								: formatAvailabilityForUI({ from, to })}
-						</Text>
-					);
+				valueGetter: (p) => {
+					const from = p?.data?.from ?? null;
+					const to = p?.data?.end ?? null;
+
+					if (p?.data?.category === "Event") {
+						return from
+							? format(new Date(from), "MMMM dd, yyyy")
+							: "—";
+					}
+					return formatAvailabilityForUI({
+						from: from ? new Date(from) : null,
+						to: to ? new Date(to) : null,
+					});
 				},
-			},
-			{
-				field: "updated_at",
-				headerName: "Last Updated",
-				sortable: false,
-				filter: false,
 				cellRenderer: ({ value }) => (
-					<Text size="xs" c="gray.9" fw={500}>
-						{format(value, "MMM dd, yyyy")}
+					<Text size="xs" c="gray.9" fw={500} title={value ?? ""}>
+						{value ?? "—"}
 					</Text>
 				),
 			},
+
 			{
-				field: "",
-				headerName: "Actions",
+				field: "updated_at",
+				headerName: "Last Updated",
+				width: 150,
+				minWidth: 140,
 				sortable: false,
-				flex: 1,
+				filter: false,
+				valueFormatter: (p) =>
+					p.value ? format(new Date(p.value), "MMM dd, yyyy") : "—",
+				cellRenderer: ({ value }) => (
+					<Text size="xs" c="gray.9" fw={500}>
+						{" "}
+						{format(value, "MMM dd, yyyy")}{" "}
+					</Text>
+				),
+			},
+
+			{
+				field: "actions",
+				headerName: "Actions",
+				pinned: "right",
+				lockPinned: true,
+				width: 120,
+				minWidth: 110,
+				sortable: false,
 				filter: false,
 				cellRenderer: (p) => (
-					<Stack>
+					<Stack align="flex-end" gap={6}>
 						<ActionIcon
 							variant="subtle"
-							size={"input-sm"}
+							size="xl"
 							radius={10}
 							color="violet.9"
 							onClick={() => setRow(p.data)}
+							aria-label="View"
 						>
-							<IconEye size={23} />
+							<IconEye size={25} />
 						</ActionIcon>
 
 						<PlansActions

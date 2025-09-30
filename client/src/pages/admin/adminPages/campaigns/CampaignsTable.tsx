@@ -50,112 +50,140 @@ const CampaignsTable = forwardRef<
 		getSelectedIds: () => selectedIdsRef.current,
 	}));
 
-	const cols = useMemo<ColDef[]>(
-		() => [
-			{
-				field: "name",
-				headerName: "Campaign",
-				flex: 2,
-				cellRenderer: ({ data }) => (
-					<Stack gap={2}>
-						<Text size="sm" fw={600} lineClamp={1}>
-							{data?.name}
-						</Text>
-						<Text size="xs" c="gray.6" lineClamp={1}>
-							{data?.description || "—"}
-						</Text>
-					</Stack>
-				),
-			},
-			{
-				field: "category",
-				headerName: "Activity",
-				width: 160,
-				cellRenderer: ({ value }) => (
-					<Badge
-						variant="light"
-						color={activityColors[value]}
+	const cols: ColDef[] = [
+		{
+			field: "name",
+			headerName: "Campaign",
+			flex: 2, // grows on wide screens
+			minWidth: 260, // don’t shrink below this
+			tooltipField: "name",
+			cellRenderer: ({ data }) => (
+				<Stack gap={2}>
+					<Text
 						size="sm"
-						fw={700}
-						style={{ border: `1px solid ${T.blue[0]}` }}
+						fw={600}
+						lineClamp={1}
+						title={data?.name ?? ""}
 					>
-						{value}
-					</Badge>
-				),
-			},
-			{
-				field: "tier",
-				headerName: "Tier",
-				width: 200,
-				cellRenderer: (p) => <TierCell row={p.data} />,
-				sortable: false,
-				filter: false,
-			},
-			{
-				field: "objectives",
-				headerName: "Objectives",
-				flex: 1,
-				sortable: false,
-				filter: false,
-				cellRenderer: ({ value }) => (
-					<BadgeList items={Array.isArray(value) ? value : []} />
-				),
-			},
-			{
-				field: "topics",
-				headerName: "Topics",
-				flex: 1,
-				sortable: false,
-				filter: false,
-				cellRenderer: ({ value }) => (
-					<BadgeList
-						items={Array.isArray(value) ? value : []}
-						firstBadgeColor="gray.1"
-						firstBadgeVariant="outline"
-						firstBadgeTextColor="gray.9"
-					/>
-				),
-			},
-			{
-				field: "availability",
-				headerName: "Availability",
-				width: 220,
-				sortable: false,
-				filter: false,
-				cellRenderer: ({ value }) => {
-					return (
-						<Text size="xs" c="gray.9" fw={500}>
-							{formatAvailabilityForUI({
-								from: value?.from,
-								to: value?.to,
-							})}
-						</Text>
-					);
-				},
-			},
+						{data?.name}
+					</Text>
+					<Text
+						size="xs"
+						c="gray.6"
+						lineClamp={1}
+						title={data?.description ?? ""}
+					>
+						{data?.description || "—"}
+					</Text>
+				</Stack>
+			),
+		},
 
-			{
-				field: "actions",
-				headerName: "Actions",
-				sortable: false,
-				filter: false,
-				width: 120,
-				cellRenderer: ({ data }) => (
-					<Group justify="flex-end">
-						<Button
-							size="xs"
-							variant="light"
-							leftSection={<IconEdit size={14} />}
-							onClick={() => onEdit(data)}
-						>
-							Edit
-						</Button>
-					</Group>
-				),
+		{
+			field: "category",
+			headerName: "Activity",
+			width: 160,
+			minWidth: 140,
+			sortable: false,
+			tooltipField: "category",
+			cellRenderer: ({ value }) => (
+				<Badge
+					variant="light"
+					color={activityColors[value]}
+					size="sm"
+					fw={700}
+					style={{ border: `1px solid ${T.blue[0]}` }}
+				>
+					{value}
+				</Badge>
+			),
+		},
+
+		{
+			field: "tier",
+			headerName: "Tier",
+			width: 200,
+			minWidth: 170,
+			sortable: false,
+			filter: false,
+			cellRenderer: (p) => <TierCell row={p.data} />,
+		},
+
+		{
+			field: "objectives",
+			headerName: "Objectives",
+			flex: 1,
+			minWidth: 200,
+			sortable: false,
+			filter: false,
+			cellRenderer: ({ value }) => (
+				<BadgeList items={Array.isArray(value) ? value : []} />
+			),
+		},
+
+		{
+			field: "topics",
+			headerName: "Topics",
+			flex: 1,
+			minWidth: 220,
+			sortable: false,
+			filter: false,
+			cellRenderer: ({ value }) => (
+				<BadgeList
+					items={Array.isArray(value) ? value : []}
+					firstBadgeColor="gray.1"
+					firstBadgeVariant="outline"
+					firstBadgeTextColor="gray.9"
+				/>
+			),
+		},
+
+		{
+			field: "availability",
+			headerName: "Dates",
+			width: 220,
+			minWidth: 200,
+			sortable: false,
+			filter: false,
+			valueGetter: (p) => {
+				const v = p.data?.availability ?? null;
+				return (
+					formatAvailabilityForUI({
+						from: v?.from ?? null,
+						to: v?.to ?? null,
+					}) || "—"
+				);
 			},
-		],
-		[onEdit]
-	);
+			cellRenderer: ({ value }) => (
+				<Text size="xs" c="gray.9" fw={500} title={value ?? ""}>
+					{value ?? "—"}
+				</Text>
+			),
+		},
+
+		{
+			field: "actions",
+			headerName: "Actions",
+			pinned: "right",
+			lockPinned: true,
+			width: 130,
+			minWidth: 120,
+			sortable: false,
+			filter: false,
+			cellRenderer: ({ data }) => (
+				<Group justify="flex-end">
+					<Button
+						size="xs"
+						variant="light"
+						leftSection={<IconEdit size={14} />}
+						onClick={() => onEdit(data)}
+					>
+						Edit
+					</Button>
+				</Group>
+			),
+		},
+	];
 
 	return (
 		<Table

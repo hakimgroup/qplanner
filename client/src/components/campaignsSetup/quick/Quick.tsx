@@ -93,19 +93,12 @@ const Quick = () => {
 			description: "Maximum impact with always-on strategy",
 			numberOfCampaigns: 10,
 			numberOfEvents: 4,
-			inclusions: bestIds,
-			includedCampaigns: [
-				"2002ba6c-2d6c-474f-a5f1-e053485746ae",
-				"2204bb97-71df-40b7-b1fb-038496fe58b9",
-				"227f93b6-622c-44ef-80fd-5f0d053e6e59",
-				"229a2614-9c9e-41ee-8f37-27fdd850e0e0",
-				"24000a55-eb0d-4548-adad-c5f442bf96cf",
-				"256ffef6-e104-4067-921b-9e04a8a1b6a2",
-				"2979de53-f683-4647-8f73-3f4b7fb0a56c",
-				"30d21922-d54d-4c21-9933-514daa993035",
-				"30ed5941-21b1-43b0-8dd1-2aab03b9e976",
-				"338d48fd-d0d7-4e0d-bf96-bfbcfdc3a0f6",
+			inclusions: [
+				"10 campaigns for the year",
+				"Always-on: Google Reviews Pack + monthly pulses (all year)",
+				"2 seasonal events and 2 brand activations",
 			],
+			includedCampaigns: bestIds,
 		},
 	];
 

@@ -213,7 +213,6 @@ const Guided = () => {
 						data={data}
 						goBack={() => {
 							closeResults();
-							close();
 						}}
 					/>
 				)}
@@ -397,7 +396,14 @@ const Guided = () => {
 						</Card>
 
 						<Flex justify={"flex-end"} mt={15} gap={8}>
-							<StyledButton>Cancel</StyledButton>
+							<StyledButton
+								onClick={() => {
+									close();
+									closeResults();
+								}}
+							>
+								Cancel
+							</StyledButton>
 							<Button
 								radius={10}
 								color="blue.3"

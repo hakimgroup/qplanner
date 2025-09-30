@@ -68,7 +68,6 @@ export type CreateBespokeInput = {
 	notes?: string | null;
 	objectives?: string[]; // will be sent as jsonb
 	topics?: string[]; // will be sent as jsonb
-	more_info_link?: string | null;
 	reference_links?: string[];
 	assets?: unknown; // any JSON-serializable shape (jsonb)
 };

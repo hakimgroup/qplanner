@@ -108,3 +108,25 @@ export function useUpdateUser() {
 		},
 	});
 }
+
+export function useDeleteAllowedUser() {
+	const qc = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (id: string) => {
+			if (!id) throw new Error("Missing user id");
+			const { error } = await supabase
+				.from(DatabaseTables.Allowed_Users) // 'allowed_users'
+				.delete()
+				.eq("id", id);
+
+			if (error) throw error;
+			return id;
+		},
+		onSuccess: () => {
+			toast.success("User deleted successfully!!");
+			// Invalidate whatever you use to fetch the users list
+			qc.invalidateQueries({ queryKey: [DatabaseTables.Allowed_Users] });
+		},
+	});
+}
