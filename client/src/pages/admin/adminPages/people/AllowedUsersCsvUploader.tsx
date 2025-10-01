@@ -1,4 +1,3 @@
-// components/admin/allowed-users/AllowedUsersCsvUploader.tsx
 import { useState, useMemo } from "react";
 import {
 	Badge,
@@ -12,6 +11,7 @@ import {
 	Alert,
 	ActionIcon,
 	useMantineTheme,
+	Flex,
 } from "@mantine/core";
 import {
 	IconCloudUpload,
@@ -22,7 +22,11 @@ import {
 import Papa from "papaparse";
 import { supabase } from "@/api/supabase";
 import StyledButton from "@/components/styledButton/StyledButton";
-import { DatabaseTables, UserRoles } from "@/shared/shared.models";
+import {
+	DatabaseTables,
+	RPCFunctions,
+	UserRoles,
+} from "@/shared/shared.models";
 import { userRoleColors } from "@/shared/shared.const";
 import { startCase } from "lodash";
 import Table from "@/components/table/Table";
@@ -30,23 +34,58 @@ import { ColDef } from "ag-grid-community";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+// -------------------------------
+// Types / helpers
+// -------------------------------
+type Role = "user" | "admin" | "super_admin";
 type Row = {
 	email: string;
 	first_name?: string;
 	last_name?: string;
-	role?: "user" | "admin" | "super_admin";
-	_row?: number; // UI only
-	_error?: string | null; // UI only
+	role?: Role;
+
+	// raw strings from CSV (optional)
+	practice_ids_raw?: string; // e.g. "uuid1; uuid2" or '["uuid1","uuid2"]'
+	practice_names_raw?: string; // e.g. "Downtown Clinic; West End"
+
+	// normalized arrays sent to the RPC
+	practice_ids?: string[]; // optional
+	practice_names?: string[]; // optional
+
+	_row?: number;
+	_error?: string | null;
 };
 
-const ALLOWED_ROLES = new Set(["user", "admin", "super_admin"]);
+const ALLOWED_ROLES = new Set<Role>(["user", "admin", "super_admin"]);
 
-const templateCsv = `email,first_name,last_name,role
-jane.doe@example.com,Jane,Doe,user
-john.manager@company.com,John,Manager,admin
-ops.lead@company.com,Ops,Lead,super_admin
-viewer@company.com,View,Only,user
+// Columns (order matters). Keep both *_raw columns so non-technical admins can use names.
+const templateCsv = `email,first_name,last_name,role,practice_names
+john.manager@company.com,John,Manager,admin,"Downtown Clinic; West End Practice"
+viewer@company.com,View,Only,user,
 `;
+
+const parseList = (v?: string): string[] | undefined => {
+	const raw = (v ?? "").trim();
+	if (!raw) return undefined;
+
+	// JSON array?
+	if (raw.startsWith("[") && raw.endsWith("]")) {
+		try {
+			const arr = JSON.parse(raw);
+			if (Array.isArray(arr)) {
+				return arr.map((x) => String(x).trim()).filter(Boolean);
+			}
+		} catch {
+			// fall through to split
+		}
+	}
+
+	// Semicolon or comma separated
+	return raw
+		.split(/[;,]/g)
+		.map((s) => s.trim())
+		.filter(Boolean);
+};
 
 function normalizeRow(r: any, idx: number): Row {
 	const email = String(r.email ?? "")
@@ -55,17 +94,39 @@ function normalizeRow(r: any, idx: number): Row {
 	const first_name = (r.first_name ?? "").toString().trim();
 	const last_name = (r.last_name ?? "").toString().trim();
 	const roleRaw = (r.role ?? "user").toString().trim().toLowerCase();
-	const role = (ALLOWED_ROLES.has(roleRaw) ? roleRaw : "user") as Row["role"];
+	const role = (
+		ALLOWED_ROLES.has(roleRaw as Role) ? roleRaw : "user"
+	) as Role;
+
+	const practice_ids_raw = (r.practice_ids ?? "").toString();
+	const practice_names_raw = (r.practice_names ?? "").toString();
+
+	const practice_ids = parseList(practice_ids_raw);
+	const practice_names = parseList(practice_names_raw);
 
 	let _error: string | null = null;
 	if (!email) _error = "Missing email";
 	else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
 		_error = "Invalid email";
-	else if (r.role && !ALLOWED_ROLES.has(roleRaw)) _error = "Invalid role";
+	else if (r.role && !ALLOWED_ROLES.has(role)) _error = "Invalid role";
 
-	return { email, first_name, last_name, role, _row: idx + 1, _error };
+	return {
+		email,
+		first_name,
+		last_name,
+		role,
+		practice_ids_raw,
+		practice_names_raw,
+		practice_ids,
+		practice_names,
+		_row: idx + 1,
+		_error,
+	};
 }
 
+// -------------------------------
+// Component
+// -------------------------------
 export default function AllowedUsersCsvUploader() {
 	const qc = useQueryClient();
 	const T = useMantineTheme().colors;
@@ -125,7 +186,7 @@ export default function AllowedUsersCsvUploader() {
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement("a");
 		a.href = url;
-		a.download = "allowed_users_template.csv";
+		a.download = "allowed_users_with_practices_template.csv";
 		a.click();
 		URL.revokeObjectURL(url);
 	};
@@ -136,27 +197,47 @@ export default function AllowedUsersCsvUploader() {
 
 		setSaving(true);
 		try {
+			// RPC expects an array of rows with (email, first_name, last_name, role, practice_ids[], practice_names[])
 			const payload = valid.map(
-				({ email, first_name, last_name, role }) => ({
+				({
+					email,
+					first_name,
+					last_name,
+					role,
+					practice_ids,
+					practice_names,
+				}) => ({
 					email,
 					first_name: first_name || null,
 					last_name: last_name || null,
 					role: role || "user",
+					practice_ids: practice_ids ?? null,
+					practice_names: practice_names ?? null,
 				})
 			);
 
-			const { error } = await supabase
-				.from(DatabaseTables.Allowed_Users)
-				.upsert(payload, {
-					onConflict: "email",
-					ignoreDuplicates: false,
-				});
+			const { data, error } = await supabase.rpc(
+				RPCFunctions.BulkUploadUsers,
+				{
+					p_rows: payload,
+				}
+			);
 
 			if (error) throw error;
 
+			// Optional: surface summary returned by RPC (if you implemented counts)
+			if (data?.summary) {
+				toast.success(
+					`Uploaded: ${data.summary.users_added} added, ${data.summary.users_updated} updated. Memberships: ${data.summary.memberships_added} added, ${data.summary.memberships_skipped} skipped.`
+				);
+			} else {
+				toast.success("Users uploaded successfully.");
+			}
+
 			handleClear();
 			setOpened(false);
-			toast.success("User added successfully!!");
+
+			// Invalidate any queries that list allowed users
 			qc.invalidateQueries({ queryKey: [DatabaseTables.Allowed_Users] });
 		} catch (e: any) {
 			setParsingErr(e?.message ?? "Failed to save users");
@@ -165,7 +246,7 @@ export default function AllowedUsersCsvUploader() {
 		}
 	};
 
-	// 🔹 AG Grid columns for the preview
+	// Preview table columns (AG Grid)
 	const colDefs: ColDef[] = useMemo(
 		() => [
 			{
@@ -197,6 +278,17 @@ export default function AllowedUsersCsvUploader() {
 					<Badge variant="light" color={userRoleColors[value]}>
 						{startCase(value)}
 					</Badge>
+				),
+			},
+			{
+				field: "practice_names_raw",
+				headerName: "Practice Names",
+				flex: 1.4,
+				minWidth: 220,
+				cellRenderer: ({ value }: any) => (
+					<Text size="sm" c="gray.7" fw={500}>
+						{value}
+					</Text>
 				),
 			},
 			{
@@ -247,31 +339,41 @@ export default function AllowedUsersCsvUploader() {
 						Bulk Upload — Allowed Users
 					</Text>
 				}
-				size="50rem"
+				size="60rem"
 				radius="md"
 				overlayProps={{ backgroundOpacity: 0.6, blur: 3 }}
 			>
 				<Stack gap="md">
-					<Text size="sm" c="gray.7">
-						Upload a CSV with headers:{" "}
-						<b>email, first_name, last_name, role</b>. Roles:{" "}
-						{[
-							UserRoles.User,
-							UserRoles.Admin,
-							UserRoles.SuperAdmin,
-						].map((u) => (
-							<Badge
-								ml={6}
-								variant="light"
-								color={userRoleColors[u]}
-								key={u}
-							>
-								{startCase(u)}
-							</Badge>
-						))}
-					</Text>
+					<Alert
+						color="gray"
+						styles={{ root: { alignItems: "start" } }}
+					>
+						<Text size="sm" c="gray.8" fw={600}>
+							CSV Columns (header row required)
+						</Text>
+						<Text size="sm" c="gray.7">
+							<b>email</b>, <b>first_name</b>, <b>last_name</b>,{" "}
+							<b>role</b>, <b>practice_ids</b>,{" "}
+							<b>practice_names</b>
+						</Text>
+						<Text size="sm" c="gray.7" mt={6}>
+							• <b>role</b>:{" "}
+							{["user", "admin", "super_admin"].join(", ")}{" "}
+							(defaults to <i>user</i>)
+						</Text>
+						<Text size="sm" c="gray.7">
+							• <b>practice_names</b>: either a JSON array (e.g.{" "}
+							<code>["Practice 1","Practice 2"]</code>) or a
+							semicolon/comma list (e.g.{" "}
+							<code>Practice 1; Practice 2</code>)
+						</Text>
+						<Text size="sm" c="gray.7">
+							• <b>practice_names</b> is optional if you don't
+							want to assign any practice.
+						</Text>
+					</Alert>
 
-					<Group justify="space-between" align="center">
+					<Flex justify="space-between" align="center">
 						<FileInput
 							placeholder="Select CSV file"
 							accept=".csv,text/csv"
@@ -291,7 +393,7 @@ export default function AllowedUsersCsvUploader() {
 								<IconTrash size={18} />
 							</ActionIcon>
 						)}
-					</Group>
+					</Flex>
 
 					{parsingErr && (
 						<Alert
@@ -328,7 +430,7 @@ export default function AllowedUsersCsvUploader() {
 								cols={colDefs}
 								enableSelection={false}
 								autoHeight
-								height={300}
+								height={360}
 								spacing={12}
 								loading={false}
 							/>

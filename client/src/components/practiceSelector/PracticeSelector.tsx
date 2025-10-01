@@ -15,11 +15,12 @@ import {
 	IconCircleFilled,
 	IconUsers,
 } from "@tabler/icons-react";
-import { Fragment, useContext, useMemo } from "react";
+import { Fragment, useContext, useMemo, useState } from "react";
 import cl from "./practiceSelector.module.scss";
 import { usePractice } from "@/shared/PracticeProvider"; // ⬅️ context
 import AppContext from "@/shared/AppContext";
 import { UserTabModes } from "@/models/general.models";
+import { truncate } from "lodash";
 
 type TargetProps = {
 	isAll?: boolean;
@@ -39,7 +40,7 @@ const TargetComponent = ({
 	const T = useMantineTheme();
 
 	return (
-		<Group gap={10} align="center">
+		<Flex gap={10} align="center">
 			{!hide && (
 				<Fragment>
 					{selected && (
@@ -56,7 +57,7 @@ const TargetComponent = ({
 					color={T.colors.blue[4]}
 				/>
 			)}
-			<Text size="sm" fw={500}>
+			<Text size="sm" fw={500} w="fit-content" truncate="end">
 				{isAll ? "United View" : name}
 			</Text>
 			{isAll && (
@@ -66,7 +67,7 @@ const TargetComponent = ({
 						: `All ${practicesCount}`}
 				</Badge>
 			)}
-		</Group>
+		</Flex>
 	);
 };
 
@@ -81,7 +82,7 @@ const PracticeSelector = () => {
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
 
 	const {
-		practices, // [{ id, name }, ...] limited by RLS to what the user can access
+		practices,
 		activePracticeId,
 		setActivePracticeId,
 		unitedView,
@@ -89,21 +90,26 @@ const PracticeSelector = () => {
 	} = usePractice();
 
 	const practicesCount = practices.length;
-
-	// Derive current selection token for the combobox ("all" or practice.id)
 	const selectedValue = unitedView ? "all" : activePracticeId ?? null;
 
-	// Resolve the display name for the selected practice (if not united)
 	const selectedPracticeName = useMemo(() => {
 		if (unitedView) return "United View";
 		const found = practices.find((p) => p.id === activePracticeId);
 		return found?.name ?? "Select a practice";
 	}, [unitedView, practices, activePracticeId]);
 
-	// Dropdown options from context
+	// 🔍 search state
+	const [search, setSearch] = useState("");
+	const filteredPractices = useMemo(() => {
+		if (!search.trim()) return practices;
+		return practices.filter((p) =>
+			p.name.toLowerCase().includes(search.toLowerCase())
+		);
+	}, [practices, search]);
+
 	const options = useMemo(
 		() =>
-			practices.map((p) => (
+			filteredPractices.map((p) => (
 				<Combobox.Option
 					value={p.id}
 					key={p.id}
@@ -116,13 +122,12 @@ const PracticeSelector = () => {
 					/>
 				</Combobox.Option>
 			)),
-		[practices, practicesCount, selectedValue]
+		[filteredPractices, practicesCount, selectedValue]
 	);
 
 	const handleSubmit = (val: string) => {
 		if (val === "all") {
 			setUnitedView(true);
-			// keep activePracticeId as-is in case the user toggles back
 		} else {
 			setUnitedView(false);
 			setActivePracticeId(val);
@@ -174,7 +179,21 @@ const PracticeSelector = () => {
 				</Combobox.Target>
 
 				<Combobox.Dropdown>
-					<Combobox.Options>
+					{/* 🔍 Search input */}
+					<Combobox.Search
+						placeholder="Search practices..."
+						value={search}
+						onChange={(event) =>
+							setSearch(event.currentTarget.value)
+						}
+					/>
+
+					<Combobox.Options
+						style={{
+							maxHeight: 250,
+							overflowY: "auto",
+						}}
+					>
 						{/* United View */}
 						<Combobox.Option
 							value="all"
@@ -197,12 +216,12 @@ const PracticeSelector = () => {
 								</Text>
 							}
 						>
-							{hasPractices ? (
+							{filteredPractices.length > 0 ? (
 								options
 							) : (
 								<Combobox.Empty>
 									<Text size="xs" c="gray.6">
-										No practices assigned
+										No practices found
 									</Text>
 								</Combobox.Empty>
 							)}
