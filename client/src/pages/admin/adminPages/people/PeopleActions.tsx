@@ -17,12 +17,7 @@ import {
 import { find, upperFirst } from "lodash";
 import { roles } from "@/filters.json";
 import { usePractice } from "@/shared/PracticeProvider";
-import {
-	IconCircleFilled,
-	IconEdit,
-	IconSearch,
-	IconX,
-} from "@tabler/icons-react";
+import { IconCircleFilled, IconEdit, IconSearch } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { useDebouncedValue } from "@mantine/hooks";
 import { useUpdateUser } from "@/pages/auth/auth.hooks";

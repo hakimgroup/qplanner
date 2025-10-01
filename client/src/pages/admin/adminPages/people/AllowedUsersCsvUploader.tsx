@@ -353,8 +353,7 @@ export default function AllowedUsersCsvUploader() {
 						</Text>
 						<Text size="sm" c="gray.7">
 							<b>email</b>, <b>first_name</b>, <b>last_name</b>,{" "}
-							<b>role</b>, <b>practice_ids</b>,{" "}
-							<b>practice_names</b>
+							<b>role</b>, <b>practice_names</b>
 						</Text>
 						<Text size="sm" c="gray.7" mt={6}>
 							• <b>role</b>:{" "}
