@@ -1,89 +1,140 @@
+// App.tsx
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "./styles/app.scss";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import Login from "@/pages/auth/Login";
-import Signup from "./pages/auth/Signup";
 import { AppRoutes } from "./shared/shared.models";
-import CalendarPlanner from "./pages/calendarPlanner/CalendarPlanner";
 import Nav from "./components/nav/Nav";
-import Admin from "./pages/admin/Admin";
-import Campaigns from "./pages/campaigns/Campaigns";
-import Forgot from "./pages/auth/Forgot";
-import ResetPassword from "./pages/auth/Reset";
+import Dashboard from "./pages/dashboard/Dashboard";
+import AppProvider from "./shared/AppProvider";
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import { RequireAuth } from "./shared/RequireAuth";
+import { PracticeProvider } from "./shared/PracticeProvider";
+import Faqs from "./pages/faqs/Faqs";
+import AdminLayout from "./pages/admin/AdminLayout";
+import Plans from "./pages/admin/adminPages/plans/Plans";
+import PeopleAccess from "./pages/admin/adminPages/people/PeopleAccess";
+import RequireAdmin from "./shared/RequireAdmin";
+import AdminCampaigns from "./pages/admin/adminPages/campaigns/AdminCampaigns";
+import { TierProvider } from "./shared/TierProvider";
+import NotificationsCenter from "./pages/notificationsCenter/NotificationsCenter";
 
-const queryClient = new QueryClient();
+ModuleRegistry.registerModules([AllCommunityModule]);
+const queryClient = new QueryClient({
+	defaultOptions: { queries: { refetchOnWindowFocus: false } },
+});
+
 export default function App() {
 	const { pathname } = useLocation();
 
-	const pages = [
-		{
-			path: AppRoutes.Home,
-			element: <Login />,
-		},
-		{
-			path: AppRoutes.Login,
-			element: <Login />,
-		},
-		{
-			path: AppRoutes.Signup,
-			element: <Signup />,
-		},
-		{
-			path: AppRoutes.Forgot,
-			element: <Forgot />,
-		},
-		{
-			path: AppRoutes.Reset,
-			element: <ResetPassword />,
-		},
-		{
-			path: AppRoutes.Calendar,
-			element: <CalendarPlanner />,
-		},
-		{
-			path: `${AppRoutes.Calendar}/:stage`,
-			element: <CalendarPlanner />,
-		},
-		{
-			path: `${AppRoutes.Calendar}/:stage/:campaignId`,
-			element: <CalendarPlanner />,
-		},
-		{
-			path: AppRoutes.Admin,
-			element: <Admin />,
-		},
-		{
-			path: AppRoutes.MyCampaigns,
-			element: <Campaigns />,
-		},
-	];
+	const publicPages = useMemo(
+		() => [
+			{ path: AppRoutes.Home, element: <Login /> },
+			{ path: AppRoutes.Login, element: <Login /> },
+		],
+		[]
+	);
+
+	const privatePages = useMemo(
+		() => [
+			{
+				path: AppRoutes.Dashboard,
+				element: <Dashboard />,
+			},
+			{
+				path: AppRoutes.NotificationsCenter,
+				element: <NotificationsCenter />,
+			},
+			{ path: AppRoutes.FAQs, element: <Faqs /> },
+		],
+		[]
+	);
+
+	const isPublicPath = [AppRoutes.Home, AppRoutes.Login].includes(
+		pathname as AppRoutes
+	);
 
 	return (
 		<Suspense fallback={null}>
 			<QueryClientProvider client={queryClient}>
-				<div className="app">
-					{![
-						AppRoutes.Home,
-						AppRoutes.Login,
-						AppRoutes.Signup,
-						AppRoutes.Forgot,
-						AppRoutes.Reset,
-					].includes(pathname as AppRoutes) && <Nav />}
-					<main>
-						<Routes>
-							{pages.map((pg, i) => (
-								<Route
-									key={`${pg.path}-${i}`}
-									path={pg.path}
-									element={pg.element}
-								/>
-							))}
-						</Routes>
-					</main>
-				</div>
+				<TierProvider>
+					<PracticeProvider>
+						<AppProvider>
+							<div className="app">
+								{!isPublicPath && <Nav />}
+								<main>
+									<Routes>
+										{/* Public */}
+										{publicPages.map((pg) => (
+											<Route
+												key={pg.path}
+												path={pg.path}
+												element={pg.element}
+											/>
+										))}
+
+										{/* Private (simple) */}
+										{privatePages.map((pg) => (
+											<Route
+												key={pg.path}
+												path={pg.path}
+												element={
+													<RequireAuth>
+														{pg.element}
+													</RequireAuth>
+												}
+											/>
+										))}
+
+										{/* Admin (nested) — NOTE the /* */}
+										<Route
+											path={`${AppRoutes.Admin}/*`} // => "/admin/*"
+											element={
+												<RequireAuth>
+													<RequireAdmin>
+														<AdminLayout />
+													</RequireAdmin>
+												</RequireAuth>
+											}
+										>
+											<Route index element={<Plans />} />{" "}
+											<Route
+												path={AppRoutes.Plans}
+												element={<Plans />}
+											/>
+											<Route
+												path={AppRoutes.Campaigns}
+												element={<AdminCampaigns />}
+											/>
+											<Route
+												path={AppRoutes.Bespoke}
+												element={<Plans />}
+											/>
+											<Route
+												path={AppRoutes.PeopleAccess}
+												element={<PeopleAccess />}
+											/>
+										</Route>
+
+										{/* Fallback */}
+										<Route
+											path="*"
+											element={
+												<Navigate
+													to={AppRoutes.Login}
+													replace
+												/>
+											}
+										/>
+									</Routes>
+								</main>
+							</div>
+						</AppProvider>
+					</PracticeProvider>
+				</TierProvider>
 			</QueryClientProvider>
 		</Suspense>
 	);

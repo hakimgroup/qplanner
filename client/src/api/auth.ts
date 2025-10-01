@@ -1,40 +1,18 @@
 import { toast } from "sonner";
 import { supabase } from "./supabase";
-import { AppRoutes } from "@/shared/shared.models";
+import { AppRoutes, DatabaseTables } from "@/shared/shared.models";
+import { Practice } from "@/shared/PracticeProvider";
 
-export interface User {
-	email: string;
-	password: string;
-	first_name: string;
-	last_name: string;
-	role?: string;
-}
+export const signin = async () => {
+	// mark that we are intentionally starting OAuth now
+	sessionStorage.setItem("oauth_just_signed_in", "1");
 
-export const signup = async (user: User) => {
-	const { data, error: signUpError } = await supabase.auth.signUp({
-		email: user.email,
-		password: user.password,
+	const { data, error } = await supabase.auth.signInWithOAuth({
+		provider: "azure",
 		options: {
-			data: {
-				first_name: user.first_name,
-				last_name: user.last_name,
-				isAdmin: false,
-			},
+			scopes: "email",
+			redirectTo: window.location.origin,
 		},
-	});
-
-	if (signUpError) {
-		toast.error(signUpError.message);
-		throw signUpError;
-	}
-
-	return data;
-};
-
-export const signin = async (email: string, password: string) => {
-	const { data, error } = await supabase.auth.signInWithPassword({
-		email,
-		password,
 	});
 
 	if (error) {
@@ -49,48 +27,73 @@ export const signout = async () => {
 	const { error } = await supabase.auth.signOut();
 
 	if (error) {
+		// clear the flag if the kick-off failed
+		sessionStorage.removeItem("oauth_just_signed_in");
 		toast.error(error.message);
 		throw error;
 	}
 };
 
-export const resetPassword = async ({ email }) => {
-	const url: string = import.meta.env.VITE_APP_BASE_URL;
+export async function signOutSafe(redirectTo: string = AppRoutes.Login) {
+	try {
+		// 1) Check current session
+		const { data } = await supabase.auth.getSession();
+		const hasSession = !!data.session;
 
-	const { error } = await supabase.auth.resetPasswordForEmail(email, {
-		redirectTo: `${url}${AppRoutes.Reset}`,
-	});
-
-	if (error) {
-		toast.error(error.message);
-		throw error;
+		if (hasSession) {
+			// 2) Try global sign-out first (logs out all devices)
+			const { error } = await supabase.auth.signOut({ scope: "global" });
+			if (error && error.code !== "session_not_found") {
+				// Unknown error → fall back to local
+				await supabase.auth.signOut({ scope: "local" });
+			}
+		} else {
+			// No session on server → clear local tokens silently
+			await supabase.auth.signOut({ scope: "local" });
+		}
+	} catch {
+		// Any unexpected issue → still clear local cache
+		await supabase.auth.signOut({ scope: "local" });
+	} finally {
+		// Your app-specific cleanup here if needed
+		// e.g., reset stores, clear query cache, etc.
+		window.location.replace(redirectTo);
 	}
+}
+
+export type Role = "user" | "admin" | "super_admin";
+export type AllowedUser = {
+	id: string;
+	first_name: string | null;
+	last_name: string | null;
+	email: string | null;
+	role: Role;
+	created_at: string;
+	last_login?: string | null;
+	assigned_practices?: Practice[];
 };
 
-export const updatePassword = async ({ password }) => {
-	const { error } = await supabase.auth.updateUser({ password });
+export const getUsers = async (opts?: {
+	id?: string | null;
+	role?: Role | null;
+}) => {
+	const { id = null, role = null } = opts ?? {};
 
-	if (error) {
-		toast.error(error.message);
-		throw error;
-	}
-};
+	let query = supabase.from(DatabaseTables.Allowed_Users).select("*");
 
-export const getUser = async ({ userId }) => {
-	const { data, error } = await supabase
-		.from("users")
-		.select()
-		.eq("id", userId)
-		.single();
+	if (id) query = query.eq("id", id);
+	if (role) query = query.eq("role", role);
+
+	const { data, error } = await query;
 
 	if (error) {
 		throw new Error(error.message);
 	}
 
-	if (!data) {
-		toast.error("User not found", { position: "top-center" });
-		throw new Error("User not found");
+	// Keep UX feedback, but don't throw on "no matches" — return [] instead.
+	if (!data || data.length === 0) {
+		return [];
 	}
 
-	return data;
+	return data as AllowedUser[];
 };

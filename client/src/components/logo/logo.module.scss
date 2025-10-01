@@ -1,0 +1,12 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+.logo {
+	background: #7264e9;
+	background: linear-gradient(
+		130deg,
+		rgba(114, 100, 233, 1) 11%,
+		rgba(214, 76, 168, 1) 85%
+	);
+}

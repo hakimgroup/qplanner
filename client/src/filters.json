@@ -1,4 +1,10 @@
 {
+  "categories": [
+    "Event",
+    "Brand Activations",
+    "Campaign",
+    "Evergreen"
+  ],
   "objectives": [
     "ADV",
     "AOV",
@@ -15,5 +21,111 @@
     "Kids",
     "Clinical",
     "Seasonal"
+  ],
+  "assets": [
+    "Posters",
+    "IPTV content",
+    "Email templates",
+    "Business cards",
+    "Web banners",
+    "Video content",
+    "Window vinyl",
+    "Social media assets",
+    "Flyers",
+    "In-store displays",
+    "Product photography",
+    "Brochures"
+  ],
+  "eventAssets": [
+    "Event Banners",
+    "Email Invitations",
+    "Event Programs",
+    "Photography",
+    "Promotional Materials",
+    "Refreshments Branding",
+    "Social media assets",
+    "Press Releases",
+    "Signage",
+    "Video Content",
+    "Awards/Certificates",
+    "Gift Bags"
+  ],
+  "eventTypes": [
+    "Brand Event",
+    "Practice Reopening Event",
+    "Anniversary Event",
+    "Sale"
+  ],
+  "status": [
+    {
+      "label": "On Plan",
+      "value": "onPlan"
+    },
+    {
+      "label": "In Progress",
+      "value": "inProgress"
+    },
+    {
+      "label": "Requested",
+      "value": "requested"
+    },
+    {
+      "label": "Confirmed",
+      "value": "confirmed"
+    },
+    {
+      "label": "Live",
+      "value": "live"
+    },
+    {
+      "label": "Cancelled",
+      "value": "cancelled"
+    }
+  ],
+  "sources": [
+    {
+      "label": "Manual",
+      "value": "manual"
+    },
+    {
+      "label": "Quick",
+      "value": "quick"
+    },
+    {
+      "label": "Guided",
+      "value": "guided"
+    },
+    {
+      "label": "Admin",
+      "value": "admin"
+    }
+  ],
+  "tiers": [
+    {
+      "label": "Good",
+      "value": "good"
+    },
+    {
+      "label": "Better",
+      "value": "better"
+    },
+    {
+      "label": "Best",
+      "value": "best"
+    }
+  ],
+  "roles": [
+    {
+      "label": "Practice User",
+      "value": "user"
+    },
+    {
+      "label": "Marketing Admin",
+      "value": "admin"
+    },
+    {
+      "label": "Marketing Super Admin",
+      "value": "super_admin"
+    }
   ]
 }

@@ -1,0 +1,10 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+.practice-selector {
+	.target {
+		border-color: variables.$sea;
+		cursor: pointer;
+	}
+}

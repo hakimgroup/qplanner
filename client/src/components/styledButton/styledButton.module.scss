@@ -1,0 +1,10 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+.styled-button {
+	&:hover {
+		background-color: rgba(variables.$purple, 0.09);
+		color: color.adjust(variables.$purple, $lightness: -20%) !important;
+	}
+}

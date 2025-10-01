@@ -1,15 +1,11 @@
-import {
-	getUser,
-	resetPassword,
-	signin,
-	signout,
-	signup,
-	updatePassword,
-	User,
-} from "@/api/auth";
+import { AllowedUser, getUsers, Role, signin, signout } from "@/api/auth";
 import { supabase } from "@/api/supabase";
 import { useAuth } from "@/shared/AuthProvider";
-import { AppRoutes } from "@/shared/shared.models";
+import {
+	AppRoutes,
+	DatabaseTables,
+	RPCFunctions,
+} from "@/shared/shared.models";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -22,41 +18,13 @@ interface UsersModel {
 	role: "user" | "admin";
 }
 
-export const useSignup = () => {
-	const navigate = useNavigate();
-
-	return useMutation({
-		mutationFn: (user: User) => signup(user),
-		onSuccess: async ({ user }) => {
-			const { data: insertData, error: insertError } = await supabase
-				.from("users")
-				.insert({
-					id: user.id,
-					first_name: user.user_metadata.first_name,
-					last_name: user.user_metadata.last_name,
-					role: user.user_metadata.isAdmin ? "admin" : "user",
-				});
-
-			if (insertError) {
-				toast.error(insertError.message);
-				throw insertError;
-			}
-
-			navigate(`${AppRoutes.Calendar}/1`);
-
-			return insertData;
-		},
-	});
-};
-
 export const useSignin = () => {
 	const navigate = useNavigate();
 
 	return useMutation({
-		mutationFn: (user: { email: string; password: string }) =>
-			signin(user.email, user.password),
+		mutationFn: () => signin(),
 		onSuccess: () => {
-			navigate(`${AppRoutes.Calendar}/1`);
+			navigate(AppRoutes.Dashboard);
 		},
 	});
 };
@@ -74,35 +42,91 @@ export const useSignout = () => {
 	});
 };
 
-export const useResetPassword = () => {
-	return useMutation({
-		mutationFn: (email: string) => resetPassword({ email }),
-	});
-};
-
-export const useUpdatePassword = () => {
-	const navigate = useNavigate();
-	const { auth } = useAuth();
-
-	return useMutation({
-		mutationFn: (password: string) => updatePassword({ password }),
-		onSuccess: () => {
-			toast.success("Password updated successfully!", {
-				position: "top-center",
-			});
-
-			if (!auth) {
-				navigate(AppRoutes.Login);
-			}
-		},
-	});
-};
-
-export default function useUser() {
+export default function useUsers(filters?: {
+	id?: string | null;
+	role?: Role | null;
+}) {
 	const { user } = useAuth();
 
-	return useQuery<UsersModel>({
-		queryKey: ["users"],
-		queryFn: () => getUser({ userId: user?.id }),
+	const id = filters?.id ?? null;
+	const role = filters?.role ?? null;
+
+	return useQuery<AllowedUser[]>({
+		queryKey: [DatabaseTables.Allowed_Users, id, role],
+		queryFn: async () => {
+			const { data, error } = await supabase.rpc(RPCFunctions.GetUsers, {
+				p_id: id,
+				p_role: role,
+			});
+			if (error) throw new Error(error.message);
+			return (data ?? []) as AllowedUser[];
+		},
+		enabled: !!user, // don’t run until we know auth state
+	});
+}
+
+/** Optional convenience: get a single user by id (returns null if none) */
+export function useUserById(id?: string | null) {
+	const { data, ...rest } = useUsers({ id: id ?? null });
+	return { data: (data && data[0]) ?? null, ...rest };
+}
+
+export type UpdateUserArgs = {
+	id: string; // required
+	first_name?: string | null;
+	last_name?: string | null;
+	email?: string | null;
+	role?: Role | null;
+	assigned_practices?: string[] | null; // array of practice IDs, pass null to leave unchanged
+};
+
+export function useUpdateUser() {
+	const qc = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (args: UpdateUserArgs) => {
+			// Map to RPC parameter names exactly
+			const { data, error } = await supabase.rpc("update_user", {
+				p_id: args.id,
+				p_first_name: args.first_name ?? null,
+				p_last_name: args.last_name ?? null,
+				p_email: args.email ?? null,
+				p_role: args.role ?? null,
+				p_assigned_practices: args.assigned_practices ?? null,
+			});
+
+			if (error) throw error;
+			return data; // updated row w/ assigned_practices array
+		},
+		onSuccess: () => {
+			// Invalidate any users lists/detail you use
+			qc.invalidateQueries({ queryKey: [DatabaseTables.Allowed_Users] });
+			toast.success("User updated");
+		},
+		onError: (e: any) => {
+			toast.error(e?.message ?? "Failed to update user");
+		},
+	});
+}
+
+export function useDeleteAllowedUser() {
+	const qc = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (id: string) => {
+			if (!id) throw new Error("Missing user id");
+			const { error } = await supabase
+				.from(DatabaseTables.Allowed_Users) // 'allowed_users'
+				.delete()
+				.eq("id", id);
+
+			if (error) throw error;
+			return id;
+		},
+		onSuccess: () => {
+			toast.success("User deleted successfully!!");
+			// Invalidate whatever you use to fetch the users list
+			qc.invalidateQueries({ queryKey: [DatabaseTables.Allowed_Users] });
+		},
 	});
 }

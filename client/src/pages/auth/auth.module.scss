@@ -1,0 +1,35 @@
+@use "@/styles/variables.module.scss";
+@use "@/styles/mixins.scss";
+@use "sass:color";
+
+.auth {
+	height: 100vh;
+	@include mixins.center-item;
+	@include mixins.enter-animation;
+
+	.auth-content {
+		padding: 50px 0px;
+		max-width: 500px;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+
+		form {
+			.form-right-link {
+				display: flex;
+				justify-content: flex-end;
+				margin: 20px 0px;
+			}
+		}
+	}
+}
+
+.logo-wrapper {
+	text-align: center;
+}
+
+.logo-main {
+	width: 16rem;
+	margin-bottom: 2rem;
+}
