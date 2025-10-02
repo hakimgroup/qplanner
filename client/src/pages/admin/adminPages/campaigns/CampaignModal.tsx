@@ -13,8 +13,6 @@ import {
 	ActionIcon,
 	Grid,
 } from "@mantine/core";
-// ⬇️ Removed DateInput import
-// import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import filtersData from "@/filters.json";
 import { useUpsertCatalogCampaign } from "@/hooks/campaign.hooks";
@@ -26,7 +24,6 @@ import CampaignDates from "@/components/campaignDates/CampaignDates";
 type Props = {
 	opened: boolean;
 	onClose: () => void;
-	// optional: pass row to edit
 	row?: any | null;
 };
 
@@ -51,7 +48,8 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 			name: row?.name ?? "",
 			description: row?.description ?? "",
 			category: row?.category ?? "",
-			tier: row?.tier ?? "good",
+			// ⬇️ If no tier present, start with null (not "good")
+			tier: row?.tier ?? (null as string | null),
 			objectives: row?.objectives ?? [],
 			topics: row?.topics ?? [],
 			from: row?.availability?.from
@@ -62,7 +60,7 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 		validate: {
 			name: (v) => (!!v?.trim() ? null : "Required"),
 			category: (v) => (!!v ? null : "Required"),
-			tier: (v) => (!!v ? null : "Required"),
+			// ⬇️ Tier is optional now (no validation)
 		},
 	});
 
@@ -78,14 +76,15 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 				name: vals.name.trim(),
 				description: vals.description?.trim() || null,
 				category: vals.category,
-				tier: vals.tier,
+				// ⬇️ Send null if tier is empty string
+				tier: vals.tier ? vals.tier : null,
 				objectives: vals.objectives,
 				topics: vals.topics,
 				availability:
 					vals.from && vals.to
 						? { from: vals.from, to: vals.to }
 						: null,
-				reference_links, // ⬅️ save multiple links
+				reference_links,
 			},
 			{ onSuccess: onClose }
 		);
@@ -137,13 +136,22 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 						<Select
 							radius={10}
 							label="Tier"
-							withAsterisk
+							// ⬇️ No asterisk; tier is optional
+							placeholder="No tier"
+							clearable
+							// include an explicit "No tier" option (empty string), plus tiers
 							data={[
+								{ label: "— No tier —", value: "" },
 								{ label: "Good", value: "good" },
 								{ label: "Better", value: "better" },
 								{ label: "Best", value: "best" },
 							]}
-							{...form.getInputProps("tier")}
+							// values may be string | null; treat null as ""
+							value={form.values.tier ?? ""}
+							onChange={(v) =>
+								form.setFieldValue("tier", v || null)
+							}
+							nothingFoundMessage="No options"
 						/>
 					</SimpleGrid>
 
