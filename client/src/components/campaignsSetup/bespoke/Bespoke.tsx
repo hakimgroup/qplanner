@@ -25,7 +25,6 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 import { useCallback, useContext, useMemo, useState } from "react";
-import filtersData from "@/filters.json";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
 import { isValid as isValidDate } from "date-fns";
 import { toast } from "sonner";
@@ -34,6 +33,8 @@ import { SelectionStatus } from "@/shared/shared.models";
 import { UserTabModes } from "@/models/general.models";
 import AppContext from "@/shared/AppContext";
 import { updateState } from "@/shared/shared.utilities";
+import { startCase } from "lodash";
+import { assets } from "@/filters.json";
 
 type DateRange = { from: Date | null; to: Date | null };
 
@@ -44,7 +45,10 @@ const Bespoke = ({
 }) => {
 	const [opened, { open, close }] = useDisclosure(false);
 	const T = useMantineTheme();
-	const { setState } = useContext(AppContext);
+	const {
+		state: { filtersOptions },
+		setState,
+	} = useContext(AppContext);
 
 	// Reference links are optional per requirements.
 	const [links, setLinks] = useState<string[]>([""]);
@@ -237,6 +241,8 @@ const Bespoke = ({
 
 						<CampaignDates
 							required
+							minDate={new Date(2026, 0, 1)}
+							maxDate={new Date(2026, 11, 31)}
 							title="Preferred Dates"
 							icon={<IconCalendar size={16} />}
 							dateRange={form.values.dateRange}
@@ -272,7 +278,7 @@ const Bespoke = ({
 								}
 							>
 								<Group align="center" gap={5}>
-									{filtersData.objectives.map((c) => (
+									{filtersOptions?.objectives.map((c) => (
 										<Chip
 											value={c}
 											key={c}
@@ -287,7 +293,7 @@ const Bespoke = ({
 													: "outline"
 											}
 										>
-											{c}
+											{startCase(c)}
 										</Chip>
 									))}
 								</Group>
@@ -314,7 +320,7 @@ const Bespoke = ({
 								}
 							>
 								<Group align="center" gap={5}>
-									{filtersData.topics.map((c) => (
+									{filtersOptions?.topics.map((c) => (
 										<Chip
 											value={c}
 											key={c}
@@ -327,7 +333,7 @@ const Bespoke = ({
 													: "outline"
 											}
 										>
-											{c}
+											{startCase(c)}
 										</Chip>
 									))}
 								</Group>
@@ -353,7 +359,7 @@ const Bespoke = ({
 								}
 							>
 								<SimpleGrid cols={2} spacing={9} mt="xs">
-									{filtersData.assets.map((ct) => (
+									{assets.map((ct) => (
 										<Checkbox
 											key={ct}
 											radius={50}

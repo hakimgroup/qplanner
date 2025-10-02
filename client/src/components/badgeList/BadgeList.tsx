@@ -7,6 +7,7 @@ import {
 	Tooltip,
 	useMantineTheme,
 } from "@mantine/core";
+import { startCase } from "lodash";
 
 interface BadgeListProps {
 	items: string[];
@@ -48,7 +49,7 @@ export const BadgeList: React.FC<BadgeListProps> = ({
 					variant={firstBadgeVariant}
 				>
 					<Text size="xs" fw={500} c={firstBadgeTextColor}>
-						{item}
+						{startCase(item)}
 					</Text>
 				</Badge>
 			))}
@@ -61,7 +62,7 @@ export const BadgeList: React.FC<BadgeListProps> = ({
 						<Stack gap={2}>
 							{remaining.map((item) => (
 								<Text key={item} size="xs" fw={500} c="gray.9">
-									{item}
+									{startCase(item)}
 								</Text>
 							))}
 						</Stack>

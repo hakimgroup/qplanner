@@ -14,6 +14,7 @@ import { activityColors } from "@/shared/shared.const";
 import { BadgeList } from "@/components/badgeList/BadgeList";
 import { formatAvailabilityForUI } from "@/shared/shared.utilities";
 import { IconEdit } from "@tabler/icons-react";
+import { startCase } from "lodash";
 
 export type CampaignRow = {
 	id: string;
@@ -94,7 +95,7 @@ const CampaignsTable = forwardRef<
 					fw={700}
 					style={{ border: `1px solid ${T.blue[0]}` }}
 				>
-					{value}
+					{startCase(value)}
 				</Badge>
 			),
 		},

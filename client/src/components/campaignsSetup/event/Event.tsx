@@ -19,7 +19,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconCalendar, IconPlus, IconTrash } from "@tabler/icons-react";
-import filtersData from "@/filters.json";
+import { eventAssets, eventTypes } from "@/filters.json";
 import { useState, useMemo, useContext } from "react";
 import { useForm } from "@mantine/form";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ import CampaignDates from "@/components/campaignDates/CampaignDates";
 import { UserTabModes } from "@/models/general.models";
 import AppContext from "@/shared/AppContext";
 import { updateState } from "@/shared/shared.utilities";
+import { startCase } from "lodash";
 
 type FormValues = {
 	eventType: string;
@@ -59,7 +60,10 @@ const urlish = (s: string) =>
 	);
 
 const Event = ({ buttonText = "Bespoke Event" }) => {
-	const { setState } = useContext(AppContext);
+	const {
+		state: { filtersOptions },
+		setState,
+	} = useContext(AppContext);
 	const [opened, { open, close }] = useDisclosure(false);
 	const T = useMantineTheme();
 	const [links, setLinks] = useState<string[]>([""]);
@@ -236,26 +240,24 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 								}
 							>
 								<SimpleGrid cols={2} spacing={9} mt="xs">
-									{filtersData.eventTypes.map(
-										(ev: string) => (
-											<Radio
-												size="xs"
-												color="blue.3"
-												key={ev}
-												value={ev}
-												label={
-													<Text
-														size="sm"
-														fw={500}
-														ml={-5}
-														mt={-2}
-													>
-														{ev}
-													</Text>
-												}
-											/>
-										)
-									)}
+									{eventTypes.map((ev: string) => (
+										<Radio
+											size="xs"
+											color="blue.3"
+											key={ev}
+											value={ev}
+											label={
+												<Text
+													size="sm"
+													fw={500}
+													ml={-5}
+													mt={-2}
+												>
+													{ev}
+												</Text>
+											}
+										/>
+									))}
 								</SimpleGrid>
 							</Radio.Group>
 							{form.errors.eventType && (
@@ -292,6 +294,8 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 							</Text>
 
 							<CampaignDates
+								minDate={new Date(2026, 0, 1)}
+								maxDate={new Date(2026, 11, 31)}
 								icon={<IconCalendar size={16} />}
 								dateRange={form.values.dateRange}
 								onChange={(range) =>
@@ -323,24 +327,26 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 								}
 							>
 								<Group align="center" gap={5}>
-									{filtersData.objectives.map((c: string) => (
-										<Chip
-											value={c}
-											key={c}
-											color={"blue.3"}
-											size="xs"
-											fw={600}
-											variant={
-												form.values.objectives.includes(
-													c
-												)
-													? "filled"
-													: "outline"
-											}
-										>
-											{c}
-										</Chip>
-									))}
+									{filtersOptions?.objectives.map(
+										(c: string) => (
+											<Chip
+												value={c}
+												key={c}
+												color={"blue.3"}
+												size="xs"
+												fw={600}
+												variant={
+													form.values.objectives.includes(
+														c
+													)
+														? "filled"
+														: "outline"
+												}
+											>
+												{startCase(c)}
+											</Chip>
+										)
+									)}
 								</Group>
 							</Chip.Group>
 							{form.errors.objectives && (
@@ -362,7 +368,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 								}
 							>
 								<Group align="center" gap={5}>
-									{filtersData.topics.map((c: string) => (
+									{filtersOptions?.topics.map((c: string) => (
 										<Chip
 											value={c}
 											key={c}
@@ -375,7 +381,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 													: "outline"
 											}
 										>
-											{c}
+											{startCase(c)}
 										</Chip>
 									))}
 								</Group>
@@ -399,27 +405,25 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
 								error={form.errors.assets}
 							>
 								<SimpleGrid cols={2} spacing={9} mt="xs">
-									{filtersData.eventAssets.map(
-										(ct: string) => (
-											<Checkbox
-												key={ct}
-												radius={50}
-												size="xs"
-												color="blue.3"
-												value={ct}
-												label={
-													<Text
-														size="sm"
-														fw={500}
-														ml={-5}
-														mt={-2}
-													>
-														{ct}
-													</Text>
-												}
-											/>
-										)
-									)}
+									{eventAssets.map((ct: string) => (
+										<Checkbox
+											key={ct}
+											radius={50}
+											size="xs"
+											color="blue.3"
+											value={ct}
+											label={
+												<Text
+													size="sm"
+													fw={500}
+													ml={-5}
+													mt={-2}
+												>
+													{ct}
+												</Text>
+											}
+										/>
+									))}
 								</SimpleGrid>
 							</Checkbox.Group>
 						</Stack>

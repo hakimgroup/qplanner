@@ -24,8 +24,15 @@ export interface Filters {
 	userSelectedTab?: UserTabModes;
 }
 
+export interface FilterOptions {
+	objectives: string[];
+	topics: string[];
+	categories: string[];
+}
+
 export interface AppState {
 	filters?: Filters;
+	filtersOptions?: FilterOptions;
 	allCampaigns?: {
 		loading: boolean;
 		hasPlans: boolean;

@@ -11,19 +11,24 @@ import {
 } from "@mantine/core";
 import { IconPlus, IconSearch } from "@tabler/icons-react";
 import { useDebouncedValue } from "@mantine/hooks";
-import { useMemo, useRef, useState } from "react";
+import { useContext, useMemo, useRef, useState } from "react";
 import StyledButton from "@/components/styledButton/StyledButton";
 import filtersData from "@/filters.json";
 import { useCampaignsCatalog } from "@/hooks/campaign.hooks";
 import CampaignModal from "./CampaignModal";
 import CampaignsFilters from "./CampaignsFilters";
 import CampaignsTable, { CampaignsTableHandle } from "./CampaignsTable";
+import AppContext from "@/shared/AppContext";
+import { startCase } from "lodash";
 
 export default function AdminCampaigns() {
 	const T = useMantineTheme().colors;
 	const [opened, setOpened] = useState(false);
 	const tableRef = useRef<CampaignsTableHandle>(null);
 	const [row, setRow] = useState(null);
+	const {
+		state: { filtersOptions },
+	} = useContext(AppContext);
 
 	// filters (server-side-ish; adapt as you wish)
 	const [category, setCategory] = useState<string | null>("all");
@@ -80,8 +85,11 @@ export default function AdminCampaigns() {
 								label="Activity"
 								data={[
 									{ label: "All", value: "all" },
-									...filtersData.categories.map(
-										(c: string) => ({ label: c, value: c })
+									...filtersOptions?.categories.map(
+										(c: string) => ({
+											label: startCase(c),
+											value: c,
+										})
 									),
 								]}
 								value={category}

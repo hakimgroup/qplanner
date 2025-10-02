@@ -34,6 +34,7 @@ import {
 import { toast } from "sonner";
 import { SelectionStatus } from "@/shared/shared.models";
 import { Campaign } from "@/models/campaign.models";
+import { startCase } from "lodash";
 
 type DateRange = { from: Date | null; to: Date | null };
 
@@ -83,7 +84,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 			<Flex align={"center"} gap={4}>
 				{items.map((c) => (
 					<Badge key={c} color="red.4">
-						{c}
+						{startCase(c)}
 					</Badge>
 				))}
 			</Flex>
@@ -97,7 +98,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 				{items.map((c) => (
 					<Badge key={c} variant="outline" color="gray.1">
 						<Text size="xs" fw={600} c={"gray.9"}>
-							{c}
+							{startCase(c)}
 						</Text>
 					</Badge>
 				))}

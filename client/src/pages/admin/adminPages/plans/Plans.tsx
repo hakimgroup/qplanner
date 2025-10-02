@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IconDownload, IconMessage, IconSearch } from "@tabler/icons-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import filtersData from "@/filters.json";
 import { usePractice } from "@/shared/PracticeProvider";
 import StyledButton from "@/components/styledButton/StyledButton";
@@ -23,12 +23,17 @@ import { PlansFilter } from "@/models/selection.models";
 import { normalizeAllToNull } from "@/shared/shared.utilities";
 import { useLocation } from "react-router-dom";
 import { AppRoutes } from "@/shared/shared.models";
+import AppContext from "@/shared/AppContext";
+import { startCase } from "lodash";
 
 const Plans = () => {
 	const T = useMantineTheme().colors;
 	const { pathname } = useLocation();
 	const { practices } = usePractice();
 	const plansRef = useRef<PlansTableHandle>(null);
+	const {
+		state: { filtersOptions },
+	} = useContext(AppContext);
 	const [plansFilters, setPlansFilters] = useState<PlansFilter>({
 		practiceIds: [],
 		status: "all",
@@ -152,10 +157,12 @@ const Plans = () => {
 												value: "all",
 											},
 										].concat(
-											filtersData.categories.map((a) => ({
-												label: a,
-												value: a,
-											}))
+											filtersOptions?.categories.map(
+												(a) => ({
+													label: startCase(a),
+													value: a,
+												})
+											)
 										)}
 										value={plansFilters.category}
 										onChange={(v) =>

@@ -40,6 +40,7 @@ export const userRoleColors = {
 };
 
 export const appStateDefault: AppState = {
+	filtersOptions: null,
 	filters: {
 		viewMode: ViewModes.Cards,
 		dateRange: {

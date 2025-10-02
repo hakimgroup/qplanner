@@ -82,7 +82,7 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
 						fw={700}
 						style={{ border: `1px solid ${T.blue[0]}` }}
 					>
-						{value}
+						{startCase(value)}
 					</Badge>
 				),
 			},

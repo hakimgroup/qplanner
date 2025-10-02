@@ -22,7 +22,7 @@ import {
 	IconMinus,
 	IconCalendarCheck,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import CampaignDates from "../campaignDates/CampaignDates";
 import StyledButton from "../styledButton/StyledButton";
 import { Campaign } from "@/models/campaign.models";
@@ -30,6 +30,7 @@ import {
 	firstSentence,
 	formatDateRange,
 	getReferenceLinkLabel,
+	updateState,
 } from "@/shared/shared.utilities";
 import { toast } from "sonner";
 import {
@@ -52,6 +53,9 @@ import Status from "../status/Status";
 import Edit from "./Edit";
 import { useDisclosure } from "@mantine/hooks";
 import { useNavigate } from "react-router-dom";
+import { startCase } from "lodash";
+import { UserTabModes } from "@/models/general.models";
+import AppContext from "@/shared/AppContext";
 
 interface Props {
 	mode: "add" | "view";
@@ -66,6 +70,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 	const navigate = useNavigate();
 	const isAdd = mode === "add";
 	const T = useMantineTheme();
+	const { setState } = useContext(AppContext);
 	const [editOpened, { open: openEdit, close: closeEdit }] =
 		useDisclosure(false);
 	const [addOpened, { toggle: toggleAdd }] = useDisclosure(false);
@@ -101,9 +106,9 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 				</Text>
 			)}
 			<Flex align={"center"} gap={4}>
-				{c.objectives.map((c) => (
+				{c.objectives?.map((c) => (
 					<Badge key={c} color="red.4">
-						{c}
+						{startCase(c)}
 					</Badge>
 				))}
 			</Flex>
@@ -121,7 +126,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 				{c.topics.map((c) => (
 					<Badge key={c} variant="outline" color="gray.1">
 						<Text size="xs" fw={600} c={"gray.9"}>
-							{c}
+							{startCase(c)}
 						</Text>
 					</Badge>
 				))}
@@ -221,6 +226,11 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 				onSuccess: () => {
 					toast.success(`Added "${c.name}" to plan`);
 					closeDrawer();
+					updateState(
+						setState,
+						"filters.userSelectedTab",
+						UserTabModes.Selected
+					);
 				},
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Could not add to plan");

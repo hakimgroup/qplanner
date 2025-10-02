@@ -39,6 +39,7 @@ export enum RPCFunctions {
 	GetUsers = "get_users",
 	UpdateUser = "update_user",
 	BulkUploadUsers = "bulk_upsert_allowed_users_with_practices",
+	GetFilterOptions = "get_filter_options",
 }
 
 export enum UserRoles {

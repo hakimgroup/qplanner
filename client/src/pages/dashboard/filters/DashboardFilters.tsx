@@ -25,8 +25,8 @@ import {
 import { Fragment, useContext } from "react";
 import cl from "./dashboardFilters.module.scss";
 import clsx from "clsx";
-import filtersData from "../../../filters.json";
-import { isEqual } from "lodash";
+// import filtersData from "../../../filters.json";
+import { isEqual, startCase } from "lodash";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
 import AppContext from "@/shared/AppContext";
 import { Filters, UserTabModes, ViewModes } from "@/models/general.models";
@@ -34,7 +34,7 @@ import { updateState } from "@/shared/shared.utilities";
 
 const DashboardFilters = () => {
 	const {
-		state: { filters },
+		state: { filters, filtersOptions },
 		setState,
 	} = useContext(AppContext);
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
@@ -123,7 +123,7 @@ const DashboardFilters = () => {
 				}}
 			>
 				<Stack mt="xs" gap={9}>
-					{filtersData[type].map((ct) => (
+					{filtersOptions?.[type]?.map((ct) => (
 						<Checkbox
 							key={ct}
 							radius={50}
@@ -132,7 +132,7 @@ const DashboardFilters = () => {
 							value={ct}
 							label={
 								<Text size="sm" fw={500} ml={-5} mt={-2}>
-									{ct}
+									{startCase(ct)}
 								</Text>
 							}
 						/>

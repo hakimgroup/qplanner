@@ -17,7 +17,7 @@ import StyledButton from "@/components/styledButton/StyledButton";
 import View from "../View";
 import Edit from "../Edit";
 import { Campaign } from "@/models/campaign.models";
-import { truncate } from "lodash";
+import { startCase, truncate } from "lodash";
 import { formatAvailabilityForUI } from "@/shared/shared.utilities";
 import { BadgeList } from "@/components/badgeList/BadgeList";
 import { useContext, useState } from "react";
@@ -157,7 +157,7 @@ const CampaignCard = (c: Campaign) => {
 						<Flex align={"center"} gap={4}>
 							<Badge variant="outline" color="gray.1">
 								<Text size="xs" fw={600} c={"gray.9"}>
-									{c.category}
+									{startCase(c.category)}
 								</Text>
 							</Badge>
 						</Flex>

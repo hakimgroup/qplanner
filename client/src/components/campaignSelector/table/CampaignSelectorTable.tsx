@@ -16,7 +16,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import filtersData from "@/filters.json";
 import { ColDef } from "ag-grid-community";
-import { find } from "lodash";
+import { find, startCase } from "lodash";
 import { BadgeList } from "@/components/badgeList/BadgeList";
 import { statusColors } from "@/shared/shared.const";
 import Table from "@/components/table/Table";
@@ -119,7 +119,7 @@ const CampaignSelectorTable = () => {
 							fw={500}
 							c={isEvent ? "violet.0" : "gray.9"}
 						>
-							{value ?? "—"}
+							{startCase(value) ?? "—"}
 						</Text>
 					</Badge>
 				);

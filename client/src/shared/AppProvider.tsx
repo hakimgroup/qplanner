@@ -11,12 +11,24 @@ import {
 import { useSelections } from "@/hooks/selection.hooks";
 import { usePractice } from "./PracticeProvider";
 import { UserTabModes } from "@/models/general.models";
+import { useFilterOptions } from "@/hooks/general.hooks";
 
 type Availability = { from: string; to: string } | null;
 
-// ✅ stable empties (same reference across renders)
+// ✅ stable empties
 const EMPTY_ARR: any[] = [];
 const EMPTY_ARR_SEL: any[] = [];
+
+// shallow equality for string arrays
+const sameStrArr = (a?: string[], b?: string[]) => {
+	if (a === b) return true;
+	if (!a?.length && !b?.length) return true;
+	if ((a?.length ?? 0) !== (b?.length ?? 0)) return false;
+	for (let i = 0; i < (a?.length ?? 0); i++) {
+		if (a![i] !== b![i]) return false;
+	}
+	return true;
+};
 
 function toDate(input: unknown): Date | null {
 	if (!input) return null;
@@ -72,21 +84,70 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const { unitedView, activePracticeId } = usePractice();
 	const practiceParam = unitedView ? null : activePracticeId;
 
-	// 🚫 avoid "= []" default; use stable ref instead
+	// 1) Fetch dynamic filter options from RPC
+	const { data: rpcFilterOptions } = useFilterOptions();
+
+	// 2) Fetch selections & campaigns
 	const { data: selectionsRaw } = useSelections();
 	const selections = (selectionsRaw ?? EMPTY_ARR_SEL) as any[];
 
 	const [state, setState] = useState(appStateDefault);
 
-	// 🚫 avoid "= []" default; use stable ref instead
 	const campaignsQuery = useAllCampaigns(practiceParam);
 	const rawCampaigns = (campaignsQuery.data ?? EMPTY_ARR) as any[];
 	const isFetching = campaignsQuery.isFetching;
 
+	// === Keep app-level filtersOptions in sync with RPC ===
+	useEffect(() => {
+		if (!rpcFilterOptions) return;
+
+		// normalize + dedupe + sort for stable comparisons
+		const norm = (arr?: string[]) =>
+			Array.from(new Set((arr ?? []).filter(Boolean))).sort();
+
+		const next = {
+			objectives: norm(rpcFilterOptions.objectives),
+			topics: norm(rpcFilterOptions.topics),
+			categories: norm(rpcFilterOptions.categories),
+		};
+
+		setState((prev) => {
+			const prevFO = (prev as any).filtersOptions ?? {
+				objectives: [],
+				topics: [],
+				categories: [],
+			};
+
+			const sameStrArr = (a?: string[], b?: string[]) => {
+				if (a === b) return true;
+				if (!a?.length && !b?.length) return true;
+				if ((a?.length ?? 0) !== (b?.length ?? 0)) return false;
+				for (let i = 0; i < (a?.length ?? 0); i++) {
+					if (a![i] !== b![i]) return false;
+				}
+				return true;
+			};
+
+			const unchanged =
+				sameStrArr(prevFO.objectives, next.objectives) &&
+				sameStrArr(prevFO.topics, next.topics) &&
+				sameStrArr(prevFO.categories, next.categories);
+
+			if (unchanged) return prev;
+
+			return {
+				...prev,
+				// ✅ correct key (matches appStateDefault)
+				filtersOptions: next,
+			};
+		});
+	}, [rpcFilterOptions]);
+
 	// TRUE if the user has added any plan
-	const hasPlans = useMemo<boolean>(() => {
-		return selections.length > 0;
-	}, [selections]);
+	const hasPlans = useMemo<boolean>(
+		() => selections.length > 0,
+		[selections]
+	);
 
 	// Compute filtered campaigns from app-level filters
 	const filteredCampaigns = useMemo(() => {
@@ -116,11 +177,21 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 			)
 				return false;
 
+			// Normalize the campaign categories into tokens
+			const catTokens = String(c?.category ?? "")
+				.split(",")
+				.map((s) => s.trim().toLowerCase())
+				.filter(Boolean);
+
+			// If user selected any categories, keep the row only if there's any match
 			if (
-				categories?.length &&
-				!categories.includes(String(c?.category ?? ""))
-			)
+				(categories?.length ?? 0) > 0 &&
+				!categories.some((sel) =>
+					catTokens.includes(String(sel).toLowerCase())
+				)
+			) {
 				return false;
+			}
 
 			if (
 				!includesAll(
@@ -152,7 +223,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 			const loadingChanged = prevAll.loading !== nextLoading;
 			const hasPlansChanged = prevAll.hasPlans !== nextHasPlans;
-			const dataChanged = prevAll.data !== nextData; // ref compare (stable due to memo + stable empties)
+			const dataChanged = prevAll.data !== nextData;
 
 			if (!loadingChanged && !hasPlansChanged && !dataChanged) {
 				return prev; // no-op
