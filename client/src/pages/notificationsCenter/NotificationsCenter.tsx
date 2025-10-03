@@ -1,4 +1,3 @@
-// NotificationsComingSoonLight.tsx
 import { AppRoutes } from "@/shared/shared.models";
 import {
 	Badge,
@@ -17,9 +16,9 @@ import { IconBell, IconSparkles } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
-	onPrimary?: () => void; // e.g., go back to Dashboard
+	onPrimary?: () => void;
 	primaryLabel?: string;
-	onSecondary?: () => void; // e.g., open roadmap/changelog
+	onSecondary?: () => void;
 	secondaryLabel?: string;
 };
 
@@ -36,18 +35,17 @@ export default function NotificationsComingSoonLight({
 		<Box component="section" bg="#fafafa">
 			<Center h="90vh" px={{ base: 20, sm: 32 }}>
 				<Stack gap={22} align="center" maw={720} ta="center">
-					{/* Title */}
 					<Text
 						variant="gradient"
 						gradient={{ from: "violet", to: "red.4", deg: 45 }}
 						fw={900}
 						style={{
-							fontSize: "clamp(40px, 7vw, 84px)",
+							fontSize: "clamp(40px, 7vw, 64px)",
 							lineHeight: 1.05,
 							letterSpacing: -0.5,
 						}}
 					>
-						Notifications
+						Notifications & Status Dashboard
 					</Text>
 
 					{/* “Coming Soon” badge */}
@@ -70,15 +68,13 @@ export default function NotificationsComingSoonLight({
 						Coming soon
 					</Badge>
 
-					{/* App-relevant copy */}
-					<Text c="violet.9" size="sm" maw={620} fw={500}>
+					{/* <Text c="violet.9" size="sm" maw={620} fw={500}>
 						Real-time alerts for campaign changes, approvals, and
 						upcoming events, all delivered where you work. Configure
 						practice - level routing, digest summaries, and admin
 						controls. No inbox clutter, just the signal you need.
-					</Text>
+					</Text> */}
 
-					{/* Non-collecting UI element: a preview of notification modes */}
 					<Paper
 						radius={10}
 						p="sm"
@@ -102,7 +98,6 @@ export default function NotificationsComingSoonLight({
 								</Text>
 							</Group>
 
-							{/* Read-only preview; doesn’t store or send data */}
 							<SegmentedControl
 								value="digest"
 								data={[
@@ -139,11 +134,10 @@ export default function NotificationsComingSoonLight({
 						)}
 					</Group>
 
-					{/* Small helper line */}
-					<Text c="gray.5" fz="xs" mt={2}>
+					{/* <Text c="gray.5" fz="xs" mt={2}>
 						No sign-ups needed.Feature will appear automatically
 						when ready.
-					</Text>
+					</Text> */}
 				</Stack>
 			</Center>
 		</Box>

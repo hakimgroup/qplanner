@@ -72,7 +72,7 @@ export enum SelectionTier {
 
 export enum SelectionActivity {
 	Event = "Event",
-	BrandActivations = "Brand Activations",
-	Campaign = "Campaign",
-	Evergreen = "Evergreen",
+	BrandActivations = "brand activation",
+	Campaign = "campaign",
+	Evergreen = "evergreen",
 }
