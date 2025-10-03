@@ -254,14 +254,13 @@ export function useCreateBespokeEvent() {
 type Filters = {
 	category?: string | null;
 	status?: string | null;
-	// tier?: "good" | "better" | "best" | null;
 	tier?: string | null;
 	q?: string | null;
 };
 
 export function useCampaignsCatalog(filters?: Filters) {
 	return useQuery({
-		queryKey: ["campaigns_catalog", filters],
+		queryKey: [DatabaseTables.CampaignsCatalog, filters],
 		queryFn: async () => {
 			let q = supabase
 				.from(DatabaseTables.CampaignsCatalog)
@@ -270,14 +269,49 @@ export function useCampaignsCatalog(filters?: Filters) {
 
 			if (filters?.category) q = q.eq("category", filters.category);
 			if (filters?.status) q = q.eq("status", filters.status);
-			if (filters?.tier) q = q.eq("tier", filters.tier);
+
+			// ---- tiers filtering (tiers is text[]):
+			if (filters && "tier" in filters) {
+				const t = filters.tier;
+
+				// If null or empty array -> NO FILTER
+				if (t === null || (Array.isArray(t) && t.length === 0)) {
+					// do nothing → returns all campaigns
+				} else if (Array.isArray(t)) {
+					// Treat only the string sentinel "none" (or "__none__") as NULL-tier
+					const wantsNull = t.some(
+						(x) => x === "none" || x === "__none__"
+					);
+					const requested = t.filter(
+						(x) => x !== "none" && x !== "__none__"
+					);
+
+					if (requested.length && wantsNull) {
+						const set = `{${requested.join(",")}}`;
+						// tiers IS NULL OR tiers overlaps requested
+						q = q.or(`tiers.is.null,tiers.ov.${set}`);
+					} else if (requested.length) {
+						q = q.overlaps("tiers", requested);
+					} else if (wantsNull) {
+						q = q.is("tiers", null);
+					}
+				} else if (typeof t === "string" && t.length > 0) {
+					if (t === "none" || t === "__none__") {
+						q = q.is("tiers", null);
+					} else {
+						q = q.contains("tiers", [t]);
+					}
+				}
+			}
+			// ---- end tiers filter
 
 			const { data, error } = await q;
 			if (error) throw error;
 
-			// local search across few fields (client-side)
+			// client-side search
 			const needle = (filters?.q ?? "").trim().toLowerCase();
 			if (!needle) return data;
+
 			return (data ?? []).filter((r: any) => {
 				const inTxt = (s?: string) =>
 					String(s ?? "")
@@ -289,6 +323,7 @@ export function useCampaignsCatalog(filters?: Filters) {
 								String(x).toLowerCase().includes(needle)
 						  )
 						: false;
+
 				return (
 					inTxt(r.name) ||
 					inTxt(r.description) ||
@@ -306,19 +341,21 @@ export function useUpdateCampaignTier() {
 	return useMutation({
 		mutationFn: async ({
 			id,
-			tier,
+			tiers,
 		}: {
 			id: string;
-			tier: string | null;
+			tiers: string[] | null;
 		}) => {
 			const { error } = await supabase
 				.from(DatabaseTables.CampaignsCatalog)
-				.update({ tier })
+				.update({ tiers })
 				.eq("id", id);
 			if (error) throw error;
 		},
 		onSuccess: () => {
-			qc.invalidateQueries({ queryKey: ["campaigns_catalog"] });
+			qc.invalidateQueries({
+				queryKey: [DatabaseTables.CampaignsCatalog],
+			});
 			toast.success("Tier updated");
 		},
 		onError: (e: any) => toast.error(e?.message ?? "Failed to update tier"),
@@ -337,7 +374,9 @@ export function useBulkUpdateCampaignTier() {
 			if (error) throw error;
 		},
 		onSuccess: () => {
-			qc.invalidateQueries({ queryKey: ["campaigns_catalog"] });
+			qc.invalidateQueries({
+				queryKey: [DatabaseTables.CampaignsCatalog],
+			});
 			toast.success("Tier set for selected");
 		},
 		onError: (e: any) => toast.error(e?.message ?? "Failed to bulk update"),
@@ -352,7 +391,7 @@ export function useUpsertCatalogCampaign() {
 				name: payload.name,
 				description: payload.description,
 				category: payload.category,
-				tier: payload.tier,
+				tiers: payload.tiers,
 				status: payload.status ?? "Available",
 				objectives: payload.objectives ?? [],
 				topics: payload.topics ?? [],
@@ -378,7 +417,9 @@ export function useUpsertCatalogCampaign() {
 			return data;
 		},
 		onSuccess: () => {
-			qc.invalidateQueries({ queryKey: ["campaigns_catalog"] });
+			qc.invalidateQueries({
+				queryKey: [DatabaseTables.CampaignsCatalog],
+			});
 			toast.success("Campaign saved");
 		},
 		onError: (e: any) => toast.error(e?.message ?? "Failed to save"),

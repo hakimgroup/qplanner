@@ -12,9 +12,10 @@ import {
 	useMantineTheme,
 	ActionIcon,
 	Grid,
+	MultiSelect, // ⬅️ use MultiSelect
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import filtersData from "@/filters.json";
+import filtersData, { tiers as tierOptions } from "@/filters.json";
 import { useUpsertCatalogCampaign } from "@/hooks/campaign.hooks";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import StyledButton from "@/components/styledButton/StyledButton";
@@ -30,7 +31,7 @@ type Props = {
 export default function CampaignModal({ opened, onClose, row }: Props) {
 	const T = useMantineTheme();
 
-	// Reference links state (array of strings)
+	// Reference links (array of strings)
 	const [links, setLinks] = useState<string[]>(
 		Array.isArray(row?.reference_links) ? row.reference_links : [""]
 	);
@@ -48,8 +49,7 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 			name: row?.name ?? "",
 			description: row?.description ?? "",
 			category: row?.category ?? "",
-			// ⬇️ If no tier present, start with null (not "good")
-			tier: row?.tier ?? (null as string | null),
+			tiers: Array.isArray(row?.tiers) ? (row.tiers as string[]) : [], // ⬅️ multi tiers
 			objectives: row?.objectives ?? [],
 			topics: row?.topics ?? [],
 			from: row?.availability?.from
@@ -60,14 +60,12 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 		validate: {
 			name: (v) => (!!v?.trim() ? null : "Required"),
 			category: (v) => (!!v ? null : "Required"),
-			// ⬇️ Tier is optional now (no validation)
 		},
 	});
 
 	const { mutate: upsert, isPending } = useUpsertCatalogCampaign();
 
 	const handleSubmit = form.onSubmit((vals) => {
-		// strip blank links
 		const reference_links = links.map((l) => l.trim()).filter(Boolean);
 
 		upsert(
@@ -76,8 +74,7 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 				name: vals.name.trim(),
 				description: vals.description?.trim() || null,
 				category: vals.category,
-				// ⬇️ Send null if tier is empty string
-				tier: vals.tier ? vals.tier : null,
+				tiers: Array.isArray(vals.tiers) ? vals.tiers : [], // ⬅️ send array (empty = no tier)
 				objectives: vals.objectives,
 				topics: vals.topics,
 				availability:
@@ -133,24 +130,16 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 							}))}
 							{...form.getInputProps("category")}
 						/>
-						<Select
+
+						{/* ⬇️ MultiSelect for tiers */}
+						<MultiSelect
 							radius={10}
-							label="Tier"
-							// ⬇️ No asterisk; tier is optional
-							placeholder="No tier"
+							label="Tiers"
+							data={tierOptions} // [{label,value}] e.g. good/better/best
+							value={form.values.tiers}
+							onChange={(v) => form.setFieldValue("tiers", v)}
 							clearable
-							// include an explicit "No tier" option (empty string), plus tiers
-							data={[
-								{ label: "— No tier —", value: "" },
-								{ label: "Good", value: "good" },
-								{ label: "Better", value: "better" },
-								{ label: "Best", value: "best" },
-							]}
-							// values may be string | null; treat null as ""
-							value={form.values.tier ?? ""}
-							onChange={(v) =>
-								form.setFieldValue("tier", v || null)
-							}
+							searchable={false}
 							nothingFoundMessage="No options"
 						/>
 					</SimpleGrid>

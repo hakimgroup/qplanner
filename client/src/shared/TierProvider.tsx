@@ -32,39 +32,46 @@ export const TierProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [loading, setLoading] = useState<boolean>(false);
 
 	const fetchTiers = async () => {
-		if (!user) return; // no session yet → skip
+		if (!user) return;
 		setLoading(true);
+
+		// Fetch only rows that have at least one of the three tiers
 		const { data, error } = await supabase
-			.from(DatabaseTables.CampaignsCatalog) // e.g. "campaigns_catalog"
-			.select("id, tier")
-			.in("tier", ["good", "better", "best"]); // only the labeled tiers
+			.from(DatabaseTables.CampaignsCatalog) // "campaigns_catalog"
+			.select("id, tiers")
+			.overlaps("tiers", ["good", "better", "best"]);
 
 		if (!error && Array.isArray(data)) {
-			const g: string[] = [];
-			const b: string[] = [];
-			const B: string[] = [];
+			const good = new Set<string>();
+			const better = new Set<string>();
+			const best = new Set<string>();
 
 			for (const row of data as Array<{
 				id: string;
-				tier: string | null;
+				tiers: string[] | null;
 			}>) {
-				if (row.tier === "good") g.push(row.id);
-				else if (row.tier === "better") b.push(row.id);
-				else if (row.tier === "best") B.push(row.id);
+				const tArr = Array.isArray(row.tiers)
+					? row.tiers.map((t) => t?.toLowerCase?.() ?? t)
+					: [];
+
+				if (tArr.includes("good")) good.add(row.id);
+				if (tArr.includes("better")) better.add(row.id);
+				if (tArr.includes("best")) best.add(row.id);
 			}
 
-			setGood(g);
-			setBetter(b);
-			setBest(B);
+			setGood([...good]);
+			setBetter([...better]);
+			setBest([...best]);
 		}
+
 		setLoading(false);
 	};
 
 	useEffect(() => {
 		fetchTiers();
-		// Optional: live updates when a campaign tier changes
 		if (!user) return;
 
+		// Live updates on inserts/updates/deletes
 		const channel = supabase
 			.channel("tiers-live")
 			.on(
@@ -82,7 +89,7 @@ export const TierProvider: React.FC<{ children: React.ReactNode }> = ({
 			supabase.removeChannel(channel);
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [user?.id]); // refetch/subscribe when auth becomes available
+	}, [user?.id]);
 
 	const value = useMemo<TierContextModel>(
 		() => ({

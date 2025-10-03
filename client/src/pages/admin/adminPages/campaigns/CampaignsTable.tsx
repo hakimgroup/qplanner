@@ -21,7 +21,7 @@ export type CampaignRow = {
 	name: string;
 	description?: string;
 	category?: string;
-	tier?: "good" | "better" | "best" | null;
+	tiers?: string[] | null;
 	status?: string | null;
 	availability?: { from?: string | null; to?: string | null } | null;
 	objectives?: string[];
@@ -101,7 +101,7 @@ const CampaignsTable = forwardRef<
 		},
 
 		{
-			field: "tier",
+			field: "tiers",
 			headerName: "Tier",
 			width: 200,
 			minWidth: 170,

@@ -13,7 +13,6 @@ import { IconPlus, IconSearch } from "@tabler/icons-react";
 import { useDebouncedValue } from "@mantine/hooks";
 import { useContext, useMemo, useRef, useState } from "react";
 import StyledButton from "@/components/styledButton/StyledButton";
-import filtersData from "@/filters.json";
 import { useCampaignsCatalog } from "@/hooks/campaign.hooks";
 import CampaignModal from "./CampaignModal";
 import CampaignsFilters from "./CampaignsFilters";

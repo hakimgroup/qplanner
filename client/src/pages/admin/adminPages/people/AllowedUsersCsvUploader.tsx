@@ -339,7 +339,7 @@ export default function AllowedUsersCsvUploader() {
 						Bulk Upload — Allowed Users
 					</Text>
 				}
-				size="60rem"
+				size="70rem"
 				radius="md"
 				overlayProps={{ backgroundOpacity: 0.6, blur: 3 }}
 			>
@@ -428,7 +428,6 @@ export default function AllowedUsersCsvUploader() {
 								rows={rows}
 								cols={colDefs}
 								enableSelection={false}
-								autoHeight
 								height={360}
 								spacing={12}
 								loading={false}
