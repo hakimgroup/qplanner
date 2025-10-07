@@ -24,6 +24,7 @@ import cl from "./help.module.scss";
 import StyledButton from "../styledButton/StyledButton";
 import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "@/shared/shared.models";
+import { VideoThumbnailModal } from "../videoPlayer/VideoThumbnailModal";
 
 const Help = () => {
 	const T = useMantineTheme();
@@ -62,16 +63,7 @@ const Help = () => {
 					planner.
 				</Text>
 
-				<AspectRatio ratio={16 / 9} w="100%">
-					<Box className={cl.thumbnail}>
-						<Center className={cl.play}>
-							<IconPlayerPlayFilled
-								size={30}
-								color={T.colors.violet[9]}
-							/>
-						</Center>
-					</Box>
-				</AspectRatio>
+				<VideoThumbnailModal />
 
 				<Stack mt={"lg"} gap={10}>
 					<Text fw={600} size="sm">
@@ -94,13 +86,7 @@ const Help = () => {
 				<Divider color="gray.1" mt={30} />
 
 				<Stack gap={8} mt={20}>
-					<Button
-						radius={10}
-						color={"blue.3"}
-						leftSection={<IconPlayerPlay size={14} />}
-					>
-						Watch Tutorial
-					</Button>
+					<VideoThumbnailModal useButton />
 					<StyledButton
 						rightSection={<IconLink size={14} />}
 						onClick={() => navigate(AppRoutes.FAQs)}

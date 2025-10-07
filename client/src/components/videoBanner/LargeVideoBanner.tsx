@@ -20,6 +20,7 @@ import {
 import StyledButton from "../styledButton/StyledButton";
 import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "@/shared/shared.models";
+import { VideoThumbnailModal } from "../videoPlayer/VideoThumbnailModal";
 
 const LargeVideoBanner = ({ closeBanner }) => {
 	const C = useMantineTheme().colors;
@@ -38,7 +39,7 @@ const LargeVideoBanner = ({ closeBanner }) => {
 				<IconX size={18} stroke={3} />
 			</ActionIcon>
 
-			<Grid gutter={30} className={cl["video-grid"]}>
+			<Grid gutter={30}>
 				<Grid.Col span={6}>
 					<Stack gap={0}>
 						<Text
@@ -60,12 +61,7 @@ const LargeVideoBanner = ({ closeBanner }) => {
 						</Text>
 
 						<Flex gap={10} align="center" mt={20}>
-							<Button
-								leftSection={<IconPlayerPlay size={14} />}
-								fullWidth
-							>
-								Watch Tutorial
-							</Button>
+							<VideoThumbnailModal useButton fullWidth />
 
 							<StyledButton
 								fullWidth
@@ -77,17 +73,8 @@ const LargeVideoBanner = ({ closeBanner }) => {
 					</Stack>
 				</Grid.Col>
 
-				<Grid.Col span={6} className={cl["right-section"]}>
-					<AspectRatio ratio={16 / 9} w="100%">
-						<Box className={cl.thumbnail}>
-							<Center className={cl.play}>
-								<IconPlayerPlayFilled
-									size={30}
-									color={C.violet[9]}
-								/>
-							</Center>
-						</Box>
-					</AspectRatio>
+				<Grid.Col span={6}>
+					<VideoThumbnailModal />
 				</Grid.Col>
 			</Grid>
 		</Card>

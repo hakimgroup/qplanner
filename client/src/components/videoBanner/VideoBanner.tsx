@@ -1,6 +1,5 @@
 import {
 	ActionIcon,
-	Button,
 	Card,
 	Flex,
 	Group,
@@ -9,6 +8,7 @@ import {
 } from "@mantine/core";
 import { IconPlayerPlay, IconX } from "@tabler/icons-react";
 import cl from "./videoBanner.module.scss";
+import { VideoThumbnailModal } from "../videoPlayer/VideoThumbnailModal";
 
 const VideoBanner = ({ onDismiss }) => {
 	const T = useMantineTheme();
@@ -32,9 +32,7 @@ const VideoBanner = ({ onDismiss }) => {
 				</Flex>
 
 				<Flex align="center" justify="space-between" gap={5}>
-					<Button color="blue.3" radius={10}>
-						Watch Tutorial
-					</Button>
+					<VideoThumbnailModal useButton />
 
 					<ActionIcon
 						variant="subtle"

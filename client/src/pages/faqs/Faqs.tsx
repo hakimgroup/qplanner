@@ -1,6 +1,8 @@
 import StyledButton from "@/components/styledButton/StyledButton";
+import { VideoThumbnailModal } from "@/components/videoPlayer/VideoThumbnailModal";
 import {
 	Accordion,
+	Box,
 	Button,
 	Card,
 	Center,
@@ -104,9 +106,9 @@ const Faqs = () => {
 								quickly
 							</Text>
 
-							<Button fullWidth mt={20}>
-								Watch Tutorial
-							</Button>
+							<Box mt={20}>
+								<VideoThumbnailModal useButton fullWidth />
+							</Box>
 						</Stack>
 					</Card>
 				</Grid.Col>
