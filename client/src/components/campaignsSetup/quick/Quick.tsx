@@ -12,6 +12,7 @@ import {
 	Stack,
 	Text,
 	useMantineTheme,
+	Highlight,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -70,6 +71,10 @@ const Quick = () => {
 				"1 seasonal event",
 			],
 			includedCampaigns: goodIds,
+			snapshot: {
+				info: "Essential foundations to stay visible all year — quarterly campaigns, core assets, light community activity.",
+				budget: "£1,500 (flex up/down based on asset and activation scope).",
+			},
 		},
 		{
 			color: "blue.3",
@@ -86,6 +91,10 @@ const Quick = () => {
 				"1 seasonal event and 1 brand activation",
 			],
 			includedCampaigns: betterIds,
+			snapshot: {
+				info: "Balanced calendar for steady growth — more campaigns, stronger windows/POS, and one or two standout activations.",
+				budget: "£2,500 (flex with bespoke assets or local media).",
+			},
 		},
 		{
 			color: "grape.8",
@@ -102,6 +111,10 @@ const Quick = () => {
 				"2 seasonal events and 2 brand activations",
 			],
 			includedCampaigns: bestIds,
+			snapshot: {
+				info: "Always-on, growth-focused presence — multiple campaigns per quarter, premium creative, events and targeted media.",
+				budget: "£3,750+ (flex for event scale, production and paid activity).",
+			},
 		},
 	];
 
@@ -250,6 +263,49 @@ const Quick = () => {
 								</Flex>
 
 								<Divider size={"xs"} color="gray.0" mt={20} />
+
+								<Card
+									radius={10}
+									bg={"violet.0"}
+									style={{
+										border: `1px solid ${T.colors.violet[1]}`,
+									}}
+									shadow="xs"
+								>
+									<Stack gap={10}>
+										<Text fw={600} size="sm" c="gray.9">
+											Strategy Snapshot
+										</Text>
+
+										<Text size="xs" fw={500} c="gray.7">
+											{t.snapshot.info}
+										</Text>
+
+										<Stack gap={5}>
+											<Text fw={700} size="xs" c="lime.9">
+												Recommended Annual Budget:
+											</Text>
+											<Highlight
+												highlight={[
+													"£1,500",
+													"£2,500",
+													"£3,750+",
+												]}
+												size="xs"
+												fw={500}
+												c="gray.7"
+												highlightStyles={{
+													fontWeight: 800,
+													backgroundColor:
+														"transparent",
+													color: T.colors.blue[3],
+												}}
+											>
+												{t.snapshot.budget}
+											</Highlight>
+										</Stack>
+									</Stack>
+								</Card>
 
 								<Box mt={20}>
 									<Text size="sm" c={"gray.9"} fw={600}>
