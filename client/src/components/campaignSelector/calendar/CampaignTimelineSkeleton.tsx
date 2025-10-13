@@ -399,6 +399,8 @@ function CampaignRow({
  *  MAIN COMPONENT
  *  ========================= */
 export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
+	const calendarYear = 2026;
+
 	const {
 		state: {
 			allCampaigns: { data },
@@ -507,7 +509,8 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 					variant="gradient"
 					gradient={{ from: "blue.3", to: "red.4", deg: 180 }}
 				>
-					{Number(format(new Date(), "yyyy"))} Planner Calendar
+					{/* {Number(format(new Date(), "yyyy"))} Planner Calendar */}
+					{calendarYear} Planner Calendar
 				</Text>
 
 				<Flex align="center" gap={10}>
@@ -545,20 +548,20 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 						<Flex align="center" mb="sm" gap={"sm"}>
 							<Logo isSmall text="H1" />
 							<Text size="xl" fw={600}>
-								First Half - 2025
+								First Half - {calendarYear}
 							</Text>
 						</Flex>
 
 						<QuarterRow
 							mode={mode}
 							color="blue.3"
-							year={2025}
+							year={calendarYear}
 							startMonth0={0}
 						/>
 						<MonthRow
 							mode={mode}
 							labels={monthsH1}
-							year={2025}
+							year={calendarYear}
 							startMonth0={0}
 						/>
 
@@ -567,8 +570,8 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 								key={g.id}
 								mode={mode}
 								group={g}
-								rangeStartISO="2025-01-01"
-								rangeEndISO="2025-06-30"
+								rangeStartISO={`${calendarYear}-01-01`}
+								rangeEndISO={`${calendarYear}-06-30`}
 							/>
 						))}
 					</Box>
@@ -592,20 +595,20 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 						<Flex align="center" mb="sm" gap={"sm"}>
 							<Logo isSmall text="H2" />
 							<Text size="xl" fw={600}>
-								Second Half - 2025
+								Second Half - {calendarYear}
 							</Text>
 						</Flex>
 
 						<QuarterRow
 							mode={mode}
 							color="red.5"
-							year={2025}
+							year={calendarYear}
 							startMonth0={6}
 						/>
 						<MonthRow
 							mode={mode}
 							labels={monthsH2}
-							year={2025}
+							year={calendarYear}
 							startMonth0={6}
 						/>
 
@@ -614,8 +617,8 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 								key={g.id}
 								mode={mode}
 								group={g}
-								rangeStartISO="2025-07-01"
-								rangeEndISO="2025-12-31"
+								rangeStartISO={`${calendarYear}-07-01`}
+								rangeEndISO={`${calendarYear}-12-31`}
 							/>
 						))}
 					</Box>
