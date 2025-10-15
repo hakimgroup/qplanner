@@ -468,8 +468,8 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 				const endMonth = new Date(it.selection_to_date).getMonth();
 
 				// boundaries
-				const h1End = "2025-06-30";
-				const h2Start = "2025-07-01";
+				const h1End = `${calendarYear}-06-30`;
+				const h2Start = `${calendarYear}-07-01`;
 
 				if (startMonth <= 5 && endMonth <= 5) {
 					gH1.campaigns.push(it);
