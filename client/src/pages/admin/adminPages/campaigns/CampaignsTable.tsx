@@ -40,8 +40,9 @@ const CampaignsTable = forwardRef<
 		rows: CampaignRow[];
 		loading?: boolean;
 		onEdit: (row: CampaignRow) => void;
+		onSelectionChange?: (ids: string[]) => void;
 	}
->(function CampaignsTable({ rows, loading, onEdit }, ref) {
+>(function CampaignsTable({ rows, loading, onEdit, onSelectionChange }, ref) {
 	const T = useMantineTheme().colors;
 	const tableRef = useRef<TableHandle>(null);
 	const selectedIdsRef = useRef<string[]>([]);
@@ -195,9 +196,11 @@ const CampaignsTable = forwardRef<
 			enableSelection
 			height={550}
 			onSelect={(selectedRows) => {
-				selectedIdsRef.current = (selectedRows ?? [])
+				const ids = (selectedRows ?? [])
 					.map((r: CampaignRow) => r?.id)
 					.filter(Boolean);
+				selectedIdsRef.current = ids;
+				onSelectionChange?.(ids); // ⬅️ trigger parent update
 			}}
 		/>
 	);

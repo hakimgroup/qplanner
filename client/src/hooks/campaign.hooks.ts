@@ -5,8 +5,8 @@ import {
 	Campaign,
 	CreateBespokeEventInput,
 	CreateBespokeInput,
-	GuidedCampaign,
 	GuidedParams,
+	BulkDeletePayload,
 } from "@/models/campaign.models";
 import { useAuth } from "@/shared/AuthProvider";
 import { usePractice } from "@/shared/PracticeProvider";
@@ -383,6 +383,34 @@ export function useBulkUpdateCampaignTier() {
 	});
 }
 
+export function useBulkDeleteCampaigns() {
+	const qc = useQueryClient();
+
+	return useMutation({
+		mutationFn: async ({ ids }: BulkDeletePayload) => {
+			if (!ids || ids.length === 0) return;
+			const { error } = await supabase
+				.from(DatabaseTables.CampaignsCatalog)
+				.delete()
+				.in("id", ids);
+
+			if (error) throw error;
+			return ids;
+		},
+		onSuccess: (ids) => {
+			qc.invalidateQueries({
+				queryKey: [DatabaseTables.CampaignsCatalog],
+			});
+			toast.success(
+				`${ids.length} campaign${
+					ids.length > 1 ? "s" : ""
+				} removed successfully.`
+			);
+		},
+		onError: (err: any) => toast.error(err?.message ?? "Failed to delete."),
+	});
+}
+
 export function useUpsertCatalogCampaign() {
 	const qc = useQueryClient();
 	return useMutation({
@@ -396,7 +424,7 @@ export function useUpsertCatalogCampaign() {
 				objectives: payload.objectives ?? [],
 				topics: payload.topics ?? [],
 				availability: payload.availability ?? null,
-				more_info_link: payload.more_info_link ?? null,
+				reference_links: payload.reference_links,
 			};
 
 			const query = payload.id

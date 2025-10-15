@@ -159,22 +159,40 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 						gap={20}
 					/>
 
-					<Select
+					<MultiSelect
 						radius={10}
 						label="Objectives"
-						data={filtersData.objectives}
-						multiple
+						data={filtersData.objectives.map((o: string) => ({
+							label: o,
+							value: o,
+						}))}
+						value={
+							Array.isArray(form.values.objectives)
+								? form.values.objectives
+								: []
+						}
+						onChange={(v) => form.setFieldValue("objectives", v)}
 						searchable
-						{...form.getInputProps("objectives")}
+						clearable
+						nothingFoundMessage="No objectives found"
 					/>
 
-					<Select
+					<MultiSelect
 						radius={10}
 						label="Topics"
-						data={filtersData.topics}
-						multiple
+						data={filtersData.topics.map((t: string) => ({
+							label: t,
+							value: t,
+						}))}
+						value={
+							Array.isArray(form.values.topics)
+								? form.values.topics
+								: []
+						}
+						onChange={(v) => form.setFieldValue("topics", v)}
 						searchable
-						{...form.getInputProps("topics")}
+						clearable
+						nothingFoundMessage="No topics found"
 					/>
 
 					{/* Reference Links (multiple) */}

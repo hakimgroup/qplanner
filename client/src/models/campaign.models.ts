@@ -4,6 +4,10 @@ import {
 	SelectionTier,
 } from "@/shared/shared.models";
 
+export interface BulkDeletePayload {
+	ids: string[];
+}
+
 export const OBJECTIVES = [
 	"ADV",
 	"AOV",

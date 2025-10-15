@@ -28,6 +28,7 @@ export default function AdminCampaigns() {
 	const {
 		state: { filtersOptions },
 	} = useContext(AppContext);
+	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
 	// filters (server-side-ish; adapt as you wish)
 	const [category, setCategory] = useState<string | null>("all");
@@ -134,7 +135,10 @@ export default function AdminCampaigns() {
 					</StyledButton>
 				</Group>
 
-				<CampaignsFilters tableRef={tableRef} />
+				<CampaignsFilters
+					tableRef={tableRef}
+					selectedIds={selectedIds}
+				/>
 
 				<CampaignsTable
 					ref={tableRef}
@@ -144,6 +148,7 @@ export default function AdminCampaigns() {
 						setRow(r);
 						setOpened(true);
 					}}
+					onSelectionChange={setSelectedIds}
 				/>
 			</Card>
 

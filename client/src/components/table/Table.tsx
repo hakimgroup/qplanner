@@ -14,9 +14,8 @@ interface Props {
 	autoHeight?: boolean;
 	height?: number;
 	enableSelection?: boolean;
-	onSelect?: (row: any[]) => void;
-	/** Optional defaults for CSV export (overridable when calling exportCsv) */
 	csvDefaults?: Partial<CsvExportParams>;
+	onSelect?: (row: any[]) => void;
 }
 
 export type TableHandle = {
