@@ -129,7 +129,7 @@ const Faqs = () => {
 								campaigns
 							</Text>
 
-							<StyledButton fullWidth mt={20}>
+							<StyledButton link="https://planner.hakimgroup.co.uk/Guide.pdf" fullWidth mt={20}>
 								Read Guide
 							</StyledButton>
 						</Stack>
@@ -196,8 +196,8 @@ const Faqs = () => {
 					</Stack>
 
 					<Group gap={10}>
-						<StyledButton>Leave Feedback</StyledButton>
-						<StyledButton>Request a Feature</StyledButton>
+						<StyledButton link="mailto:marketing@hakimgroup.co.uk">Leave Feedback</StyledButton>
+						<StyledButton link="mailto:marketing@hakimgroup.co.uk">Request a Feature</StyledButton>
 					</Group>
 				</Stack>
 			</Card>
