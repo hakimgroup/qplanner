@@ -1,15 +1,15 @@
 import {
-	Title,
-	Paper,
-	Stack,
-	Group,
-	Flex,
-	Text,
-	Divider,
-	Card,
+  Title,
+  Paper,
+  Stack,
+  Group,
+  Flex,
+  Text,
+  Divider,
+  Card,
 } from "@mantine/core";
 import StyledTabs from "@/components/styledTabs/StyledTabs";
-import { IconCircleFilled } from "@tabler/icons-react";
+import { IconCircleFilled, IconPlus } from "@tabler/icons-react";
 import Quick from "@/components/campaignsSetup/quick/Quick";
 import Guided from "@/components/campaignsSetup/guided/Guided";
 import { useContext } from "react";
@@ -21,70 +21,74 @@ import CampaignSelectorTable from "@/components/campaignSelector/table/CampaignS
 import CampaignSelectorCalendar from "@/components/campaignSelector/calendar/CampaignSelectorCalendar";
 import Banners from "@/components/videoBanner/Banners";
 import { usePractice } from "@/shared/PracticeProvider";
+import StyledButton from "@/components/styledButton/StyledButton";
+import CopyPracticeCampaigns from "@/components/practiceSelector/CopyPracticeCampaigns";
 
 export function DashboardContent() {
-	const {
-		state: { filters },
-	} = useContext(AppContext);
-	const { activePracticeName, unitedView } = usePractice();
+  const {
+    state: { filters },
+  } = useContext(AppContext);
+  const { activePracticeName, unitedView } = usePractice();
 
-	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
+  const isSelections = filters.userSelectedTab === UserTabModes.Selected;
 
-	// Render logic for main content
-	const renderContent = () => {
-		if (isSelections && filters.viewMode === ViewModes.Calendar) {
-			return <CampaignSelectorCalendar />;
-		}
+  // Render logic for main content
+  const renderContent = () => {
+    if (isSelections && filters.viewMode === ViewModes.Calendar) {
+      return <CampaignSelectorCalendar />;
+    }
 
-		if (filters.viewMode === ViewModes.Table) {
-			return <CampaignSelectorTable />;
-		}
+    if (filters.viewMode === ViewModes.Table) {
+      return <CampaignSelectorTable />;
+    }
 
-		// Default fallback to Card view
-		return <CampaignSelectorCards />;
-	};
+    // Default fallback to Card view
+    return <CampaignSelectorCards />;
+  };
 
-	return (
-		<Paper pt={10} h="100%">
-			<Stack gap={25}>
-				<Banners />
-				<StyledTabs />
+  return (
+    <Paper pt={10} h="100%">
+      <Stack gap={25}>
+        <Banners />
+        <StyledTabs />
 
-				<Group align="center" justify="space-between">
-					<Stack gap={5}>
-						<Title order={3}>
-							{unitedView ? "All" : activePracticeName}
-							{isSelections
-								? " Selections"
-								: " - Select Campaigns"}
-						</Title>
-						<Flex align={"center"} gap={20}>
-							<Text size="sm" c={"gray.8"}>
-								{isSelections
-									? "Manage your chosen campaigns"
-									: "Browse and add campaigns to your plan"}
-							</Text>
-							<IconCircleFilled size={4} />
-							<Text size="sm" c={"gray.8"}>
-								{upperFirst(filters.viewMode)} View
-							</Text>
-						</Flex>
-					</Stack>
+        <Group align="center" justify="space-between">
+          <Stack gap={5}>
+            <Title order={3}>
+              {unitedView ? "All" : activePracticeName}
+              {isSelections ? " Selections" : " - Select Campaigns"}
+            </Title>
+            <Flex align={"center"} gap={20}>
+              <Text size="sm" c={"gray.8"}>
+                {isSelections
+                  ? "Manage your chosen campaigns"
+                  : "Browse and add campaigns to your plan"}
+              </Text>
+              <IconCircleFilled size={4} />
+              <Text size="sm" c={"gray.8"}>
+                {upperFirst(filters.viewMode)} View
+              </Text>
+            </Flex>
+          </Stack>
 
-					{!isSelections && (
-						<Flex gap={12}>
-							<Quick />
-							<Guided />
-						</Flex>
-					)}
-				</Group>
+          {!isSelections && (
+            <Flex gap={12}>
+              <Quick />
+              <Guided />
+            </Flex>
+          )}
 
-				<Divider size={"xs"} color="gray.1" />
-			</Stack>
+          {isSelections && filters.viewMode === ViewModes.Calendar && (
+            <CopyPracticeCampaigns />
+          )}
+        </Group>
 
-			<Stack gap={25} pt={25}>
-				{renderContent()}
-			</Stack>
-		</Paper>
-	);
+        <Divider size={"xs"} color="gray.1" />
+      </Stack>
+
+      <Stack gap={25} pt={25}>
+        {renderContent()}
+      </Stack>
+    </Paper>
+  );
 }
