@@ -1,22 +1,19 @@
-import {
-  Card,
-  Group,
-  Text,
-  Select,
-  Button,
-  Stack,
-  Divider,
-  Collapse,
-} from "@mantine/core";
-import { useState } from "react";
+import { Group, Text, Select, Collapse } from "@mantine/core";
+import { useContext, useState } from "react";
 import { usePractice } from "@/shared/PracticeProvider";
 import { IconCopy, IconPlus } from "@tabler/icons-react";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { useCopyPracticeCampaigns } from "@/hooks/selection.hooks";
 import { useDisclosure } from "@mantine/hooks";
+import AppContext from "@/shared/AppContext";
 
 export default function CopyPracticeCampaigns() {
-  const { practices, activePracticeId, activePracticeName } = usePractice();
+  const {
+    state: {
+      allCampaigns: { data },
+    },
+  } = useContext(AppContext);
+  const { practices, activePracticeId } = usePractice();
   const [targetId, setTargetId] = useState<string | null>(null);
   const { mutate: copyCampaigns, isPending } = useCopyPracticeCampaigns();
   const [opened, { toggle }] = useDisclosure(false);
@@ -54,7 +51,7 @@ export default function CopyPracticeCampaigns() {
         leftSection={!opened ? <IconPlus size={14} /> : <IconCopy size={14} />}
         onClick={opened ? handleCopy : toggle}
         loading={isPending}
-        disabled={opened && (!targetId || !activePracticeId)}
+        disabled={(opened && (!targetId || !activePracticeId)) || !data.length}
       >
         {opened ? "Copy Calendar" : "Replicate This Calendar"}
       </StyledButton>
