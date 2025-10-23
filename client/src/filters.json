@@ -1,10 +1,5 @@
 {
-  "categories": [
-    "Event",
-    "Brand Activations",
-    "Campaign",
-    "Evergreen"
-  ],
+  "categories": ["Event", "Brand Activations", "Campaign", "Evergreen"],
   "objectives": [
     "ADV",
     "AOV",
@@ -14,14 +9,7 @@
     "Recurring revenue",
     "Eye test"
   ],
-  "topics": [
-    "Frame",
-    "Lens",
-    "Contact lenses",
-    "Kids",
-    "Clinical",
-    "Seasonal"
-  ],
+  "topics": ["Frame", "Lens", "Contact lenses", "Kids", "Clinical", "Seasonal"],
   "assets": [
     "Posters",
     "IPTV content",
@@ -62,12 +50,16 @@
       "value": "onPlan"
     },
     {
+      "label": "Request Assets",
+      "value": "requested"
+    },
+    {
       "label": "In Progress",
       "value": "inProgress"
     },
     {
-      "label": "Requested",
-      "value": "requested"
+      "label": "Awaiting Approval",
+      "value": "awaitingApproval"
     },
     {
       "label": "Confirmed",
@@ -76,10 +68,6 @@
     {
       "label": "Live",
       "value": "live"
-    },
-    {
-      "label": "Cancelled",
-      "value": "cancelled"
     }
   ],
   "sources": [

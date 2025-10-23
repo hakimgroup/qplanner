@@ -3,6 +3,7 @@ import {
   SelectionStatus,
   SelectionTier,
 } from "@/shared/shared.models";
+import { AssetItem } from "./general.models";
 
 export interface BulkDeletePayload {
   ids: string[];
@@ -64,6 +65,14 @@ export interface Campaign {
   bespoke_campaign_id?: string;
 }
 
+export interface Assets {
+  printedAssets: AssetItem[];
+  digitalAssets: AssetItem[];
+  externalPlacements: AssetItem[];
+  creative?: string;
+  note?: string;
+}
+
 export type CreateBespokeInput = {
   name: string;
   description: string;
@@ -88,7 +97,7 @@ export type CreateBespokeEventInput = {
   eventToDate: Date;
   objectives?: string[]; // jsonb array
   topics?: string[]; // jsonb array
-  assets?: string[]; // jsonb array
+  assets?: unknown;
   requirements?: string | null;
   notes?: string | null; // stored on selection
   links?: string[];

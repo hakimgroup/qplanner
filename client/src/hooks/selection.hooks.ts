@@ -21,6 +21,8 @@ import {
 import { fetchPlans } from "@/api/selections";
 import { useAuth } from "@/shared/AuthProvider";
 import { toast } from "sonner";
+import { GetAssetsResponse } from "@/models/general.models";
+import { useAssets } from "./general.hooks";
 
 const key = (activePracticeId: string | null, unitedView: boolean) => [
   DatabaseTables.Selections,
@@ -54,10 +56,20 @@ export function useSelections() {
 export function useAddSelection(onSuccess?: () => void) {
   const qc = useQueryClient();
   const { activePracticeId } = usePractice();
+  const { data: assetsData } = useAssets(); // 🔹 pull default assets
+
+  const formatAssets = (data?: GetAssetsResponse) => {
+    return {
+      printedAssets: data?.printedAssets,
+      digitalAssets: data?.digitalAssets,
+      externalPlacements: data?.externalPlacements,
+    };
+  };
 
   return useMutation({
     mutationFn: async (input: AddSelectionInput) => {
       if (!activePracticeId) throw new Error("No active practice selected");
+
       const payload = {
         practice_id: activePracticeId,
         campaign_id: input.campaign_id,
@@ -67,12 +79,15 @@ export function useAddSelection(onSuccess?: () => void) {
         notes: input.notes ?? null,
         bespoke: input.bespoke ?? false,
         source: input.source,
+        assets: formatAssets(assetsData), // 🔹 include default assets
       };
+
       const { data, error } = await supabase
         .from(DatabaseTables.Selections)
         .insert(payload)
         .select()
         .single();
+
       if (error) throw error;
       return data as Selection;
     },

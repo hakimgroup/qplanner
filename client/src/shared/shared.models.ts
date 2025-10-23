@@ -24,6 +24,7 @@ export enum DatabaseTables {
   Practices = "practices",
   Allowed_Users = "allowed_users",
   BespokeCampaigns = "bespoke_campaigns",
+  Notifications = "notifications",
 }
 
 export enum RPCFunctions {
@@ -41,6 +42,8 @@ export enum RPCFunctions {
   BulkUploadUsers = "bulk_upsert_allowed_users_with_practices",
   GetFilterOptions = "get_filter_options",
   CopyPracticeCampaigns = "copy_practice_campaigns",
+  GetAssets = "get_assets",
+  RequestAssets = "request_assets",
 }
 
 export enum UserRoles {
@@ -50,12 +53,12 @@ export enum UserRoles {
 }
 
 export enum SelectionStatus {
-  Requested = "requested",
-  Live = "live",
-  InProgress = "inProgress",
   OnPlan = "onPlan",
-  Cancelled = "cancelled",
+  Requested = "requested",
+  InProgress = "inProgress",
+  AwaitingApproval = "awaitingApproval",
   Confirmed = "confirmed",
+  Live = "live",
 }
 
 export enum SelectionsSource {
