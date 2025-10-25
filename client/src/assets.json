@@ -212,7 +212,7 @@
       "price": 5,
       "quantity": 0,
       "suffix": "per day",
-      "type": "free",
+      "type": "default",
       "adminRequested": false,
       "userSelected": false
     },
@@ -230,7 +230,7 @@
       "price": 0.83,
       "quantity": 0,
       "suffix": "per SMS",
-      "type": "free",
+      "type": "default",
       "adminRequested": false,
       "userSelected": false
     },

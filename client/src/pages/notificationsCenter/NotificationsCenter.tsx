@@ -2,7 +2,7 @@ import StyledTabs from "@/components/styledTabs/StyledTabs";
 import { Center, Container, Group, Stack, Text } from "@mantine/core";
 import { useState } from "react";
 import NotificationsFilters from "./NotificationsFilters";
-import NotificationCard from "./NotificationCard";
+import NotificationsList from "./NotificationsList";
 
 enum NotifTabs {
   Notifications = "notifications",
@@ -61,7 +61,7 @@ const NotificationsCenter = () => {
             </Text>
           </Group>
 
-          <NotificationCard />
+          <NotificationsList />
         </Stack>
       </Stack>
     </Container>
