@@ -1,4 +1,3 @@
-// components/notifications/PracticeRespondModal.tsx
 import {
   Modal,
   Stack,
@@ -7,7 +6,6 @@ import {
   Card,
   SimpleGrid,
   Checkbox,
-  Radio,
   Textarea,
   TextInput,
   Badge,
@@ -16,7 +14,8 @@ import {
   Button,
   useMantineTheme,
   ActionIcon,
-  Box,
+  ThemeIcon,
+  Select,
 } from "@mantine/core";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
@@ -24,14 +23,20 @@ import {
   IconCalendar,
   IconMinus,
   IconPlus,
-  IconPhoto,
   IconCircleCheck,
+  IconClock,
+  IconCircle,
+  IconBox,
 } from "@tabler/icons-react";
 import {
   useMarkNotificationRead,
   useSubmitAssets,
 } from "@/hooks/notification.hooks";
 import StyledButton from "@/components/styledButton/StyledButton";
+import CreativePicker, { CreativeItem } from "./CreativePicker";
+import { format } from "date-fns";
+import { activityColors } from "@/shared/shared.const";
+import { toLower } from "lodash";
 
 type AssetOption = { label: string; value: number };
 type AssetItem = {
@@ -78,10 +83,7 @@ export default function PracticeRespondModal({
   const campaignCategory = payload?.category ?? "";
   const fromDate = payload?.from_date ?? null;
   const toDate = payload?.to_date ?? null;
-  const requestNote = payload?.note ?? null;
-  const creatives: string[] = Array.isArray(payload?.creatives)
-    ? payload.creatives
-    : [];
+  const creatives: CreativeItem[] = payload.creatives ?? [];
 
   const baseAssets: AssetsGroup = payload?.assets ?? {
     printedAssets: [],
@@ -151,22 +153,6 @@ export default function PracticeRespondModal({
   const { mutate: markRead, isPending: markingRead } =
     useMarkNotificationRead();
 
-  // ─────────────────────────────────
-  // State mutators
-  // ─────────────────────────────────
-  function updateAsset(
-    bucket: keyof typeof assetsState,
-    name: string,
-    patch: Partial<EditableAsset>
-  ) {
-    setAssetsState((prev) => ({
-      ...prev,
-      [bucket]: prev[bucket].map((it) =>
-        it.name === name ? { ...it, ...patch } : it
-      ),
-    }));
-  }
-
   // toggle asset selected / deselected
   function toggleAssetSelected(
     bucket: keyof typeof assetsState,
@@ -189,7 +175,7 @@ export default function PracticeRespondModal({
         return {
           ...it,
           userSelected: checked,
-          quantity: nextQty,
+          quantity: checked ? nextQty : 0,
         };
       }),
     }));
@@ -202,10 +188,31 @@ export default function PracticeRespondModal({
       [bucket]: prev[bucket].map((it) => {
         if (it.name !== name) return it;
 
-        const minVal = it.type === "external" ? 1 : 0;
+        // external placements can go down to 0 now
+        const minVal = it.type === "external" ? 0 : 0;
         const cur = it.quantity ?? minVal;
         let next = cur - 1;
         if (next < minVal) next = minVal;
+
+        // special rule for "card":
+        // if quantity becomes 0, reset chosenOptionLabel and deselect
+        if (it.type === "card" && next === 0) {
+          return {
+            ...it,
+            quantity: 0,
+            userSelected: false,
+            chosenOptionLabel: null,
+          };
+        }
+
+        // NEW: if quantity becomes 0 for any asset, userSelected must be false
+        if (next === 0) {
+          return {
+            ...it,
+            quantity: next,
+            userSelected: false,
+          };
+        }
 
         return {
           ...it,
@@ -258,35 +265,50 @@ export default function PracticeRespondModal({
   // Helpers: display text + total cost
   // ─────────────────────────────────
   function describeAssetPrice(a: EditableAsset): string {
-    switch (a.type) {
-      case "free":
+    // we branch specially for "card"
+    if (a.type === "card") {
+      // if user has picked an option, show that exact price instead of "From ..."
+      if (a.chosenOptionLabel && a.options && a.options.length > 0) {
+        const picked = a.options.find((o) => o.label === a.chosenOptionLabel);
+        if (picked && picked.value != null && !isNaN(picked.value)) {
+          return `£${picked.value} (${picked.label})`;
+        }
+      }
+
+      // otherwise fall back to "From £X (label)"
+      if (a.options && a.options.length > 0) {
+        const sorted = [...a.options].sort(
+          (x, y) => (x.value ?? 0) - (y.value ?? 0)
+        );
+        const cheapest = sorted[0];
+        if (cheapest) {
+          return cheapest.label
+            ? `From £${cheapest.value} (${cheapest.label})`
+            : `From £${cheapest.value}`;
+        }
+      }
+      return "£—";
+    }
+
+    // other types: original logic
+    switch (true) {
+      case a.type === "free" && a.price === null:
         return "Free";
 
-      case "default": {
+      case a.type === "default": {
         if (a.priceNum != null) {
-          return a.suffix ? `£${a.priceNum} ${a.suffix}` : `£${a.priceNum}`;
+          return a.suffix
+            ? `£${a.priceNum} ${a.suffix}`
+            : `£${a.priceNum} each`;
         }
         return "£—";
       }
 
-      case "card": {
-        if (a.options && a.options.length > 0) {
-          const sorted = [...a.options].sort(
-            (x, y) => (x.value ?? 0) - (y.value ?? 0)
-          );
-          const cheapest = sorted[0];
-          if (cheapest) {
-            return cheapest.label
-              ? `From £${cheapest.value} (${cheapest.label})`
-              : `From £${cheapest.value}`;
-          }
-        }
-        return "£—";
-      }
-
-      case "external": {
+      case a.type === "external": {
         if (a.priceNum != null) {
-          return a.suffix ? `£${a.priceNum} ${a.suffix}` : `£${a.priceNum}`;
+          return a.suffix
+            ? `£${a.priceNum} ${a.suffix}`
+            : `£${a.priceNum} each`;
         }
         return "£—";
       }
@@ -310,20 +332,15 @@ export default function PracticeRespondModal({
     function lineCost(a: EditableAsset): number {
       if (!a.userSelected) return 0;
 
-      const minQty = a.type === "external" ? 1 : 0;
+      // external minQty is now allowed to be 0, so cost can be 0 if qty 0
+      const minQty = a.type === "external" ? 0 : 0;
       const qty = a.quantity && a.quantity > minQty ? a.quantity : minQty;
 
-      switch (a.type) {
-        case "free":
+      switch (true) {
+        case a.type === "free" && a.price === null:
           return 0;
 
-        case "default":
-          if (a.priceNum != null) {
-            return a.priceNum * qty;
-          }
-          return 0;
-
-        case "card": {
+        case a.type === "card": {
           if (a.options && a.options.length > 0) {
             const picked =
               (a.chosenOptionLabel &&
@@ -344,13 +361,10 @@ export default function PracticeRespondModal({
           return 0;
         }
 
-        case "external":
+        default:
           if (a.priceNum != null) {
             return a.priceNum * qty;
           }
-          return 0;
-
-        default:
           return 0;
       }
     }
@@ -387,27 +401,32 @@ export default function PracticeRespondModal({
   // build final assets payload for submit_assets RPC
   function buildFinalAssets() {
     function mapBucket(list: EditableAsset[]) {
-      return list.map((a) => {
-        const chosenOpt =
-          a.chosenOptionLabel &&
-          a.options?.find((o) => o.label === a.chosenOptionLabel);
+      return (
+        list
+          // keep ONLY assets with a positive quantity
+          .filter((a) => (a.quantity ?? 0) > 0)
+          .map((a) => {
+            const chosenOpt =
+              a.chosenOptionLabel &&
+              a.options?.find((o) => o.label === a.chosenOptionLabel);
 
-        return {
-          name: a.name,
-          type: a.type,
-          price: a.priceNum ?? null,
-          suffix: a.suffix,
-          quantity: a.quantity ?? 0,
-          userSelected: a.userSelected,
-          chosenOptionLabel: a.chosenOptionLabel ?? null,
-          chosenOptionValue:
-            chosenOpt && chosenOpt.value != null && !isNaN(chosenOpt.value)
-              ? chosenOpt.value
-              : null,
-          options: a.options ?? [],
-          note: a.note ?? null,
-        };
-      });
+            return {
+              name: a.name,
+              type: a.type,
+              price: a.priceNum ?? null,
+              suffix: a.suffix,
+              quantity: a.quantity ?? 0,
+              userSelected: a.userSelected,
+              chosenOptionLabel: a.chosenOptionLabel ?? null,
+              chosenOptionValue:
+                chosenOpt && chosenOpt.value != null && !isNaN(chosenOpt.value)
+                  ? chosenOpt.value
+                  : null,
+              options: a.options ?? [],
+              note: a.note ?? null,
+            };
+          })
+      );
     }
 
     return {
@@ -451,167 +470,67 @@ export default function PracticeRespondModal({
     markRead(
       { notificationId: notification.id },
       {
-        onSuccess: () => {
-          toast.success("Marked as read");
-        },
-        onError: (e: any) => {
-          toast.error(e?.message ?? "Failed to mark as read");
-        },
+        onSuccess: () => {},
+        onError: (e: any) => {},
       }
     );
   }
 
-  // ─────────────────────────────────
-  // Render helpers
-  // ─────────────────────────────────
-  const SectionHeader = ({
-    label,
-    icon,
-  }: {
-    label: string;
-    icon?: React.ReactNode;
-  }) => (
-    <Group gap={6} align="center">
-      {icon}
-      <Text fw={700} size="sm">
-        {label}
-      </Text>
-    </Group>
-  );
-
-  const DateRangeRow = () => (
-    <Group gap={10} wrap="wrap">
-      <Group gap={4}>
-        <IconCalendar size={14} />
-        <Text size="xs" c="gray.7">
-          {fromDate ? new Date(fromDate).toLocaleDateString() : "—"} →{" "}
-          {toDate ? new Date(toDate).toLocaleDateString() : "—"}
-        </Text>
-      </Group>
-
-      {campaignCategory && (
-        <Badge
-          size="xs"
-          radius="sm"
-          color={campaignCategory === "Event" ? "pink" : "gray"}
-          variant={campaignCategory === "Event" ? "filled" : "light"}
-          tt="none"
-        >
-          {campaignCategory}
-        </Badge>
-      )}
-    </Group>
-  );
-
-  const CreativePicker = () =>
-    creatives.length === 0 ? null : (
-      <Stack gap={8}>
-        <SectionHeader
-          label="Choose a creative"
-          icon={<IconPhoto size={16} />}
-        />
-        <Text size="xs" c="gray.6">
-          Select the artwork you'd like us to use
-        </Text>
-
-        <Radio.Group
-          value={selectedCreative ?? ""}
-          onChange={(val) => setSelectedCreative(val)}
-        >
-          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-            {creatives.map((url, idx) => (
-              <Card
-                key={idx}
-                withBorder
-                radius={10}
-                px="sm"
-                py="sm"
-                style={{
-                  borderColor:
-                    selectedCreative === url
-                      ? T.colors.blue[3]
-                      : T.colors.gray[2],
-                }}
-              >
-                <Stack gap={6}>
-                  <Radio
-                    value={url}
-                    label={
-                      <Text size="sm" fw={500} c="gray.9">
-                        Creative {idx + 1}
-                      </Text>
-                    }
-                    styles={{
-                      body: { alignItems: "flex-start" },
-                    }}
-                  />
-                  <TextInput
-                    value={url}
-                    readOnly
-                    radius="md"
-                    size="xs"
-                    styles={{
-                      input: {
-                        fontSize: 11,
-                        color: T.colors.gray[7],
-                      },
-                    }}
-                  />
-                </Stack>
-              </Card>
-            ))}
-          </SimpleGrid>
-        </Radio.Group>
-
-        {creatives.length > 0 && !selectedCreative && (
-          <Text size="xs" c="red.6">
-            Please select one creative.
-          </Text>
-        )}
-      </Stack>
-    );
-
+  // quantity row
   const QuantityRow = ({
     bucket,
     asset,
   }: {
     bucket: keyof typeof assetsState;
     asset: EditableAsset;
-  }) => (
-    <Group justify="space-between" align="center" mt={6}>
-      <Text size="sm" c="gray.7">
-        Quantity:
-      </Text>
-      <Group gap={8} align="center">
-        <ActionIcon
-          variant="subtle"
-          aria-label="decrease"
-          onClick={() => decQty(bucket, asset.name)}
-        >
-          <IconMinus size={16} />
-        </ActionIcon>
+  }) => {
+    // Disable quantity picker for "card" assets until an option is chosen
+    const disableQtyForCard = asset.type === "card" && !asset.chosenOptionLabel;
 
-        <TextInput
-          value={String(asset.quantity ?? 0)}
-          onChange={() => {}}
-          readOnly
-          w={46}
-          ta="center"
-          styles={{
-            input: { textAlign: "center" },
-          }}
-        />
+    return (
+      <Group justify="space-between" align="center" mt={6}>
+        <Text size="sm" c="gray.7" fw={500}>
+          {asset.name === "Paid Social Media" ? "No. Of Days:" : "Quantity:"}
+        </Text>
+        <Group gap={8} align="center">
+          <ActionIcon
+            variant="subtle"
+            aria-label="decrease"
+            disabled={disableQtyForCard}
+            onClick={() => {
+              if (disableQtyForCard) return;
+              decQty(bucket, asset.name);
+            }}
+          >
+            <IconMinus size={16} />
+          </ActionIcon>
 
-        <ActionIcon
-          variant="subtle"
-          aria-label="increase"
-          onClick={() => incQty(bucket, asset.name)}
-        >
-          <IconPlus size={16} />
-        </ActionIcon>
+          <TextInput
+            value={String(asset.quantity ?? 0)}
+            onChange={() => {}}
+            readOnly
+            w={46}
+            ta="center"
+            styles={{
+              input: { textAlign: "center" },
+            }}
+          />
+
+          <ActionIcon
+            variant="subtle"
+            aria-label="increase"
+            disabled={disableQtyForCard}
+            onClick={() => {
+              if (disableQtyForCard) return;
+              incQty(bucket, asset.name);
+            }}
+          >
+            <IconPlus size={16} />
+          </ActionIcon>
+        </Group>
       </Group>
-    </Group>
-  );
+    );
+  };
 
   const AssetCard = ({
     bucket,
@@ -620,7 +539,10 @@ export default function PracticeRespondModal({
     bucket: keyof typeof assetsState;
     asset: EditableAsset;
   }) => {
-    const selected = asset.userSelected;
+    const selected = asset.userSelected && asset.quantity > 0;
+
+    // When rendering Select for card assets, we respect existing logic,
+    // and QuantityRow will be disabled until user picks.
     return (
       <Card
         withBorder
@@ -628,7 +550,7 @@ export default function PracticeRespondModal({
         px="md"
         py="sm"
         style={{
-          borderColor: selected ? T.colors.blue[2] : "#e9ecef",
+          borderColor: selected ? T.colors.blue[2] : T.colors.blue[0],
           background: selected ? "rgba(107,123,255,0.06)" : "white",
         }}
       >
@@ -656,66 +578,68 @@ export default function PracticeRespondModal({
           </Group>
 
           {/* Include this asset */}
-          <Checkbox
-            size="xs"
-            radius="xl"
-            color="blue.3"
-            checked={asset.userSelected}
-            label={
-              asset.userSelected ? (
-                <Text size="xs">
-                  {asset.type === "external"
-                    ? "Remove this placement"
-                    : "Remove this asset"}
-                </Text>
-              ) : (
-                <Text size="xs">
-                  {asset.type === "external"
-                    ? "Book this placement"
-                    : "Include this asset"}
-                </Text>
-              )
-            }
-            onChange={(e) =>
-              toggleAssetSelected(bucket, asset.name, e.currentTarget.checked)
-            }
-          />
-
-          {/* Quantity row */}
-          <QuantityRow bucket={bucket} asset={asset} />
+          {selected && (
+            <Checkbox
+              size="xs"
+              radius="xl"
+              color="blue.3"
+              checked={asset.userSelected}
+              label={
+                asset.userSelected ? (
+                  <Text size="xs">
+                    {asset.type === "external"
+                      ? "Remove this placement"
+                      : "Remove this asset"}
+                  </Text>
+                ) : (
+                  <Text size="xs">
+                    {asset.type === "external"
+                      ? "Book this placement"
+                      : "Include this asset"}
+                  </Text>
+                )
+              }
+              onChange={(e) =>
+                toggleAssetSelected(bucket, asset.name, e.currentTarget.checked)
+              }
+            />
+          )}
 
           {/* Option picker for "card" assets */}
           {asset.type === "card" &&
             asset.options &&
             asset.options.length > 0 && (
-              <Radio.Group
-                value={asset.chosenOptionLabel ?? ""}
+              <Select
                 label={
                   <Text size="xs" fw={500} c="gray.8">
                     Choose an option
                   </Text>
                 }
-                onChange={(label) =>
-                  chooseOption(bucket, asset.name, label as string)
-                }
-              >
-                <Stack gap={4}>
-                  {asset.options.map((opt) => (
-                    <Radio
-                      key={opt.label}
-                      value={opt.label}
-                      size="xs"
-                      color="blue.3"
-                      label={
-                        <Text size="xs">
-                          {opt.label} — £{opt.value}
-                        </Text>
-                      }
-                    />
-                  ))}
-                </Stack>
-              </Radio.Group>
+                size="xs"
+                radius="md"
+                value={asset.chosenOptionLabel ?? ""}
+                placeholder="Select an option"
+                data={asset.options.map((opt) => ({
+                  value: opt.label,
+                  label: `${opt.label} — £${opt.value}`,
+                }))}
+                onChange={(val) => {
+                  if (val) {
+                    chooseOption(bucket, asset.name, val);
+                  }
+                }}
+              />
             )}
+
+          {/* Quantity row */}
+          <QuantityRow bucket={bucket} asset={asset} />
+
+          {/* Any Available Note */}
+          {asset?.note && (
+            <Text size="xs" fw={600} c="teal.9">
+              {asset.note}
+            </Text>
+          )}
         </Stack>
       </Card>
     );
@@ -753,6 +677,12 @@ export default function PracticeRespondModal({
     </Stack>
   );
 
+  useEffect(() => {
+    if (!notification?.read_at) {
+      handleMarkRead();
+    }
+  }, [notification]);
+
   return (
     <Modal
       opened={opened}
@@ -762,40 +692,95 @@ export default function PracticeRespondModal({
       size="56rem"
       overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
       title={
-        <Stack gap={4}>
-          <Text fw={600} size="sm" c="gray.9">
-            Respond to Asset Request
-            {campaignName ? ` — ${campaignName}` : ""}
-          </Text>
+        <Stack gap={10}>
+          <Group gap={5} align="center">
+            <IconCircle color={T.colors.blue[3]} size={20} />
+            <Text fw={600} size="lg">
+              Respond to Asset Request
+            </Text>
+          </Group>
           <Group gap={6} wrap="wrap">
-            <DateRangeRow />
+            <Text fw={600} size="lg">
+              {campaignName ? campaignName : "Campaign"} Details
+            </Text>
+            {campaignCategory && (
+              <Badge
+                size="xs"
+                radius="sm"
+                color={activityColors[toLower(campaignCategory)]}
+                variant={campaignCategory === "Event" ? "filled" : "light"}
+                tt="none"
+              >
+                {campaignCategory}
+              </Badge>
+            )}
           </Group>
         </Stack>
       }
     >
-      <Stack gap="lg">
-        {/* Marketing note */}
-        {requestNote && (
-          <Card
-            withBorder
-            radius="md"
-            px="md"
-            py="sm"
-            style={{ borderColor: "#e9ecef", background: "#f9f9fb" }}
-          >
-            <Text size="xs" c="gray.7" fw={500}>
-              Message from Marketing
-            </Text>
-            <Text size="sm" c="gray.9">
-              {requestNote}
-            </Text>
-          </Card>
-        )}
+      <Stack gap={30}>
+        {/* Campaign Period */}
+        <Card radius="md" px="md" py="md" bg={"gray.0"}>
+          <Stack gap={15}>
+            <Stack gap={5}>
+              <Text fw={700} size="sm">
+                About this campaign
+              </Text>
+              <Text size="sm" fw={500} c="gray.6">
+                {payload?.description}
+              </Text>
+            </Stack>
+
+            <Group>
+              <Flex gap={10}>
+                <Group gap={5} align="center">
+                  <IconClock size={15} />
+                  <Text c="gray.6" size="sm">
+                    Start Date:
+                  </Text>
+                </Group>
+
+                <Text c="blue.3" size="sm" fw={700}>
+                  {fromDate ? format(fromDate, "MMM dd, yyyy") : "—"}
+                </Text>
+              </Flex>
+
+              <Flex gap={10}>
+                <Group gap={5} align="center">
+                  <IconClock size={15} />
+                  <Text c="gray.6" size="sm">
+                    End Date:
+                  </Text>
+                </Group>
+
+                <Text c="blue.3" size="sm" fw={700}>
+                  {fromDate ? format(toDate, "MMM dd, yyyy") : "—"}
+                </Text>
+              </Flex>
+            </Group>
+          </Stack>
+        </Card>
 
         {/* Creative picker */}
-        <CreativePicker />
+        <CreativePicker
+          creatives={creatives}
+          value={selectedCreative}
+          onChange={(url) => setSelectedCreative(url)}
+        />
 
         {/* Assets */}
+        <Stack gap={8}>
+          <Text fw={600} size="lg">
+            Complete Your Campaign Setup
+          </Text>
+          <Group gap={8} align="center">
+            <ThemeIcon variant="light" color="blue.5" radius="xl" size="sm">
+              <IconBox size={14} />
+            </ThemeIcon>
+            <Text fw={500}>Select Assets</Text>
+          </Group>
+        </Stack>
+
         <AssetSection
           title="Printed Assets"
           bucket="printedAssets"
@@ -830,7 +815,18 @@ export default function PracticeRespondModal({
         </Stack>
 
         {/* Estimated Total Cost */}
-        <Card radius="md" px="md" py="md" bg={"gray.0"}>
+        <Card
+          radius="md"
+          px="md"
+          py="md"
+          bg={"gray.0"}
+          pos={"sticky"}
+          bottom={20}
+          withBorder
+          style={{
+            borderColor: T.colors.blue[0],
+          }}
+        >
           <Group justify="space-between" align="center">
             <Text c="gray.7" fw={600}>
               Estimated Total Cost:
@@ -845,35 +841,20 @@ export default function PracticeRespondModal({
         <Divider color="#e9ecef" />
 
         <Flex
-          justify="space-between"
-          align="center"
+          justify="flex-end"
           direction={{ base: "column", sm: "row" }}
           gap="md"
         >
-          {/* Mark as read button */}
-          <StyledButton
-            variant="default"
-            radius="md"
-            onClick={handleMarkRead}
-            loading={markingRead}
-            disabled={markingRead || !notification?.id}
-            leftSection={<IconCircleCheck size={17} />}
-          >
-            Mark as read
-          </StyledButton>
-
           <Group justify="flex-end">
-            <StyledButton variant="default" radius="md" onClick={onClose}>
+            <StyledButton variant="default" onClick={onClose}>
               Cancel
             </StyledButton>
             <Button
-              radius="md"
-              color="blue.5"
               loading={submitting}
               disabled={!canSubmit}
               onClick={handleSubmit}
             >
-              Submit Campaign Request
+              Submit My Choices
             </Button>
           </Group>
         </Flex>

@@ -15,6 +15,8 @@ type Props = {
     from_date?: string | Date | null;
     to_date?: string | Date | null;
     category?: string | null;
+    topics?: string[];
+    objectives?: string[];
   };
 };
 

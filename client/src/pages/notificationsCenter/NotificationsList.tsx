@@ -1,11 +1,10 @@
 // components/notifications/NotificationsList.tsx
 import { useNotifications } from "@/hooks/notification.hooks";
-import { NotificationRow } from "@/models/notification.models";
-import { Stack, Text, Loader, Center } from "@mantine/core";
+import { Stack, Text, Loader, Center, Box, Group } from "@mantine/core";
 
-import { useState } from "react";
 import NotificationCard from "./NotificationCard";
-import PracticeRespondModal from "./PracticeRespondModal";
+import { useNotificationOpen } from "./useNotificationOpen.hook";
+import NotificationsFilters from "./NotificationsFilters";
 
 export default function NotificationsList() {
   // You could pass filters here later (practiceId, onlyUnread, etc.)
@@ -15,9 +14,12 @@ export default function NotificationsList() {
     offset: 0,
   });
 
-  // We'll need this soon (Step 2) to open the detail / "respond" modal
-  const [activeNotification, setActiveNotification] =
-    useState<NotificationRow | null>(null);
+  const {
+    handleOpenNotification,
+    NotificationModalRenderer,
+    openingId,
+    isOpening,
+  } = useNotificationOpen();
 
   if (isLoading) {
     return (
@@ -49,21 +51,32 @@ export default function NotificationsList() {
 
   return (
     <Stack gap="sm">
-      {data.map((n) => (
-        <NotificationCard
-          key={n.id}
-          notification={n}
-          onClick={(row) => {
-            setActiveNotification(n);
-          }}
-        />
-      ))}
+      <NotificationsFilters />
 
-      <PracticeRespondModal
-        opened={!!activeNotification}
-        notification={activeNotification}
-        onClose={() => setActiveNotification(null)}
-      />
+      <Group align="center" justify="space-between">
+        <Text size="sm" c="blue.3">
+          7 of 7 notifications
+        </Text>
+        <Text size="sm" fw={700}>
+          Newest first
+        </Text>
+      </Group>
+
+      {data.map((n) => {
+        const loadingThisCard = isOpening && openingId === n.id;
+
+        return (
+          <Box
+            w="100%"
+            key={n.id}
+            onClick={() => handleOpenNotification(n, false)}
+          >
+            <NotificationCard notification={n} isOpening={loadingThisCard} />
+          </Box>
+        );
+      })}
+
+      <NotificationModalRenderer />
     </Stack>
   );
 }

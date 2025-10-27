@@ -1,5 +1,6 @@
 // components/notifications/NotificationCard.tsx
 import { NotificationRow } from "@/models/notification.models";
+import { activityColors, statusColors } from "@/shared/shared.const";
 import {
   getNotificationCampaignName,
   getNotificationCategory,
@@ -16,15 +17,19 @@ import {
   ThemeIcon,
   useMantineTheme,
   Indicator,
+  LoadingOverlay,
 } from "@mantine/core";
 import { IconPalette } from "@tabler/icons-react";
+import { toLower } from "lodash";
 
 export interface NotificationCardProps {
+  isOpening?: boolean;
   notification: NotificationRow;
   onClick?: (n: NotificationRow) => void;
 }
 
 export default function NotificationCard({
+  isOpening = false,
   notification,
   onClick,
 }: NotificationCardProps) {
@@ -41,26 +46,35 @@ export default function NotificationCard({
   return (
     <Indicator
       inline
-      size={13}
-      offset={15}
+      size={12}
+      offset={20}
       color="blue.3"
+      processing
       withBorder
+      w="100%"
       disabled={!isUnread}
     >
       <Card
-        withBorder={false}
         radius={10}
+        withBorder
         px="md"
         py="sm"
         bg="#f9f9fb"
         shadow="xs"
         style={{
-          borderLeft: `4px solid ${C.blue[3]}`,
           border: `1px solid ${C.gray[0]}`,
+          borderLeft: `4px solid ${C.blue[3]}`,
           cursor: "pointer",
         }}
         onClick={() => onClick?.(notification)}
       >
+        <LoadingOverlay
+          visible={isOpening}
+          zIndex={1000}
+          overlayProps={{ radius: "sm", blur: 2 }}
+          loaderProps={{ color: "blue.3" }}
+        />
+
         <Group gap="sm" align="flex-start" style={{ flex: 1 }}>
           <ThemeIcon
             radius="xl"
@@ -79,7 +93,7 @@ export default function NotificationCard({
           <Flex direction="column" gap={4} style={{ flex: 1 }}>
             {/* Title */}
             <Text fw={600} fz="sm" c="gray.9">
-              {notification.title || "New update"}
+              {campaignName || "New update"}
             </Text>
 
             {/* Message */}
@@ -113,7 +127,7 @@ export default function NotificationCard({
                 {/* category */}
                 {category && (
                   <Badge
-                    color="grape"
+                    color={activityColors[toLower(category)]}
                     variant="light"
                     radius="sm"
                     fz="xs"
@@ -126,7 +140,7 @@ export default function NotificationCard({
 
                 {/* type label ("Assets Requested", etc.) */}
                 <Badge
-                  color="pink"
+                  color={statusColors[notification.type]}
                   variant="filled"
                   radius="sm"
                   fz="xs"

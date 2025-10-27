@@ -2,6 +2,7 @@
 import _ from "lodash";
 import { parseISO, format, isValid } from "date-fns";
 import { NotificationRow } from "@/models/notification.models";
+import { SelectionStatus } from "./shared.models";
 
 type State = Record<string, any>;
 type SetState = React.Dispatch<React.SetStateAction<State>>;
@@ -333,7 +334,7 @@ export function getNotificationBadgeType(n: NotificationRow): string {
   // e.g. "requested" => "Assets Requested"
   switch (n.type) {
     case "requested":
-      return "Assets Requested";
+      return "Request Assets";
     case "inProgress":
       return "In Progress";
     case "awaitingApproval":
@@ -349,4 +350,28 @@ export function getNotificationBadgeType(n: NotificationRow): string {
 
 export function getNotificationPracticeName(n: NotificationRow): string | null {
   return n.practice_name ?? null;
+}
+
+type StageInfo = {
+  label: string;
+  color: string;
+};
+
+export function currentStage(status: SelectionStatus): StageInfo {
+  switch (status) {
+    case SelectionStatus.OnPlan:
+    case SelectionStatus.InProgress:
+    case SelectionStatus.Confirmed:
+      return { label: "HG Team", color: "#2849B3" }; // blue
+
+    case SelectionStatus.Requested:
+    case SelectionStatus.AwaitingApproval:
+      return { label: "Practice", color: "#166534" }; // deep green
+
+    case SelectionStatus.Live:
+      return { label: "Action Complete", color: "#9b59b6" }; // purple
+
+    default:
+      return { label: "Unknown", color: "#adb5bd" }; // gray fallback
+  }
 }

@@ -1,4 +1,3 @@
-// components/admin/requestAssets/AdminRequestAssetsModal.tsx
 import {
   useRequestAssets,
   useUpdateSourceAssets,
@@ -12,7 +11,6 @@ import {
   Checkbox,
   TextInput,
   ActionIcon,
-  Divider,
   Flex,
   Button,
   Card,
@@ -21,8 +19,10 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { startCase } from "lodash";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import StyledButton from "../styledButton/StyledButton";
 
 type AssetOption = { label: string; value: number };
 
@@ -41,7 +41,7 @@ type AssetItem = {
 type Assets = {
   printedAssets: AssetItem[];
   digitalAssets: AssetItem[];
-  externalPlacements: AssetItem[];
+  // externalPlacements: AssetItem[];
 };
 
 type Props = {
@@ -56,6 +56,8 @@ type Props = {
     from_date?: string | Date | null;
     to_date?: string | Date | null;
     category?: string | null;
+    topics?: string[];
+    objectives?: string[];
   };
 };
 
@@ -78,35 +80,37 @@ const cloneAssets = (a?: Assets | null): Assets => ({
         ? x.quantity
         : 0,
   })),
-  externalPlacements: (a?.externalPlacements ?? []).map((x) => ({
-    ...x,
-    userSelected: x.userSelected ?? false,
-    // keep price as-is (string | number | null) when cloning, don't coerce
-    price:
-      x.price === null || typeof x.price === "string"
-        ? x.price
-        : Number.isFinite(x.price)
-        ? x.price
-        : null,
-    quantity:
-      typeof x.quantity === "number" && Number.isFinite(x.quantity)
-        ? x.quantity
-        : 0,
-  })),
+  // externalPlacements: (a?.externalPlacements ?? []).map((x) => ({
+  //   ...x,
+  //   userSelected: x.userSelected ?? false,
+  //   // keep price as-is (string | number | null) when cloning, don't coerce
+  //   price:
+  //     x.price === null || typeof x.price === "string"
+  //       ? x.price
+  //       : Number.isFinite(x.price)
+  //       ? x.price
+  //       : null,
+  //   quantity:
+  //     typeof x.quantity === "number" && Number.isFinite(x.quantity)
+  //       ? x.quantity
+  //       : 0,
+  // })),
 });
 
 /* ----------------------- CHILD COMPONENTS ----------------------- */
 
 function CreativeInputs({
-  creativeUrls,
+  creatives,
   addCreative,
   removeCreative,
-  updateCreative,
+  updateCreativeUrl,
+  updateCreativeLabel,
 }: {
-  creativeUrls: string[];
+  creatives: { url: string; label: string }[];
   addCreative: () => void;
   removeCreative: (idx: number) => void;
-  updateCreative: (idx: number, val: string) => void;
+  updateCreativeUrl: (idx: number, val: string) => void;
+  updateCreativeLabel: (idx: number, val: string) => void;
 }) {
   return (
     <Stack gap={8}>
@@ -114,12 +118,12 @@ function CreativeInputs({
         <Text fw={700} size="sm">
           Campaign Creatives
         </Text>
-        <Tooltip label="Add another creative URL (max 4)" withArrow>
+        <Tooltip label="Add another creative (max 4)" withArrow>
           <ActionIcon
             variant="subtle"
             aria-label="add creative"
             onClick={addCreative}
-            disabled={creativeUrls.length >= 4}
+            disabled={creatives.length >= 4}
           >
             <IconPlus size={16} />
           </ActionIcon>
@@ -127,16 +131,28 @@ function CreativeInputs({
       </Group>
 
       <Stack gap={6}>
-        {creativeUrls.map((url, idx) => (
-          <Group key={idx} gap={6} wrap="nowrap" align="center">
+        {creatives.map((item, idx) => (
+          <Group key={idx} gap={6} wrap="nowrap" align="center" w="100%">
+            {/* URL input */}
             <TextInput
               placeholder="https://image-url-or-asset.jpg"
-              value={url}
-              onChange={(e) => updateCreative(idx, e.currentTarget.value)}
-              style={{ flex: 1 }}
+              value={item.url}
+              onChange={(e) => {
+                // update the url
+                updateCreativeUrl(idx, e.currentTarget.value);
+                // auto-sync the label to "Creative {idx+1}"
+                updateCreativeLabel(idx, `Creative ${idx + 1}`);
+              }}
               radius="md"
+              style={{ flex: 2 }}
+              label={
+                <Text size="xs" fw={500} c="gray.7">
+                  {`Creative ${idx + 1}`}
+                </Text>
+              }
             />
-            {creativeUrls.length > 1 && (
+
+            {creatives.length > 1 && (
               <ActionIcon
                 color="red"
                 variant="subtle"
@@ -177,7 +193,6 @@ function AssetCard({
   const getDescriptor = (it: AssetItem): string => {
     switch (it.type) {
       case "default": {
-        // standard thing with a unit price
         if (
           it.price !== null &&
           it.price !== "" &&
@@ -191,7 +206,6 @@ function AssetCard({
       }
 
       case "card": {
-        // has options[] with {label, value}, pick cheapest for display
         if (it.options && it.options.length > 0) {
           const sorted = [...it.options].sort(
             (a, b) => (a.value ?? 0) - (b.value ?? 0)
@@ -214,7 +228,6 @@ function AssetCard({
       }
 
       case "external": {
-        // generally handled in placement cards, but just in case
         if (
           it.price !== null &&
           it.price !== "" &&
@@ -229,7 +242,6 @@ function AssetCard({
       }
 
       default: {
-        // fallback
         if (
           it.price !== null &&
           it.price !== "" &&
@@ -386,8 +398,10 @@ export default function AdminRequestAssetsModal({
     cloneAssets(selection.assets)
   );
 
-  // creatives (up to 4 image URLs)
-  const [creativeUrls, setCreativeUrls] = useState<string[]>([""]);
+  // creatives (up to 4 {url,label})
+  const [creatives, setCreatives] = useState<{ url: string; label: string }[]>([
+    { url: "", label: "" },
+  ]);
 
   const { mutate: updateAssets, isPending: savingAssets } =
     useUpdateSourceAssets();
@@ -395,18 +409,26 @@ export default function AdminRequestAssetsModal({
 
   // Creatives handlers
   const addCreative = () => {
-    if (creativeUrls.length >= 4) return;
-    setCreativeUrls((l) => [...l, ""]);
+    if (creatives.length >= 4) return;
+    setCreatives((l) => [...l, { url: "", label: "" }]);
   };
 
   const removeCreative = (idx: number) => {
-    setCreativeUrls((l) => l.filter((_, i) => i !== idx));
+    setCreatives((l) => l.filter((_, i) => i !== idx));
   };
 
-  const updateCreative = (idx: number, val: string) => {
-    setCreativeUrls((l) => {
+  const updateCreativeUrl = (idx: number, val: string) => {
+    setCreatives((l) => {
       const c = [...l];
-      c[idx] = val;
+      c[idx] = { ...c[idx], url: val };
+      return c;
+    });
+  };
+
+  const updateCreativeLabel = (idx: number, val: string) => {
+    setCreatives((l) => {
+      const c = [...l];
+      c[idx] = { ...c[idx], label: val };
       return c;
     });
   };
@@ -431,67 +453,72 @@ export default function AdminRequestAssetsModal({
   // - If parsed value is > 0, we also ensure userSelected = true.
   // - Clearing/emptying keeps userSelected as-is unless manually unticked.
   const updatePlacementPrice = (name: string, raw: string) => {
-    const trimmed = raw; // keep EXACT user input, including "150.", "0.", etc.
+    const trimmed = raw;
     const parsed = parseFloat(trimmed);
 
     setAssetsState((prev) => ({
       ...prev,
-      externalPlacements: prev.externalPlacements.map((it) => {
-        if (it.name !== name) return it;
+      // externalPlacements: prev.externalPlacements.map((it) => {
+      //   if (it.name !== name) return it;
 
-        // should we force-select?
-        const shouldSelect =
-          !Number.isNaN(parsed) && parsed > 0 ? true : it.userSelected;
+      //   const shouldSelect =
+      //     !Number.isNaN(parsed) && parsed > 0 ? true : it.userSelected;
 
-        return {
-          ...it,
-          price: trimmed === "" ? "" : trimmed, // allow "" while typing
-          userSelected: shouldSelect,
-        };
-      }),
+      //   return {
+      //     ...it,
+      //     price: trimmed === "" ? "" : trimmed,
+      //     userSelected: shouldSelect,
+      //   };
+      // }),
     }));
   };
 
   const toggleRequestPlacement = (name: string, checked: boolean) => {
     setAssetsState((prev) => ({
       ...prev,
-      externalPlacements: prev.externalPlacements.map((it) =>
-        it.name === name ? { ...it, userSelected: checked } : it
-      ),
+      // externalPlacements: prev.externalPlacements.map((it) =>
+      //   it.name === name ? { ...it, userSelected: checked } : it
+      // ),
     }));
   };
 
   // Derived sets for rendering
   const printedAssets = assetsState.printedAssets;
   const digitalAssets = assetsState.digitalAssets;
-  const placements = assetsState.externalPlacements;
+  // const placements = assetsState.externalPlacements;
 
   // Validation for submission
   const hasAnyCreative = useMemo(
-    () => creativeUrls.map((u) => u.trim()).filter(Boolean).length > 0,
-    [creativeUrls]
+    () => creatives.map((c) => c.url.trim()).filter(Boolean).length > 0,
+    [creatives]
   );
 
   const hasAnyRequested = useMemo(() => {
     const anySelected = (arr: AssetItem[]) => arr.some((it) => it.userSelected);
     return (
-      anySelected(printedAssets) ||
-      anySelected(digitalAssets) ||
-      anySelected(placements)
+      anySelected(printedAssets) || anySelected(digitalAssets)
+      // anySelected(placements)
     );
-  }, [printedAssets, digitalAssets, placements]);
+  }, [
+    printedAssets,
+    digitalAssets,
+    // placements
+  ]);
 
   const canSubmit =
     (hasAnyCreative || hasAnyRequested) && !savingAssets && !requesting;
 
   // Submit flow:
-  // 1. Persist the edited assets state (with updated userSelected + price for placements)
-  // 2. Call request_assets RPC with creativeUrls
+  // 1. Persist the edited assets state
+  // 2. Call request_assets RPC with creatives (now url+label objects)
   const handleSubmit = () => {
-    const cleanedCreatives = creativeUrls
-      .map((u) => u.trim())
-      .filter(Boolean)
-      .slice(0, 4);
+    const cleanedCreatives = creatives
+      .filter((c) => c.url.trim())
+      .slice(0, 4)
+      .map((c) => ({
+        url: c.url.trim(),
+        label: c.label.trim(),
+      }));
 
     updateAssets(
       {
@@ -505,12 +532,11 @@ export default function AdminRequestAssetsModal({
           requestAssets(
             {
               selectionId: selection.id,
-              creativeUrls: cleanedCreatives,
+              creativeUrls: cleanedCreatives, // now array of {url,label}
               note: null,
             },
             {
               onSuccess: () => {
-                toast.success("Request sent to practice");
                 onClose();
               },
               onError: (e: any) => {
@@ -544,12 +570,44 @@ export default function AdminRequestAssetsModal({
       overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
     >
       <Stack gap="lg">
+        <Stack gap={5}>
+          <Text size="sm" fw={500} c={"blue.3"}>
+            Objectives
+          </Text>
+          {selection?.objectives?.length ? (
+            <Flex align={"center"} gap={4}>
+              {selection?.objectives?.map((c) => (
+                <Badge key={c} color="red.4">
+                  {startCase(c)}
+                </Badge>
+              ))}
+            </Flex>
+          ) : (
+            <Text>-</Text>
+          )}
+        </Stack>
+        <Stack gap={5}>
+          <Text size="sm" fw={500} c={"blue.3"}>
+            Categories
+          </Text>
+          <Flex align={"center"} gap={4}>
+            {selection?.topics?.map((c) => (
+              <Badge key={c} variant="outline" color="gray.1">
+                <Text size="xs" fw={600} c={"gray.9"}>
+                  {startCase(c)}
+                </Text>
+              </Badge>
+            ))}
+          </Flex>
+        </Stack>
+
         {/* Creatives section */}
         <CreativeInputs
-          creativeUrls={creativeUrls}
+          creatives={creatives}
           addCreative={addCreative}
           removeCreative={removeCreative}
-          updateCreative={updateCreative}
+          updateCreativeUrl={updateCreativeUrl}
+          updateCreativeLabel={updateCreativeLabel}
         />
 
         {/* Printed Assets */}
@@ -601,7 +659,7 @@ export default function AdminRequestAssetsModal({
         </Stack>
 
         {/* Additional Placements */}
-        <Stack gap={8}>
+        {/* <Stack gap={8}>
           <Text fw={700} size="sm">
             Additional Placements
           </Text>
@@ -622,13 +680,13 @@ export default function AdminRequestAssetsModal({
               />
             ))}
           </SimpleGrid>
-        </Stack>
+        </Stack> */}
 
         {/* Footer actions */}
         <Group justify="flex-end" align="center">
-          <Button variant="default" onClick={onClose}>
+          <StyledButton variant="default" c="red.4" onClick={onClose}>
             Cancel
-          </Button>
+          </StyledButton>
           <Button
             onClick={handleSubmit}
             loading={savingAssets || requesting}

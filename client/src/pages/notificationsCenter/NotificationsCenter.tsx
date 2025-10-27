@@ -3,6 +3,7 @@ import { Center, Container, Group, Stack, Text } from "@mantine/core";
 import { useState } from "react";
 import NotificationsFilters from "./NotificationsFilters";
 import NotificationsList from "./NotificationsList";
+import CampaignStatusDashboard from "./CampaignStatusDashboard";
 
 enum NotifTabs {
   Notifications = "notifications",
@@ -11,6 +12,11 @@ enum NotifTabs {
 
 const NotificationsCenter = () => {
   const [active, setActive] = useState<NotifTabs>(NotifTabs.Notifications);
+
+  const section = {
+    [NotifTabs.Notifications]: <NotificationsList />,
+    [NotifTabs.Status]: <CampaignStatusDashboard />,
+  };
 
   return (
     <Container size={1280} mx="auto">
@@ -49,20 +55,7 @@ const NotificationsCenter = () => {
           ]}
         />
 
-        <NotificationsFilters />
-
-        <Stack>
-          <Group align="center" justify="space-between">
-            <Text size="sm" c="blue.3">
-              7 of 7 notifications
-            </Text>
-            <Text size="sm" fw={700}>
-              Newest first
-            </Text>
-          </Group>
-
-          <NotificationsList />
-        </Stack>
+        <Stack>{section[active]}</Stack>
       </Stack>
     </Container>
   );

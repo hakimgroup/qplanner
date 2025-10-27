@@ -10,6 +10,7 @@ import {
   SubmitAssetsArgs,
   UseNotificationsArgs,
 } from "@/models/notification.models";
+import { toast } from "sonner";
 
 export function useUpdateSourceAssets() {
   const qc = useQueryClient();
@@ -58,6 +59,8 @@ export function useRequestAssets() {
       return data;
     },
     onSuccess: () => {
+      toast.success("Request sent to practice");
+
       // Refresh admin views (selections list, notifications, etc.)
       qc.invalidateQueries({
         queryKey: [DatabaseTables.Notifications],

@@ -29,6 +29,30 @@ const key = (activePracticeId: string | null, unitedView: boolean) => [
   { p: activePracticeId, u: unitedView },
 ];
 
+async function fetchSelection(selectionId: string) {
+  if (!selectionId) return null;
+
+  const { data, error } = await supabase
+    .from(DatabaseTables.Selections)
+    .select("*")
+    .eq("id", selectionId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export function useSelectionById(selectionId: string | null | undefined) {
+  const query = useQuery({
+    queryKey: ["selection", selectionId],
+    queryFn: () => fetchSelection(selectionId as string),
+    enabled: !!selectionId, // don't auto-run if we don't have an id
+    staleTime: 0, // always treat as fresh (forces spinner each click)
+  });
+
+  return query;
+}
+
 export function useSelections() {
   const { activePracticeId, unitedView } = usePractice();
   const { user } = useAuth();
@@ -60,9 +84,9 @@ export function useAddSelection(onSuccess?: () => void) {
 
   const formatAssets = (data?: GetAssetsResponse) => {
     return {
-      printedAssets: data?.printedAssets,
-      digitalAssets: data?.digitalAssets,
-      externalPlacements: data?.externalPlacements,
+      printedAssets: data?.printedAssets.content,
+      digitalAssets: data?.digitalAssets.content,
+      externalPlacements: data?.externalPlacements.content,
     };
   };
 

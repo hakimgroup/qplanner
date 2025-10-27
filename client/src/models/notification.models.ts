@@ -1,3 +1,6 @@
+import { CreativeItem } from "@/pages/notificationsCenter/practiceRespondModal/CreativePicker";
+import { SelectionStatus } from "@/shared/shared.models";
+
 export type AdminAssetsPayload = {
   selectionId: string;
   isBespoke: boolean;
@@ -7,14 +10,14 @@ export type AdminAssetsPayload = {
 
 export type RequestAssetsInput = {
   selectionId: string;
-  creativeUrls: string[]; // up to 4
+  creativeUrls: CreativeItem[]; // up to 4
   note?: string | null;
   recipientIds?: string[] | null; // optional explicit recipients
 };
 
 export type NotificationRow = {
   id: string;
-  type: string;
+  type: SelectionStatus;
   practice_id: string | null;
   practice_name: string | null; // NEW
   selection_id: string | null;

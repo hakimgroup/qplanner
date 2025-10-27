@@ -15,10 +15,10 @@ import {
   Text,
   useMantineTheme,
 } from "@mantine/core";
-import { IconAsset, IconEye } from "@tabler/icons-react";
+import { IconEye } from "@tabler/icons-react";
 import { ColDef } from "ag-grid-community";
 import { format } from "date-fns";
-import { isEmpty, startCase, upperFirst } from "lodash";
+import { isEmpty, startCase, toLower, upperFirst } from "lodash";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import PlansActions from "./PlansActions";
 import AdminRequestAssetsButton from "@/components/assets/AdminRequestAssetsButton";
@@ -78,7 +78,7 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
         cellRenderer: ({ value }) => (
           <Badge
             variant="light"
-            color={activityColors[value]}
+            color={activityColors[toLower(value)]}
             size="sm"
             fw={700}
             style={{ border: `1px solid ${T.blue[0]}` }}
@@ -195,6 +195,8 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
                   from_date: p.data.from,
                   to_date: p.data.end,
                   category: p.data.category,
+                  topics: p.data.topics,
+                  objectives: p.data.objectives,
                 }}
               />
 
