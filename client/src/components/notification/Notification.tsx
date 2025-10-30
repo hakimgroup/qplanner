@@ -21,10 +21,12 @@ import StyledButton from "../styledButton/StyledButton";
 import { useNotifications } from "@/hooks/notification.hooks";
 import { useNotificationOpen } from "@/pages/notificationsCenter/useNotificationOpen.hook";
 import EmptyState from "../emptyState/EmptyState";
+import { useAuth } from "@/shared/AuthProvider";
 
 const Notification = () => {
   const T = useMantineTheme();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   // fetch notifications (same hook used in NotificationsList)
   const {
@@ -247,7 +249,13 @@ const Notification = () => {
               fw={500}
               size="sm"
               fullWidth
-              onClick={() => navigate(AppRoutes.NotificationsCenter)}
+              onClick={() => {
+                if (isAdmin) {
+                  navigate(`${AppRoutes.Admin}/${AppRoutes.Notifications}`);
+                } else {
+                  navigate(AppRoutes.NotificationsCenter);
+                }
+              }}
             >
               View all notifications
             </StyledButton>

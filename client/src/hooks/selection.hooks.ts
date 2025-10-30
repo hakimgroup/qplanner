@@ -80,15 +80,6 @@ export function useSelections() {
 export function useAddSelection(onSuccess?: () => void) {
   const qc = useQueryClient();
   const { activePracticeId } = usePractice();
-  const { data: assetsData } = useAssets(); // 🔹 pull default assets
-
-  const formatAssets = (data?: GetAssetsResponse) => {
-    return {
-      printedAssets: data?.printedAssets.content,
-      digitalAssets: data?.digitalAssets.content,
-      externalPlacements: data?.externalPlacements.content,
-    };
-  };
 
   return useMutation({
     mutationFn: async (input: AddSelectionInput) => {
@@ -103,7 +94,6 @@ export function useAddSelection(onSuccess?: () => void) {
         notes: input.notes ?? null,
         bespoke: input.bespoke ?? false,
         source: input.source,
-        assets: formatAssets(assetsData), // 🔹 include default assets
       };
 
       const { data, error } = await supabase

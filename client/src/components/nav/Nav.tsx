@@ -33,20 +33,27 @@ import { useNavPreset } from "@/shared/shared.hooks";
 import { signOutSafe } from "@/api/auth";
 import { startCase } from "lodash";
 import { userRoleColors } from "@/shared/shared.const";
+import { useSignout } from "@/pages/auth/auth.hooks";
 
 const Nav = () => {
   const T = useMantineTheme();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { user, isAdmin, role } = useAuth();
-  const name = `${user?.identities[0].identity_data.first_name} ${user?.identities[0].identity_data.last_name}`;
-  const isUserView = [AppRoutes.Dashboard, AppRoutes.FAQs].includes(
-    pathname as any
-  );
+  const name = `${user?.identities[0].identity_data.first_name ?? "John"} ${
+    user?.identities[0].identity_data.last_name ?? "Doe"
+  }`;
+  const isUserView = [
+    AppRoutes.Dashboard,
+    AppRoutes.FAQs,
+    AppRoutes.NotificationsCenter,
+  ].includes(pathname as any);
   const { title, description } = useNavPreset();
   const notDashboard = ![AppRoutes.Dashboard, AppRoutes.Admin].includes(
     pathname as any
   );
+
+  const { mutate: signout } = useSignout();
 
   //Components
   const AdminNavigate = () => (
@@ -152,7 +159,7 @@ const Nav = () => {
               color="violet"
               c="gray.8"
               leftSection={<IconLogout size={18} />}
-              onClick={() => signOutSafe()}
+              onClick={() => signout()}
             >
               Logout
             </Button>

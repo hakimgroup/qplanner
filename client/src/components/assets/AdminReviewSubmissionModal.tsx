@@ -20,7 +20,7 @@ import {
   IconBox,
   IconExternalLink,
 } from "@tabler/icons-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { activityColors } from "@/shared/shared.const";
@@ -93,9 +93,7 @@ export default function AdminReviewSubmissionModal({
     markRead(
       { notificationId: notification.id },
       {
-        onSuccess: () => {
-          toast.success("Marked as read");
-        },
+        onSuccess: () => {},
         onError: (e: any) => {
           toast.error(e?.message ?? "Failed to mark as read");
         },
@@ -359,6 +357,12 @@ export default function AdminReviewSubmissionModal({
       )}
     </Stack>
   );
+
+  useEffect(() => {
+    if (!notification?.read_at) {
+      handleMarkRead();
+    }
+  }, [notification]);
 
   return (
     <Modal

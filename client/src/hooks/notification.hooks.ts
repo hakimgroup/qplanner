@@ -71,19 +71,27 @@ export function useRequestAssets() {
   });
 }
 
+const toYMD = (d?: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
+
 async function fetchNotifications({
   type = null,
   practiceId = null,
-  onlyUnread = false,
   limit = 25,
   offset = 0,
-}: UseNotificationsArgs): Promise<NotificationRow[]> {
+  category = null,
+  startDate = null,
+  endDate = null,
+  readStatus = null,
+}: UseNotificationsArgs = {}): Promise<NotificationRow[]> {
   const { data, error } = await supabase.rpc(RPCFunctions.ListNotifications, {
     p_type: type,
     p_practice_id: practiceId,
-    p_only_unread: onlyUnread,
     p_limit: limit,
     p_offset: offset,
+    p_category: category, // e.g. "Campaign" or null
+    p_start_date: toYMD(startDate), // 'YYYY-MM-DD' or null
+    p_end_date: toYMD(endDate), // 'YYYY-MM-DD' or null
+    p_read_status: readStatus, // 'read' | 'unread' | null
   });
 
   if (error) throw error;
@@ -91,15 +99,42 @@ async function fetchNotifications({
 }
 
 export function useNotifications(args: UseNotificationsArgs = {}) {
-  const { type, practiceId, onlyUnread, limit, offset } = args;
+  const {
+    type = null,
+    practiceId = null,
+    limit = 25,
+    offset = 0,
+    category = null,
+    startDate = null,
+    endDate = null,
+    readStatus = null,
+  } = args;
 
   return useQuery({
     queryKey: [
       DatabaseTables.Notifications,
-      { type, practiceId, onlyUnread, limit, offset },
+      {
+        type,
+        practiceId,
+        limit,
+        offset,
+        category,
+        startDate: toYMD(startDate),
+        endDate: toYMD(endDate),
+        readStatus,
+      },
     ],
     queryFn: () =>
-      fetchNotifications({ type, practiceId, onlyUnread, limit, offset }),
+      fetchNotifications({
+        type,
+        practiceId,
+        limit,
+        offset,
+        category,
+        startDate,
+        endDate,
+        readStatus,
+      }),
   });
 }
 

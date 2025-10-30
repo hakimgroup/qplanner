@@ -74,7 +74,6 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
         headerName: "Activity",
         width: 160,
         minWidth: 140,
-        sortable: false,
         cellRenderer: ({ value }) => (
           <Badge
             variant="light"
@@ -93,7 +92,6 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
         headerName: "Source",
         width: 130,
         minWidth: 120,
-        sortable: false,
         cellRenderer: ({ value }) => (
           <Badge
             variant="light"
@@ -112,7 +110,6 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
         headerName: "Status",
         width: 160,
         minWidth: 140,
-        sortable: false,
         cellRenderer: ({ value }) => (
           <Badge
             variant="light"
@@ -161,7 +158,6 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
         headerName: "Last Updated",
         width: 150,
         minWidth: 140,
-        sortable: false,
         filter: false,
         valueFormatter: (p) =>
           p.value ? format(new Date(p.value), "MMM dd, yyyy") : "—",
@@ -191,12 +187,13 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
                   name: p.data.campaign,
                   isBespoke: !isEmpty(p.data.bespoke_id),
                   bespoke_campaign_id: p.data.bespoke_id,
-                  assets: p.data.assets, // Assets object
+                  assets: p.data.assets,
                   from_date: p.data.from,
                   to_date: p.data.end,
                   category: p.data.category,
                   topics: p.data.topics,
                   objectives: p.data.objectives,
+                  creatives: p.data.creatives,
                 }}
               />
 

@@ -1,23 +1,12 @@
 // components/admin/requestAssets/AdminRequestAssetsButton.tsx
-import StyledButton from "@/components/styledButton/StyledButton";
-import { IconAsset, IconSend } from "@tabler/icons-react";
+import { IconPackage } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import AdminRequestAssetsModal from "./AdminRequestAssetsModal";
 import { ActionIcon } from "@mantine/core";
+import { AdminModalSelection } from "@/models/campaign.models";
 
 type Props = {
-  selection: {
-    id: string;
-    name?: string;
-    isBespoke?: boolean;
-    bespoke_campaign_id?: string | null;
-    assets?: any; // Assets object
-    from_date?: string | Date | null;
-    to_date?: string | Date | null;
-    category?: string | null;
-    topics?: string[];
-    objectives?: string[];
-  };
+  selection: AdminModalSelection;
 };
 
 export default function AdminRequestAssetsButton({ selection }: Props) {
@@ -33,7 +22,7 @@ export default function AdminRequestAssetsButton({ selection }: Props) {
         onClick={open}
         aria-label="Assets"
       >
-        <IconAsset size={22} />
+        <IconPackage size={22} />
       </ActionIcon>
 
       <AdminRequestAssetsModal

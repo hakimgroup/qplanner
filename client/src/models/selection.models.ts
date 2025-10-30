@@ -1,9 +1,11 @@
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
+import { Assets } from "./general.models";
+import { Creatives } from "./campaign.models";
 
 // types/db.ts
 export type Selection = {
   id: string;
-  assets: string[];
+  assets?: Assets | null;
   practice_id: string;
   campaign_id: string;
   from_date: string; // ISO date (YYYY-MM-DD)
@@ -14,6 +16,7 @@ export type Selection = {
   created_by: string | null;
   updated_at: string;
   reference_links: string[];
+  bespoke_campaign_id?: string;
 };
 
 export type AddSelectionInput = {
@@ -52,6 +55,7 @@ export type PlanRow = {
   topics: string[];
   practiceid: string;
   bespoke_id: string;
+  creatives: Creatives[];
 };
 
 export type PlansFilter = {

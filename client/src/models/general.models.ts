@@ -47,15 +47,22 @@ export interface AssetOption {
 
 export interface AssetItem {
   name: string;
-  price: number | null;
+  // allow string while editing so decimals like "150.50" or "150." don't get killed mid-typing
+  price: number | string | null;
   quantity: number | null;
   suffix: string | null;
   type: string;
-  adminRequested: boolean;
   userSelected: boolean;
+  adminRequested?: boolean;
   options?: AssetOption[];
   note?: string;
 }
+
+export type Assets = {
+  printedAssets: AssetItem[];
+  digitalAssets: AssetItem[];
+  externalPlacements?: AssetItem[];
+};
 
 export interface AssetCategory {
   id: string;

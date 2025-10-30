@@ -44,11 +44,7 @@ import {
   isBefore,
 } from "date-fns";
 import { useAddSelection, useDeleteSelection } from "@/hooks/selection.hooks";
-import {
-  AppRoutes,
-  SelectionsSource,
-  SelectionStatus,
-} from "@/shared/shared.models";
+import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
 import Status from "../status/Status";
 import Edit from "./Edit";
 import { useDisclosure } from "@mantine/hooks";

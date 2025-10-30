@@ -17,52 +17,24 @@ import {
   Badge,
   Tooltip,
   useMantineTheme,
+  Image, // ⬅️ added
 } from "@mantine/core";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { startCase } from "lodash";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import StyledButton from "../styledButton/StyledButton";
-
-type AssetOption = { label: string; value: number };
-
-type AssetItem = {
-  name: string;
-  // 👇 allow string while editing so decimals like "150.50" or "150." don't get killed mid-typing
-  price: number | string | null;
-  quantity: number | null;
-  suffix: string | null;
-  type: string;
-  userSelected: boolean;
-  options?: AssetOption[];
-  note?: string;
-};
-
-type Assets = {
-  printedAssets: AssetItem[];
-  digitalAssets: AssetItem[];
-  // externalPlacements: AssetItem[];
-};
+import { useUpsertCatalogCampaign } from "@/hooks/campaign.hooks";
+import { AssetItem, Assets } from "@/models/general.models";
+import { AdminModalSelection, Creatives } from "@/models/campaign.models";
 
 type Props = {
   opened: boolean;
   onClose: () => void;
-  selection: {
-    id: string;
-    name?: string | null;
-    isBespoke?: boolean;
-    bespoke_campaign_id?: string | null;
-    assets?: Assets | null;
-    from_date?: string | Date | null;
-    to_date?: string | Date | null;
-    category?: string | null;
-    topics?: string[];
-    objectives?: string[];
-  };
+  selection: AdminModalSelection;
 };
 
 // Initialize assets state. We KEEP all assets, always visible.
-// We normalize quantity to a number (but admins no longer edit quantity in this modal).
 const cloneAssets = (a?: Assets | null): Assets => ({
   printedAssets: (a?.printedAssets ?? []).map((x) => ({
     ...x,
@@ -80,21 +52,6 @@ const cloneAssets = (a?: Assets | null): Assets => ({
         ? x.quantity
         : 0,
   })),
-  // externalPlacements: (a?.externalPlacements ?? []).map((x) => ({
-  //   ...x,
-  //   userSelected: x.userSelected ?? false,
-  //   // keep price as-is (string | number | null) when cloning, don't coerce
-  //   price:
-  //     x.price === null || typeof x.price === "string"
-  //       ? x.price
-  //       : Number.isFinite(x.price)
-  //       ? x.price
-  //       : null,
-  //   quantity:
-  //     typeof x.quantity === "number" && Number.isFinite(x.quantity)
-  //       ? x.quantity
-  //       : 0,
-  // })),
 });
 
 /* ----------------------- CHILD COMPONENTS ----------------------- */
@@ -106,23 +63,36 @@ function CreativeInputs({
   updateCreativeUrl,
   updateCreativeLabel,
 }: {
-  creatives: { url: string; label: string }[];
+  creatives: Creatives[];
   addCreative: () => void;
   removeCreative: (idx: number) => void;
   updateCreativeUrl: (idx: number, val: string) => void;
   updateCreativeLabel: (idx: number, val: string) => void;
 }) {
+  const hasAnyUrl = creatives.some((c) => c.url?.trim());
+  const T = useMantineTheme().colors;
+
   return (
     <Stack gap={8}>
       <Group justify="space-between" align="center">
         <Text fw={700} size="sm">
           Campaign Creatives
         </Text>
-        <Tooltip label="Add another creative (max 4)" withArrow>
+
+        <Tooltip
+          label={`Add ${
+            creatives && creatives.length > 0 ? "another" : "a"
+          } creative (max 4)`}
+          withArrow
+          style={{ border: `1px solid ${T.blue[1]}`, color: T.gray[9] }}
+          bg={"blue.0"}
+        >
           <ActionIcon
-            variant="subtle"
+            variant="light"
             aria-label="add creative"
-            onClick={addCreative}
+            onClick={() => {
+              addCreative();
+            }}
             disabled={creatives.length >= 4}
           >
             <IconPlus size={16} />
@@ -130,41 +100,96 @@ function CreativeInputs({
         </Tooltip>
       </Group>
 
-      <Stack gap={6}>
-        {creatives.map((item, idx) => (
-          <Group key={idx} gap={6} wrap="nowrap" align="center" w="100%">
-            {/* URL input */}
-            <TextInput
-              placeholder="https://image-url-or-asset.jpg"
-              value={item.url}
-              onChange={(e) => {
-                // update the url
-                updateCreativeUrl(idx, e.currentTarget.value);
-                // auto-sync the label to "Creative {idx+1}"
-                updateCreativeLabel(idx, `Creative ${idx + 1}`);
-              }}
+      {/* If we have any URLs, show a preview grid; otherwise show plain inputs */}
+      {hasAnyUrl ? (
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+          {creatives.map((item, idx) => (
+            <Card
+              key={idx}
+              withBorder
               radius="md"
-              style={{ flex: 2 }}
-              label={
-                <Text size="xs" fw={500} c="gray.7">
-                  {`Creative ${idx + 1}`}
-                </Text>
-              }
-            />
+              px="md"
+              py="sm"
+              shadow="xs"
+              style={{ borderColor: T.blue[1] }}
+            >
+              <Stack gap={8}>
+                <Group justify="space-between" align="center">
+                  <Text size="xs" fw={600} c="indigo.9">
+                    {`Creative ${idx + 1}`}
+                  </Text>
+                  {creatives.length > 1 && (
+                    <ActionIcon
+                      color="red"
+                      variant="subtle"
+                      aria-label="remove creative"
+                      onClick={() => removeCreative(idx)}
+                    >
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  )}
+                </Group>
 
-            {creatives.length > 1 && (
-              <ActionIcon
-                color="red"
-                variant="subtle"
-                aria-label="remove creative"
-                onClick={() => removeCreative(idx)}
-              >
-                <IconTrash size={16} />
-              </ActionIcon>
-            )}
-          </Group>
-        ))}
-      </Stack>
+                <Image
+                  src={item.url || undefined}
+                  radius="sm"
+                  height={160}
+                  alt={`Creative ${idx + 1}`}
+                />
+
+                <TextInput
+                  label={
+                    <Text size="xs" fw={500} c="gray.7">
+                      Replace URL
+                    </Text>
+                  }
+                  placeholder="https://image-url-or-asset.jpg"
+                  value={item.url}
+                  onChange={(e) => {
+                    const next = e.currentTarget.value;
+                    updateCreativeUrl(idx, next);
+                    updateCreativeLabel(idx, `Creative ${idx + 1}`);
+                  }}
+                  radius="md"
+                />
+              </Stack>
+            </Card>
+          ))}
+        </SimpleGrid>
+      ) : (
+        <Stack gap={6}>
+          {creatives.map((item, idx) => (
+            <Group key={idx} gap={6} wrap="nowrap" align="center" w="100%">
+              <TextInput
+                placeholder="https://image-url-or-asset.jpg"
+                value={item.url}
+                onChange={(e) => {
+                  updateCreativeUrl(idx, e.currentTarget.value);
+                  updateCreativeLabel(idx, `Creative ${idx + 1}`);
+                }}
+                radius="md"
+                style={{ flex: 1 }}
+                label={
+                  <Text size="xs" fw={500} c="gray.7">
+                    {`Creative ${idx + 1}`}
+                  </Text>
+                }
+              />
+
+              {creatives.length > 1 && (
+                <ActionIcon
+                  color="red"
+                  variant="subtle"
+                  aria-label="remove creative"
+                  onClick={() => removeCreative(idx)}
+                >
+                  <IconTrash size={16} />
+                </ActionIcon>
+              )}
+            </Group>
+          ))}
+        </Stack>
+      )}
 
       <Text size="xs" c="gray.6">
         These will be shown to the practice. They'll choose one.
@@ -189,7 +214,6 @@ function AssetCard({
   const T = useMantineTheme().colors;
   const selected = item.userSelected;
 
-  // helper to build the price/descriptor line under the name
   const getDescriptor = (it: AssetItem): string => {
     switch (it.type) {
       case "default": {
@@ -204,7 +228,6 @@ function AssetCard({
         }
         return "Price on request";
       }
-
       case "card": {
         if (it.options && it.options.length > 0) {
           const sorted = [...it.options].sort(
@@ -215,18 +238,14 @@ function AssetCard({
             cheapest.value != null && !Number.isNaN(cheapest.value)
               ? `£${cheapest.value}`
               : "£—";
-
           return cheapest.label
             ? `From ${valueDisplay} (${cheapest.label})`
             : `From ${valueDisplay}`;
         }
         return "Price on request";
       }
-
-      case "free": {
+      case "free":
         return "Free";
-      }
-
       case "external": {
         if (
           it.price !== null &&
@@ -240,7 +259,6 @@ function AssetCard({
         }
         return "External / quoted";
       }
-
       default: {
         if (
           it.price !== null &&
@@ -351,7 +369,6 @@ function PlacementCard({
           )}
         </Group>
 
-        {/* Price input (admin sets budget/quote) */}
         <Stack gap={4}>
           <Text size="xs" fw={500} c="gray.7">
             Price (£):
@@ -370,7 +387,6 @@ function PlacementCard({
           />
         </Stack>
 
-        {/* Single checkbox: request this placement */}
         <Checkbox
           size="xs"
           radius="xl"
@@ -399,13 +415,22 @@ export default function AdminRequestAssetsModal({
   );
 
   // creatives (up to 4 {url,label})
-  const [creatives, setCreatives] = useState<{ url: string; label: string }[]>([
-    { url: "", label: "" },
-  ]);
+  const defaultCreatives = [{ url: "", label: "" }];
+  const [creatives, setCreatives] = useState<Creatives[]>(
+    selection.creatives ?? defaultCreatives
+  );
+
+  /** ⬇️ New: toggle to switch to catalog update mode */
+  const applyToCatalog = selection.campaign_id;
+
+  const catalogId = selection?.campaign_id ?? null;
 
   const { mutate: updateAssets, isPending: savingAssets } =
     useUpdateSourceAssets();
   const { mutate: requestAssets, isPending: requesting } = useRequestAssets();
+
+  const { mutate: upsertCatalog, isPending: savingCatalog } =
+    useUpsertCatalogCampaign();
 
   // Creatives handlers
   const addCreative = () => {
@@ -447,45 +472,13 @@ export default function AdminRequestAssetsModal({
     }));
   };
 
-  // External placements logic
-  // - Admin can enter any decimal string while typing.
-  // - We store that raw string in `price` so typing "150.50" is preserved.
-  // - If parsed value is > 0, we also ensure userSelected = true.
-  // - Clearing/emptying keeps userSelected as-is unless manually unticked.
-  const updatePlacementPrice = (name: string, raw: string) => {
-    const trimmed = raw;
-    const parsed = parseFloat(trimmed);
-
-    setAssetsState((prev) => ({
-      ...prev,
-      // externalPlacements: prev.externalPlacements.map((it) => {
-      //   if (it.name !== name) return it;
-
-      //   const shouldSelect =
-      //     !Number.isNaN(parsed) && parsed > 0 ? true : it.userSelected;
-
-      //   return {
-      //     ...it,
-      //     price: trimmed === "" ? "" : trimmed,
-      //     userSelected: shouldSelect,
-      //   };
-      // }),
-    }));
-  };
-
-  const toggleRequestPlacement = (name: string, checked: boolean) => {
-    setAssetsState((prev) => ({
-      ...prev,
-      // externalPlacements: prev.externalPlacements.map((it) =>
-      //   it.name === name ? { ...it, userSelected: checked } : it
-      // ),
-    }));
-  };
+  // (external placements code removed in this variant)
+  const updatePlacementPrice = (_name: string, _raw: string) => {};
+  const toggleRequestPlacement = (_name: string, _checked: boolean) => {};
 
   // Derived sets for rendering
   const printedAssets = assetsState.printedAssets;
   const digitalAssets = assetsState.digitalAssets;
-  // const placements = assetsState.externalPlacements;
 
   // Validation for submission
   const hasAnyCreative = useMemo(
@@ -495,31 +488,49 @@ export default function AdminRequestAssetsModal({
 
   const hasAnyRequested = useMemo(() => {
     const anySelected = (arr: AssetItem[]) => arr.some((it) => it.userSelected);
-    return (
-      anySelected(printedAssets) || anySelected(digitalAssets)
-      // anySelected(placements)
-    );
-  }, [
-    printedAssets,
-    digitalAssets,
-    // placements
-  ]);
+    return anySelected(printedAssets) || anySelected(digitalAssets);
+  }, [printedAssets, digitalAssets]);
 
-  const canSubmit =
-    (hasAnyCreative || hasAnyRequested) && !savingAssets && !requesting;
+  // In "catalog" mode, allow saving even with no requested assets (you may be templating)
+  const canSubmit = applyToCatalog
+    ? !savingCatalog
+    : hasAnyCreative && hasAnyRequested && !savingAssets && !requesting;
 
   // Submit flow:
-  // 1. Persist the edited assets state
-  // 2. Call request_assets RPC with creatives (now url+label objects)
   const handleSubmit = () => {
     const cleanedCreatives = creatives
       .filter((c) => c.url.trim())
       .slice(0, 4)
-      .map((c) => ({
+      .map((c, idx) => ({
         url: c.url.trim(),
-        label: c.label.trim(),
+        label: c.label?.trim() || `Creative ${idx + 1}`,
       }));
 
+    if (applyToCatalog) {
+      if (!catalogId) {
+        toast.error("Missing campaign (catalog) id");
+        return;
+      }
+      upsertCatalog(
+        {
+          id: catalogId,
+          assets: assetsState, // campaigns_catalog.assets
+          creatives: cleanedCreatives, // campaigns_catalog.creatives
+        },
+        {
+          onSuccess: () => {
+            toast.success("Campaign template updated");
+            onClose();
+          },
+          onError: (e: any) => {
+            toast.error(e?.message ?? "Failed to update campaign template");
+          },
+        }
+      );
+      return;
+    }
+
+    // --- Selection mode (original flow) ---
     updateAssets(
       {
         selectionId: selection.id,
@@ -532,7 +543,7 @@ export default function AdminRequestAssetsModal({
           requestAssets(
             {
               selectionId: selection.id,
-              creativeUrls: cleanedCreatives, // now array of {url,label}
+              creativeUrls: cleanedCreatives,
               note: null,
             },
             {
@@ -586,6 +597,7 @@ export default function AdminRequestAssetsModal({
             <Text>-</Text>
           )}
         </Stack>
+
         <Stack gap={5}>
           <Text size="sm" fw={500} c={"blue.3"}>
             Categories
@@ -658,30 +670,6 @@ export default function AdminRequestAssetsModal({
           </SimpleGrid>
         </Stack>
 
-        {/* Additional Placements */}
-        {/* <Stack gap={8}>
-          <Text fw={700} size="sm">
-            Additional Placements
-          </Text>
-
-          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-            {placements.length === 0 && (
-              <Text size="xs" c="gray.6">
-                No external placements available
-              </Text>
-            )}
-
-            {placements.map((p, idx) => (
-              <PlacementCard
-                key={`placement-${idx}`}
-                p={p}
-                updatePlacementPrice={updatePlacementPrice}
-                toggleRequestPlacement={toggleRequestPlacement}
-              />
-            ))}
-          </SimpleGrid>
-        </Stack> */}
-
         {/* Footer actions */}
         <Group justify="flex-end" align="center">
           <StyledButton variant="default" c="red.4" onClick={onClose}>
@@ -689,10 +677,12 @@ export default function AdminRequestAssetsModal({
           </StyledButton>
           <Button
             onClick={handleSubmit}
-            loading={savingAssets || requesting}
+            loading={
+              applyToCatalog ? savingCatalog : savingAssets || requesting
+            }
             disabled={!canSubmit}
           >
-            Send Request
+            {applyToCatalog ? "Save to Campaign Template" : "Send Request"}
           </Button>
         </Group>
       </Stack>
