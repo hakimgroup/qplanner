@@ -27,8 +27,8 @@ export const TOPICS = [
 export type Topic = (typeof TOPICS)[number];
 
 export interface Availability {
-  from?: Date;
-  to?: Date;
+  from: string;
+  to: string;
 }
 
 export interface Assets {

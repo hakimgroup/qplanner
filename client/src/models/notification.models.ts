@@ -32,9 +32,9 @@ export type NotificationRow = {
 export type UseNotificationsArgs = {
   practiceId?: string;
   type?: string | null;
-  category?: string;
-  startDate?: Date;
-  endDate?: Date;
+  category?: string | null;
+  startDate?: any;
+  endDate?: any;
   readStatus?: "read" | "unread" | null;
   limit?: number;
   offset?: number;
