@@ -20,6 +20,7 @@ import StyledButton from "../styledButton/StyledButton";
 
 import { useNotifications } from "@/hooks/notification.hooks";
 import { useNotificationOpen } from "@/pages/notificationsCenter/useNotificationOpen.hook";
+import EmptyState from "../emptyState/EmptyState";
 
 const Notification = () => {
   const T = useMantineTheme();
@@ -108,11 +109,10 @@ const Notification = () => {
               !isError &&
               notifications &&
               notifications.length === 0 && (
-                <Flex align="center" justify="center" p={20}>
-                  <Text c="gray.6" size="sm">
-                    You're all caught up.
-                  </Text>
-                </Flex>
+                <EmptyState
+                  title="No notifications"
+                  message="You're all caught up."
+                />
               )}
 
             {!loadingNotifications &&

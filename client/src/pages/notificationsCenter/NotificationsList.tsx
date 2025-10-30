@@ -5,6 +5,7 @@ import { Stack, Text, Loader, Center, Box, Group } from "@mantine/core";
 import NotificationCard from "./NotificationCard";
 import { useNotificationOpen } from "./useNotificationOpen.hook";
 import NotificationsFilters from "./NotificationsFilters";
+import EmptyState from "@/components/emptyState/EmptyState";
 
 export default function NotificationsList() {
   // You could pass filters here later (practiceId, onlyUnread, etc.)
@@ -41,11 +42,7 @@ export default function NotificationsList() {
 
   if (!data || data.length === 0) {
     return (
-      <Center py="xl">
-        <Text c="gray.6" size="sm">
-          No notifications yet.
-        </Text>
-      </Center>
+      <EmptyState title="No notifications" message="You're all caught up." />
     );
   }
 
