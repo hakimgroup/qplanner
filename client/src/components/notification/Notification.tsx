@@ -34,7 +34,7 @@ const Notification = () => {
     isLoading: loadingNotifications,
     isError,
   } = useNotifications({
-    onlyUnread: false,
+    readStatus: null,
     limit: 10,
     offset: 0,
   });
