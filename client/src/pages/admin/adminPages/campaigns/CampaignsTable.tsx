@@ -16,7 +16,7 @@ import { activityColors } from "@/shared/shared.const";
 import { BadgeList } from "@/components/badgeList/BadgeList";
 import { formatAvailabilityForUI } from "@/shared/shared.utilities";
 import { IconEdit } from "@tabler/icons-react";
-import { isEmpty, startCase } from "lodash";
+import { startCase } from "lodash";
 import AdminRequestAssetsButton from "@/components/assets/AdminRequestAssetsButton";
 
 export type CampaignRow = {

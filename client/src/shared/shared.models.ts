@@ -25,6 +25,7 @@ export enum DatabaseTables {
   Allowed_Users = "allowed_users",
   BespokeCampaigns = "bespoke_campaigns",
   Notifications = "notifications",
+  CommunicationLogs = "selection_status_history",
 }
 
 export enum RPCFunctions {

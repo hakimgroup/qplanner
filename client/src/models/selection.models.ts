@@ -36,6 +36,18 @@ export type UpdateSelectionInput = {
   >;
 };
 
+export interface Plans {
+  data: PlanRow[];
+  meta: {
+    awaitingApproval: number;
+    confirmed: number;
+    inProgress: number;
+    live: number;
+    onPlan: number;
+    requested: number;
+  };
+}
+
 export type PlanRow = {
   id: string;
   practice: string;

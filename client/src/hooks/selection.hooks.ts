@@ -9,6 +9,7 @@ import {
 import {
   AddSelectionInput,
   PlanRow,
+  Plans,
   PlansFilter,
   Selection,
   UpdateSelectionInput,
@@ -190,11 +191,11 @@ export function useDeleteSelection() {
   });
 }
 
-export function usePlans<TData = PlanRow[]>(
+export function usePlans<TData = Plans>(
   filters: PlansFilter = {},
-  options?: UseQueryOptions<PlanRow[], unknown, TData, any[]>
+  options?: UseQueryOptions<Plans, unknown, TData, any[]>
 ) {
-  return useQuery<PlanRow[], unknown, TData, any[]>({
+  return useQuery<Plans, unknown, TData, any[]>({
     queryKey: [RPCFunctions.GetPlans, filters],
     queryFn: () => fetchPlans(filters),
     refetchOnWindowFocus: false,

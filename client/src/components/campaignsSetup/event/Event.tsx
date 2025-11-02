@@ -431,10 +431,10 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
                     [
                       { key: "printedAssets", label: "Printed Assets" },
                       { key: "digitalAssets", label: "Digital Assets" },
-                      {
-                        key: "externalPlacements",
-                        label: "External Placements",
-                      },
+                      // {
+                      //   key: "externalPlacements",
+                      //   label: "External Placements",
+                      // },
                     ] as const
                   ).map(({ key, label }) => (
                     <Box key={key}>
