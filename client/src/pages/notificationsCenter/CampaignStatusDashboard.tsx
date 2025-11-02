@@ -139,7 +139,7 @@ const CampaignStatusDashboard = () => {
 
       <Table
         loading={isLoading}
-        rows={data && data.length ? data : []}
+        rows={data && data.data ? data.data : []}
         cols={colDefs}
         autoHeight
       />
