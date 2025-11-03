@@ -37,7 +37,7 @@ export enum RPCFunctions {
   CreateBespokeEvent = "create_bespoke_event",
   AddCampaignsBulk = "add_campaigns_bulk",
   GetGuidedCampaigns = "get_guided_campaigns",
-  GetPlans = "get_plans",
+  GetPlans = "get_plans_test",
   GetUsers = "get_users",
   UpdateUser = "update_user",
   BulkUploadUsers = "bulk_upsert_allowed_users_with_practices",
