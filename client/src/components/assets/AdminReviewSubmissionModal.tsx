@@ -475,10 +475,7 @@ export default function AdminReviewSubmissionModal({
             <StyledButton variant="default" onClick={onClose}>
               Close
             </StyledButton>
-
-            {/* Placeholder for next step in workflow:
-               e.g. "Approve & Move to AwaitingApproval" or similar. */}
-            <Button>Move Forward</Button>
+            {/* <Button>Move Forward</Button> */}
           </Group>
         </Flex>
       </Stack>
