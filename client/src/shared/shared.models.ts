@@ -45,9 +45,11 @@ export enum RPCFunctions {
   CopyPracticeCampaigns = "copy_practice_campaigns",
   GetAssets = "get_assets",
   RequestAssets = "request_assets",
+  RequestAssetsBulk = "request_assets_bulk",
   ListNotifications = "list_notifications",
   SubmitAssets = "submit_assets",
   MarkAsRead = "mark_notification_read",
+  DeleteSelection = "delete_selection",
 }
 
 export enum UserRoles {

@@ -26,6 +26,9 @@ import { AppRoutes } from "@/shared/shared.models";
 import AppContext from "@/shared/AppContext";
 import { startCase } from "lodash";
 import PlansMetaSummary from "./PlansMetaSummary";
+import { useRequestAssetsBulk } from "@/hooks/notification.hooks";
+import { toast } from "sonner";
+import BulkRequestButton from "@/components/assets/BulkRequestButton";
 
 const Plans = () => {
   const T = useMantineTheme().colors;
@@ -54,6 +57,7 @@ const Plans = () => {
   const { data: plansResponse, isFetching } = usePlans(
     normalizeAllToNull(plansFilters)
   );
+  const { mutate: requestBulk, isPending } = useRequestAssetsBulk();
 
   // plansResponse will either be undefined (first render / error) or { data: [...], meta: {...} }
   const data = plansResponse?.data ?? [];
@@ -253,9 +257,7 @@ const Plans = () => {
                 onChange={(v) => {}}
               />
 
-              <StyledButton leftSection={<IconMessage size={16} />}>
-                Trigger follow-up
-              </StyledButton>
+              <BulkRequestButton selectionIds={selectedRowIds} />
 
               <Button
                 variant="subtle"

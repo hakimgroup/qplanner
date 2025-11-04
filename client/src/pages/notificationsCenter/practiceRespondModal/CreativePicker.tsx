@@ -74,6 +74,7 @@ export default function CreativePicker({
                 radius="md"
                 px={6}
                 py={6}
+                mah={130}
                 style={{
                   position: "relative",
                   borderColor:
@@ -86,8 +87,7 @@ export default function CreativePicker({
                   src={item.url}
                   alt={item.label ?? `Creative ${idx + 1}`}
                   radius="sm"
-                  height={150}
-                  fit="cover"
+                  height={"100%"}
                 />
 
                 <ActionIcon
@@ -135,7 +135,7 @@ export default function CreativePicker({
         opened={opened}
         onClose={close}
         centered
-        radius="md"
+        radius={10}
         title={<Text fw={600}>{preview?.label ?? "Creative"}</Text>}
         size="lg"
         overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
@@ -145,7 +145,6 @@ export default function CreativePicker({
             src={preview?.url}
             alt={preview?.label ?? "Creative preview"}
             radius="md"
-            fit="contain"
           />
           <Group justify="space-between">
             <StyledButton onClick={close}>Close</StyledButton>

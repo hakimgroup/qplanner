@@ -6,15 +6,20 @@ import { ActionIcon } from "@mantine/core";
 import { AdminModalSelection } from "@/models/campaign.models";
 
 type Props = {
+  disabled?: boolean;
   selection: AdminModalSelection;
 };
 
-export default function AdminRequestAssetsButton({ selection }: Props) {
+export default function AdminRequestAssetsButton({
+  selection,
+  disabled,
+}: Props) {
   const [opened, { open, close }] = useDisclosure(false);
 
   return (
     <>
       <ActionIcon
+        disabled={disabled}
         variant="subtle"
         size="xl"
         radius={10}

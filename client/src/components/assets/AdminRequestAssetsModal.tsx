@@ -111,6 +111,7 @@ function CreativeInputs({
               px="md"
               py="sm"
               shadow="xs"
+              mah={300}
               style={{ borderColor: T.blue[1] }}
             >
               <Stack gap={8}>

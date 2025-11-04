@@ -78,3 +78,17 @@ export type PlansFilter = {
   tier?: string | null;
   isBespoke?: boolean;
 };
+
+export type BulkResultItem = {
+  selection_id: string;
+  notification_id?: string | null;
+  practice_id?: string | null;
+  status: "ok" | string;
+};
+
+export type RequestAssetsBulkResponse = {
+  success: number;
+  failed: number;
+  results: BulkResultItem[];
+  errors: { selection_id: string; error: string }[];
+};

@@ -11,6 +11,8 @@ import {
   UseNotificationsArgs,
 } from "@/models/notification.models";
 import { toast } from "sonner";
+import { requestAssetsBulk } from "@/api/selections";
+import { RequestAssetsBulkResponse } from "@/models/selection.models";
 
 export function useUpdateSourceAssets() {
   const qc = useQueryClient();
@@ -179,6 +181,25 @@ export function useMarkNotificationRead() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
+    },
+  });
+}
+
+export function useRequestAssetsBulk() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (selectionIds: string[]) => requestAssetsBulk(selectionIds),
+    onSuccess: (res: RequestAssetsBulkResponse) => {
+      // invalidate anything relevant (notifications list, selections, etc.)
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Notifications],
+        exact: false,
+      });
+      qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+    },
+    onError: (e: any) => {
+      toast.error(e?.message ?? "Failed to request assets in bulk");
     },
   });
 }

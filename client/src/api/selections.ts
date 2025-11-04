@@ -1,4 +1,8 @@
-import { PlansFilter, Plans } from "@/models/selection.models";
+import {
+  PlansFilter,
+  Plans,
+  RequestAssetsBulkResponse,
+} from "@/models/selection.models";
 import { RPCFunctions } from "@/shared/shared.models";
 import { supabase } from "./supabase";
 
@@ -19,4 +23,15 @@ export async function fetchPlans(filters: PlansFilter = {}): Promise<Plans> {
 
   if (error) throw error;
   return (data ?? {}) as Plans;
+}
+
+export async function requestAssetsBulk(
+  selectionIds: string[]
+): Promise<RequestAssetsBulkResponse> {
+  const { data, error } = await supabase.rpc(RPCFunctions.RequestAssetsBulk, {
+    p_selection_ids: selectionIds,
+  });
+
+  if (error) throw error;
+  return (data ?? {}) as RequestAssetsBulkResponse;
 }

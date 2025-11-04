@@ -22,6 +22,7 @@ import { isEmpty, startCase, toLower, upperFirst } from "lodash";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import PlansActions from "./PlansActions";
 import AdminRequestAssetsButton from "@/components/assets/AdminRequestAssetsButton";
+import { SelectionStatus } from "@/shared/shared.models";
 
 interface Props {
   loading: boolean;
@@ -179,9 +180,10 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
         sortable: false,
         filter: false,
         cellRenderer: (p) => (
-          <Stack align="flex-end" gap={6}>
-            <Flex>
+          <Stack align="flex-end" justify="center" gap={6}>
+            <Flex justify={"center"}>
               <AdminRequestAssetsButton
+                disabled={p.data.status !== SelectionStatus.OnPlan}
                 selection={{
                   id: p.data.id,
                   name: p.data.campaign,

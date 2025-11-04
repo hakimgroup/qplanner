@@ -155,30 +155,20 @@ export function useDeleteSelection() {
   const qc = useQueryClient();
 
   return useMutation({
-    // ⬇️ accept object with optional bespokeId
-    mutationFn: async ({ selectionId, bespokeId }: DeleteSelectionArgs) => {
-      // 1️⃣ delete selection
-      const { error: selError } = await supabase
-        .from(DatabaseTables.Selections)
-        .delete()
-        .eq("id", selectionId);
+    mutationFn: async ({ selectionId }: DeleteSelectionArgs) => {
+      // call the RPC that archives then deletes the selection
+      const { data, error } = await supabase.rpc(RPCFunctions.DeleteSelection, {
+        p_selection_id: selectionId,
+      });
 
-      if (selError) throw selError;
-
-      // 2️⃣ if bespokeId provided, also delete from bespoke_campaigns
-      if (bespokeId) {
-        const { error: bespokeError } = await supabase
-          .from(DatabaseTables.BespokeCampaigns)
-          .delete()
-          .eq("id", bespokeId);
-
-        if (bespokeError) throw bespokeError;
-      }
-
-      return { selectionId, bespokeId };
+      if (error) throw error;
+      return data;
     },
 
     onSuccess: () => {
+      // refresh anything that depends on selections
+      qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
+      qc.invalidateQueries({ queryKey: [DatabaseTables.Selections] });
       qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog],
         exact: false,
