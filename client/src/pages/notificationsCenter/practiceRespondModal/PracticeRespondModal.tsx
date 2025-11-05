@@ -793,11 +793,11 @@ export default function PracticeRespondModal({
           list={assetsState.digitalAssets}
         />
 
-        <AssetSection
+        {/* <AssetSection
           title="Additional Placements"
           bucket="externalPlacements"
           list={assetsState.externalPlacements}
-        />
+        /> */}
 
         {/* Practice note */}
         <Stack gap={6}>
