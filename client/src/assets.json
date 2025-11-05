@@ -1,0 +1,322 @@
+{
+  "printedAssets": [
+    {
+      "name": "A0 Poster",
+      "price": 24.96,
+      "quantity": 0,
+      "suffix": null,
+      "type": "default",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "A1 Poster",
+      "price": 18.4,
+      "quantity": 0,
+      "suffix": null,
+      "type": "default",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "A2 Poster",
+      "price": 15.12,
+      "quantity": 0,
+      "suffix": null,
+      "type": "default",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "A3 Poster",
+      "price": 14.13,
+      "quantity": 0,
+      "suffix": null,
+      "type": "default",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "A4 Poster",
+      "price": 12.99,
+      "quantity": 0,
+      "suffix": null,
+      "type": "default",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "A4 Strut Card",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "card",
+      "adminRequested": false,
+      "userSelected": false,
+      "options": [
+        {
+          "label": "MOQ 5",
+          "value": 16.11
+        }
+      ]
+    },
+    {
+      "name": "A5 Strut Card",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "card",
+      "adminRequested": false,
+      "userSelected": false,
+      "options": [
+        {
+          "label": "MOQ 5",
+          "value": 15
+        }
+      ]
+    },
+    {
+      "name": "A5 Leaflet (double sided, silk, 170gsm)",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "card",
+      "adminRequested": false,
+      "userSelected": false,
+      "options": [
+        {
+          "label": "500",
+          "value": 38.95
+        },
+        {
+          "label": "1000",
+          "value": 46.22
+        }
+      ]
+    },
+    {
+      "name": "DL Leaflet (double sided, silk, 170gsm)",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "card",
+      "adminRequested": false,
+      "userSelected": false,
+      "options": [
+        {
+          "label": "500",
+          "value": 33.69
+        },
+        {
+          "label": "1000",
+          "value": 42.52
+        }
+      ]
+    },
+    {
+      "name": "Roller Banner",
+      "price": 75,
+      "quantity": 0,
+      "suffix": null,
+      "type": "default",
+      "adminRequested": false,
+      "userSelected": false,
+      "note": "For roller banners the costs vary between £25-£110 depending on the style and supplier, so the above is a midrange estimate and exact numbers will be shared after the artwork has been decided on."
+    },
+    {
+      "name": "Business Cards",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "card",
+      "adminRequested": false,
+      "userSelected": false,
+      "options": [
+        {
+          "label": "100",
+          "value": 17.06
+        },
+        {
+          "label": "500",
+          "value": 32.55
+        },
+        {
+          "label": "1000",
+          "value": 42.62
+        }
+      ]
+    },
+    {
+      "name": "Booklets",
+      "price": null,
+      "quantity": 0,
+      "suffix": null,
+      "type": "free",
+      "note": "On request dependent on page number",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Postcards",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "card",
+      "adminRequested": false,
+      "userSelected": false,
+      "options": [
+        {
+          "label": "100",
+          "value": 21.25
+        },
+        {
+          "label": "500",
+          "value": 50.59
+        },
+        {
+          "label": "1000",
+          "value": 88.62
+        }
+      ]
+    }
+  ],
+  "digitalAssets": [
+    {
+      "name": "IPTV (landscape / portrait)",
+      "price": null,
+      "quantity": 0,
+      "suffix": null,
+      "type": "free",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Website Update / Landing Page",
+      "price": null,
+      "quantity": 0,
+      "suffix": null,
+      "type": "free",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Organic Social Media",
+      "price": null,
+      "quantity": 0,
+      "suffix": null,
+      "type": "free",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Paid Social Media",
+      "price": 5,
+      "quantity": 0,
+      "suffix": "per day",
+      "type": "default",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Email Campaign",
+      "price": null,
+      "quantity": 0,
+      "suffix": null,
+      "type": "free",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "SMS Campaign",
+      "price": 0.83,
+      "quantity": 0,
+      "suffix": "per SMS",
+      "type": "default",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Recall Letter Reverse",
+      "price": null,
+      "quantity": 0,
+      "suffix": null,
+      "type": "free",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Recall Email Graphic",
+      "price": null,
+      "quantity": 0,
+      "suffix": null,
+      "type": "free",
+      "adminRequested": false,
+      "userSelected": false
+    }
+  ],
+  "externalPlacements": [
+    {
+      "name": "Billboard",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "external",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Local Printed Ad",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "external",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Local Radio Ad",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "external",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Bus Stop Posters",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "external",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Shopping Centres",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "external",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Local Sponsorship Materials (event programmes, sport club ads)",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "external",
+      "adminRequested": false,
+      "userSelected": false
+    },
+    {
+      "name": "Local Homes Door Drop",
+      "price": null,
+      "quantity": null,
+      "suffix": null,
+      "type": "external",
+      "adminRequested": false,
+      "userSelected": false
+    }
+  ]
+}

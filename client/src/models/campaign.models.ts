@@ -1,8 +1,5 @@
-import {
-  SelectionsSource,
-  SelectionStatus,
-  SelectionTier,
-} from "@/shared/shared.models";
+import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
+import { AssetItem, Assets as MainAssets } from "./general.models";
 
 export interface BulkDeletePayload {
   ids: string[];
@@ -34,31 +31,45 @@ export interface Availability {
   to: string;
 }
 
+export interface Assets {
+  printedAssets: AssetItem[];
+  digitalAssets: AssetItem[];
+  externalPlacements?: AssetItem[];
+  creative?: string;
+  note?: string;
+}
+
+export interface Creatives {
+  url?: string;
+  label?: string;
+}
+
 export interface Campaign {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  assets: string[];
-  objectives: Objective[]; // e.g. ["Conversion", "ADV"]
-  topics: Topic[]; // e.g. ["Frame", "Lens"]
-  availability: Availability | null; // e.g. { from: "Sep", to: "Oct" } or null
-  reference_links: string[];
-  status: SelectionStatus;
-  is_bespoke: boolean;
-  custom_events: boolean;
-  selected: boolean;
-  selection_id: string;
-  selection_from_date: string;
-  selection_to_date: string;
-  selection_practice_id: string;
-  selection_practice_name: string;
-  notes: string;
-  tier: SelectionTier | null;
-  source: SelectionsSource | null;
-  is_event: boolean;
-  event_type: string;
-  requirements: string;
+  id?: string;
+  name?: string;
+  description?: string;
+  category?: string;
+  assets?: Assets;
+  creatives?: Creatives[];
+  objectives?: Objective[];
+  topics?: Topic[];
+  availability?: Availability | null;
+  reference_links?: string[];
+  status?: SelectionStatus;
+  is_bespoke?: boolean;
+  custom_events?: boolean;
+  selected?: boolean;
+  selection_id?: string;
+  selection_from_date?: string;
+  selection_to_date?: string;
+  selection_practice_id?: string;
+  selection_practice_name?: string;
+  notes?: string;
+  tiers?: string[];
+  source?: SelectionsSource | null;
+  is_event?: boolean;
+  event_type?: string;
+  requirements?: string;
   focus?: string;
   duration?: string;
   bespoke_campaign_id?: string;
@@ -88,7 +99,7 @@ export type CreateBespokeEventInput = {
   eventToDate: Date;
   objectives?: string[]; // jsonb array
   topics?: string[]; // jsonb array
-  assets?: string[]; // jsonb array
+  assets?: unknown;
   requirements?: string | null;
   notes?: string | null; // stored on selection
   links?: string[];
@@ -136,3 +147,18 @@ export type GuidedParams = {
   eventReady: boolean; // maps to custom_events = true
   activity: number; // 0..100 (maps to 2..20 in RPC)
 };
+
+export interface AdminModalSelection {
+  id: string;
+  name?: string;
+  isBespoke?: boolean;
+  bespoke_campaign_id?: string | null;
+  campaign_id?: string | null;
+  assets?: MainAssets | null;
+  from_date?: string | Date | null;
+  to_date?: string | Date | null;
+  category?: string | null;
+  topics?: string[];
+  objectives?: string[];
+  creatives?: Creatives[];
+}

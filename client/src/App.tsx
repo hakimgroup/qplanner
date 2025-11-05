@@ -21,121 +21,111 @@ import RequireAdmin from "./shared/RequireAdmin";
 import AdminCampaigns from "./pages/admin/adminPages/campaigns/AdminCampaigns";
 import { TierProvider } from "./shared/TierProvider";
 import NotificationsCenter from "./pages/notificationsCenter/NotificationsCenter";
+import AdminNotifications from "./pages/admin/adminPages/notifications/AdminNotifications";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
-	defaultOptions: { queries: { refetchOnWindowFocus: false } },
+  defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
 
 export default function App() {
-	const { pathname } = useLocation();
+  const { pathname } = useLocation();
 
-	const publicPages = useMemo(
-		() => [
-			{ path: AppRoutes.Home, element: <Login /> },
-			{ path: AppRoutes.Login, element: <Login /> },
-		],
-		[]
-	);
+  const publicPages = useMemo(
+    () => [
+      { path: AppRoutes.Home, element: <Login /> },
+      { path: AppRoutes.Login, element: <Login /> },
+    ],
+    []
+  );
 
-	const privatePages = useMemo(
-		() => [
-			{
-				path: AppRoutes.Dashboard,
-				element: <Dashboard />,
-			},
-			{
-				path: AppRoutes.NotificationsCenter,
-				element: <NotificationsCenter />,
-			},
-			{ path: AppRoutes.FAQs, element: <Faqs /> },
-		],
-		[]
-	);
+  const privatePages = useMemo(
+    () => [
+      {
+        path: AppRoutes.Dashboard,
+        element: <Dashboard />,
+      },
+      {
+        path: AppRoutes.NotificationsCenter,
+        element: <NotificationsCenter />,
+      },
+      { path: AppRoutes.FAQs, element: <Faqs /> },
+    ],
+    []
+  );
 
-	const isPublicPath = [AppRoutes.Home, AppRoutes.Login].includes(
-		pathname as AppRoutes
-	);
+  const isPublicPath = [AppRoutes.Home, AppRoutes.Login].includes(
+    pathname as AppRoutes
+  );
 
-	return (
-		<Suspense fallback={null}>
-			<QueryClientProvider client={queryClient}>
-				<TierProvider>
-					<PracticeProvider>
-						<AppProvider>
-							<div className="app">
-								{!isPublicPath && <Nav />}
-								<main>
-									<Routes>
-										{/* Public */}
-										{publicPages.map((pg) => (
-											<Route
-												key={pg.path}
-												path={pg.path}
-												element={pg.element}
-											/>
-										))}
+  return (
+    <Suspense fallback={null}>
+      <QueryClientProvider client={queryClient}>
+        <TierProvider>
+          <PracticeProvider>
+            <AppProvider>
+              <div className="app">
+                {!isPublicPath && <Nav />}
+                <main>
+                  <Routes>
+                    {/* Public */}
+                    {publicPages.map((pg) => (
+                      <Route
+                        key={pg.path}
+                        path={pg.path}
+                        element={pg.element}
+                      />
+                    ))}
 
-										{/* Private (simple) */}
-										{privatePages.map((pg) => (
-											<Route
-												key={pg.path}
-												path={pg.path}
-												element={
-													<RequireAuth>
-														{pg.element}
-													</RequireAuth>
-												}
-											/>
-										))}
+                    {/* Private (simple) */}
+                    {privatePages.map((pg) => (
+                      <Route
+                        key={pg.path}
+                        path={pg.path}
+                        element={<RequireAuth>{pg.element}</RequireAuth>}
+                      />
+                    ))}
 
-										{/* Admin (nested) — NOTE the /* */}
-										<Route
-											path={`${AppRoutes.Admin}/*`} // => "/admin/*"
-											element={
-												<RequireAuth>
-													<RequireAdmin>
-														<AdminLayout />
-													</RequireAdmin>
-												</RequireAuth>
-											}
-										>
-											<Route index element={<Plans />} />{" "}
-											<Route
-												path={AppRoutes.Plans}
-												element={<Plans />}
-											/>
-											<Route
-												path={AppRoutes.Campaigns}
-												element={<AdminCampaigns />}
-											/>
-											<Route
-												path={AppRoutes.Bespoke}
-												element={<Plans />}
-											/>
-											<Route
-												path={AppRoutes.PeopleAccess}
-												element={<PeopleAccess />}
-											/>
-										</Route>
+                    {/* Admin (nested) — NOTE the /* */}
+                    <Route
+                      path={`${AppRoutes.Admin}/*`} // => "/admin/*"
+                      element={
+                        <RequireAuth>
+                          <RequireAdmin>
+                            <AdminLayout />
+                          </RequireAdmin>
+                        </RequireAuth>
+                      }
+                    >
+                      <Route index element={<Plans />} />{" "}
+                      <Route path={AppRoutes.Plans} element={<Plans />} />
+                      <Route
+                        path={AppRoutes.Campaigns}
+                        element={<AdminCampaigns />}
+                      />
+                      <Route path={AppRoutes.Bespoke} element={<Plans />} />
+                      <Route
+                        path={AppRoutes.PeopleAccess}
+                        element={<PeopleAccess />}
+                      />
+                      <Route
+                        path={AppRoutes.Notifications}
+                        element={<AdminNotifications />}
+                      />
+                    </Route>
 
-										{/* Fallback */}
-										<Route
-											path="*"
-											element={
-												<Navigate
-													to={AppRoutes.Login}
-													replace
-												/>
-											}
-										/>
-									</Routes>
-								</main>
-							</div>
-						</AppProvider>
-					</PracticeProvider>
-				</TierProvider>
-			</QueryClientProvider>
-		</Suspense>
-	);
+                    {/* Fallback */}
+                    <Route
+                      path="*"
+                      element={<Navigate to={AppRoutes.Login} replace />}
+                    />
+                  </Routes>
+                </main>
+              </div>
+            </AppProvider>
+          </PracticeProvider>
+        </TierProvider>
+      </QueryClientProvider>
+    </Suspense>
+  );
 }

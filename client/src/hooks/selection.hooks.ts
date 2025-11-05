@@ -9,6 +9,7 @@ import {
 import {
   AddSelectionInput,
   PlanRow,
+  Plans,
   PlansFilter,
   Selection,
   UpdateSelectionInput,
@@ -21,11 +22,37 @@ import {
 import { fetchPlans } from "@/api/selections";
 import { useAuth } from "@/shared/AuthProvider";
 import { toast } from "sonner";
+import { GetAssetsResponse } from "@/models/general.models";
+import { useAssets } from "./general.hooks";
 
 const key = (activePracticeId: string | null, unitedView: boolean) => [
   DatabaseTables.Selections,
   { p: activePracticeId, u: unitedView },
 ];
+
+async function fetchSelection(selectionId: string) {
+  if (!selectionId) return null;
+
+  const { data, error } = await supabase
+    .from(DatabaseTables.Selections)
+    .select("*")
+    .eq("id", selectionId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export function useSelectionById(selectionId: string | null | undefined) {
+  const query = useQuery({
+    queryKey: ["selection", selectionId],
+    queryFn: () => fetchSelection(selectionId as string),
+    enabled: !!selectionId, // don't auto-run if we don't have an id
+    staleTime: 0, // always treat as fresh (forces spinner each click)
+  });
+
+  return query;
+}
 
 export function useSelections() {
   const { activePracticeId, unitedView } = usePractice();
@@ -58,6 +85,7 @@ export function useAddSelection(onSuccess?: () => void) {
   return useMutation({
     mutationFn: async (input: AddSelectionInput) => {
       if (!activePracticeId) throw new Error("No active practice selected");
+
       const payload = {
         practice_id: activePracticeId,
         campaign_id: input.campaign_id,
@@ -68,11 +96,13 @@ export function useAddSelection(onSuccess?: () => void) {
         bespoke: input.bespoke ?? false,
         source: input.source,
       };
+
       const { data, error } = await supabase
         .from(DatabaseTables.Selections)
         .insert(payload)
         .select()
         .single();
+
       if (error) throw error;
       return data as Selection;
     },
@@ -125,30 +155,20 @@ export function useDeleteSelection() {
   const qc = useQueryClient();
 
   return useMutation({
-    // ⬇️ accept object with optional bespokeId
-    mutationFn: async ({ selectionId, bespokeId }: DeleteSelectionArgs) => {
-      // 1️⃣ delete selection
-      const { error: selError } = await supabase
-        .from(DatabaseTables.Selections)
-        .delete()
-        .eq("id", selectionId);
+    mutationFn: async ({ selectionId }: DeleteSelectionArgs) => {
+      // call the RPC that archives then deletes the selection
+      const { data, error } = await supabase.rpc(RPCFunctions.DeleteSelection, {
+        p_selection_id: selectionId,
+      });
 
-      if (selError) throw selError;
-
-      // 2️⃣ if bespokeId provided, also delete from bespoke_campaigns
-      if (bespokeId) {
-        const { error: bespokeError } = await supabase
-          .from(DatabaseTables.BespokeCampaigns)
-          .delete()
-          .eq("id", bespokeId);
-
-        if (bespokeError) throw bespokeError;
-      }
-
-      return { selectionId, bespokeId };
+      if (error) throw error;
+      return data;
     },
 
     onSuccess: () => {
+      // refresh anything that depends on selections
+      qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
+      qc.invalidateQueries({ queryKey: [DatabaseTables.Selections] });
       qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog],
         exact: false,
@@ -161,11 +181,11 @@ export function useDeleteSelection() {
   });
 }
 
-export function usePlans<TData = PlanRow[]>(
+export function usePlans<TData = Plans>(
   filters: PlansFilter = {},
-  options?: UseQueryOptions<PlanRow[], unknown, TData, any[]>
+  options?: UseQueryOptions<Plans, unknown, TData, any[]>
 ) {
-  return useQuery<PlanRow[], unknown, TData, any[]>({
+  return useQuery<Plans, unknown, TData, any[]>({
     queryKey: [RPCFunctions.GetPlans, filters],
     queryFn: () => fetchPlans(filters),
     refetchOnWindowFocus: false,
