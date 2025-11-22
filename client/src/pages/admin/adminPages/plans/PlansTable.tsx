@@ -133,8 +133,9 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
         headerName: "Dates",
         width: 200,
         minWidth: 180,
-        sortable: false,
         filter: false,
+        sortable: true,
+        // keep the pretty text for display
         valueGetter: (p) => {
           const from = p?.data?.from ?? null;
           const to = p?.data?.end ?? null;
@@ -146,6 +147,17 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
             from: from ? new Date(from) : null,
             to: to ? new Date(to) : null,
           });
+        },
+        // sort strictly by the raw "from" date
+        comparator: (valueA, valueB, nodeA, nodeB) => {
+          const tA = nodeA?.data?.from
+            ? new Date(nodeA.data.from).getTime()
+            : Number.POSITIVE_INFINITY;
+          const tB = nodeB?.data?.from
+            ? new Date(nodeB.data.from).getTime()
+            : Number.POSITIVE_INFINITY;
+          // earlier dates first; rows with no "from" go to the bottom
+          return tA - tB;
         },
         cellRenderer: ({ value }) => (
           <Text size="xs" c="gray.9" fw={500} title={value ?? ""}>
