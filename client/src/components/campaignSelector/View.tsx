@@ -116,7 +116,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
         </Text>
       )}
       <Flex align={"center"} gap={4}>
-        {c.topics.map((c) => (
+        {c.topics?.map((c) => (
           <Badge key={c} variant="outline" color="gray.1">
             <Text size="xs" fw={600} c={"gray.9"}>
               {startCase(c)}
