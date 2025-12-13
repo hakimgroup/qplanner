@@ -38,6 +38,7 @@ import { format } from "date-fns";
 import { activityColors } from "@/shared/shared.const";
 import { toLower } from "lodash";
 import { NotificationRow } from "@/models/notification.models";
+import { Assets } from "@/models/campaign.models";
 
 type AssetOption = { label: string; value: number };
 type AssetItem = {
@@ -78,7 +79,7 @@ export default function PracticeRespondModal({
 	// ─────────────────────────────────
 	// Pull structured payload from the notification
 	// ─────────────────────────────────
-	const payload = notification?.payload ?? {};
+	const payload = notification?.payload ?? null;
 	const selectionId = notification?.selection_id ?? null;
 	const campaignName = payload?.name ?? "";
 	const campaignCategory = payload?.category ?? "";
@@ -86,7 +87,7 @@ export default function PracticeRespondModal({
 	const toDate = payload?.to_date ?? null;
 	const creatives: CreativeItem[] = payload.creatives ?? [];
 
-	const baseAssets: AssetsGroup = payload?.assets ?? {
+	const baseAssets: Assets = payload?.assets ?? {
 		printedAssets: [],
 		digitalAssets: [],
 		externalPlacements: [],

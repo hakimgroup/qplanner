@@ -24,6 +24,7 @@ export interface NotificationPayload {
 	from_date: string;
 	to_date: string;
 	category: string;
+	description?: string;
 	creatives?: {
 		url?: string;
 		label?: string;
@@ -32,7 +33,7 @@ export interface NotificationPayload {
 	event_type?: string;
 	is_bespoke?: boolean;
 	campaign_id?: string;
-	chosenCreative?: string;
+	chosen_creative?: string;
 	markup_link?: string;
 }
 

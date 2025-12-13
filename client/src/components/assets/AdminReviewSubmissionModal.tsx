@@ -27,7 +27,10 @@ import { activityColors } from "@/shared/shared.const";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { useMarkNotificationRead } from "@/hooks/notification.hooks";
 import { toLower } from "lodash";
-import { NotificationRow } from "@/models/notification.models";
+import {
+	NotificationPayload,
+	NotificationRow,
+} from "@/models/notification.models";
 
 /**
  * Types the shape of each asset line in payload.assets as submitted by the practice
@@ -68,7 +71,7 @@ export default function AdminReviewSubmissionModal({
 	const T = useMantineTheme();
 
 	// pull what we need from the notification payload
-	const payload = notification?.payload ?? {};
+	const payload = notification?.payload ?? null;
 	const campaignName = payload?.name ?? "";
 	const campaignCategory = payload?.category ?? "";
 
@@ -79,7 +82,7 @@ export default function AdminReviewSubmissionModal({
 	const chosenCreativeUrl = payload?.chosen_creative ?? null;
 	const practiceNote = payload?.note ?? null;
 
-	const assets: SubmittedAssetsGroup = payload?.assets ?? {
+	const assets: SubmittedAssetsGroup | any = payload?.assets ?? {
 		printedAssets: [],
 		digitalAssets: [],
 		externalPlacements: [],
