@@ -67,9 +67,9 @@ export default function PracticeApprovalModal({
 							backgroundColor: "white",
 						}}
 					>
-						{ntf?.payload?.chosenCreative ? (
+						{ntf?.payload?.chosen_creative ? (
 							<Image
-								src={ntf.payload.chosenCreative}
+								src={ntf.payload.chosen_creative}
 								alt="Campaign artwork"
 								radius="md"
 								fit="contain"
