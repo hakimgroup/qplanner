@@ -12,14 +12,6 @@
     },
     {
       "path": "/api/process-onboarding-emails",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/process-onboarding-emails",
-      "schedule": "0 16 * * *"
-    },
-    {
-      "path": "/api/process-onboarding-emails",
       "schedule": "0 17 * * *"
     }
   ]
