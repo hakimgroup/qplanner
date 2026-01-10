@@ -50,6 +50,7 @@ export enum RPCFunctions {
   SubmitAssets = "submit_assets",
   MarkAsRead = "mark_notification_read",
   DeleteSelection = "delete_selection",
+  QueuePracticeOnboardingEmail = "queue_practice_onboarding_email",
 }
 
 export enum UserRoles {

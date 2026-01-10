@@ -10,6 +10,6 @@
     "skipLibCheck": true,                                   /* Skip type checking all .d.ts files. */
     "allowSyntheticDefaultImports": true,
   },
-  "include": ["api/**/*.ts", "api/index.ts"],
+  "include": ["api/**/*.ts", "api/index.ts", "emails/**/*.tsx"],
   "exclude": ["node_modules"]
 }

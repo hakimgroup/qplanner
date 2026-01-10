@@ -15,6 +15,32 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
+/**
+ * Queue the first-time practice onboarding email.
+ * This is called after a selection is added to a practice.
+ * The RPC is idempotent - it will only queue the email once per practice.
+ * Errors are logged but not thrown to avoid affecting the main flow.
+ */
+async function queuePracticeOnboardingEmail(
+  practiceId: string,
+  userId: string
+): Promise<void> {
+  try {
+    const { error } = await supabase.rpc(
+      RPCFunctions.QueuePracticeOnboardingEmail,
+      {
+        p_practice_id: practiceId,
+        p_triggered_by: userId,
+      }
+    );
+    if (error) {
+      console.error("[Onboarding Email] Failed to queue:", error.message);
+    }
+  } catch (err) {
+    console.error("[Onboarding Email] Unexpected error:", err);
+  }
+}
+
 const key = (practiceId?: string | null) => [
   DatabaseTables.CampaignsCatalog,
   practiceId ?? null,
@@ -32,6 +58,7 @@ export const useAllCampaigns = (practiceId?: string | null, enabled = true) => {
 export const useCreateBespokeSelection = () => {
   const qc = useQueryClient();
   const { activePracticeId } = usePractice();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (input: CreateBespokeInput) => {
@@ -83,6 +110,11 @@ export const useCreateBespokeSelection = () => {
         queryKey: [DatabaseTables.CampaignsCatalog],
         exact: false,
       });
+
+      // Queue first-time practice onboarding email (fire-and-forget)
+      if (activePracticeId && user?.id) {
+        queuePracticeOnboardingEmail(activePracticeId, user.id);
+      }
     },
   });
 };
@@ -90,6 +122,7 @@ export const useCreateBespokeSelection = () => {
 export function useBulkAddCampaigns() {
   const qc = useQueryClient();
   const { activePracticeId } = usePractice();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (input: BulkAddCampaignsInput) => {
@@ -123,12 +156,17 @@ export function useBulkAddCampaigns() {
       );
 
       if (error) throw error;
-      return data as { selection_id: string; campaign_id: string }[];
+      return { result: data as { selection_id: string; campaign_id: string }[], practiceId: p_practice };
     },
-    onSuccess: (_data, variables) => {
-      const pid = variables.practiceId ?? activePracticeId ?? null;
+    onSuccess: ({ result, practiceId }) => {
+      const pid = practiceId ?? activePracticeId ?? null;
       // Refresh merged campaigns view
       qc.invalidateQueries({ queryKey: key(pid) });
+
+      // Queue first-time practice onboarding email (fire-and-forget)
+      if (pid && user?.id) {
+        queuePracticeOnboardingEmail(pid, user.id);
+      }
     },
   });
 }
@@ -208,6 +246,7 @@ export function useGuidedCampaigns<TData = Campaign[]>(
 export function useCreateBespokeEvent() {
   const qc = useQueryClient();
   const { activePracticeId } = usePractice();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (input: CreateBespokeEventInput) => {
@@ -233,13 +272,19 @@ export function useCreateBespokeEvent() {
 
       if (error) throw error;
       // RPC returns the new selection_id (uuid)
-      return data as string;
+      return { selectionId: data as string, practiceId };
     },
-    onSuccess: async (selectionId) => {
+    onSuccess: async ({ selectionId, practiceId }) => {
       // Refresh merged campaigns for the current practice context
       await qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog, activePracticeId],
       });
+
+      // Queue first-time practice onboarding email (fire-and-forget)
+      const pid = practiceId ?? activePracticeId;
+      if (pid && user?.id) {
+        queuePracticeOnboardingEmail(pid, user.id);
+      }
     },
     onError: (e) => {},
   });

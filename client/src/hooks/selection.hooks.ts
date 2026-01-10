@@ -25,6 +25,32 @@ import { toast } from "sonner";
 import { GetAssetsResponse } from "@/models/general.models";
 import { useAssets } from "./general.hooks";
 
+/**
+ * Queue the first-time practice onboarding email.
+ * This is called after a selection is added to a practice.
+ * The RPC is idempotent - it will only queue the email once per practice.
+ * Errors are logged but not thrown to avoid affecting the main flow.
+ */
+async function queuePracticeOnboardingEmail(
+  practiceId: string,
+  userId: string
+): Promise<void> {
+  try {
+    const { error } = await supabase.rpc(
+      RPCFunctions.QueuePracticeOnboardingEmail,
+      {
+        p_practice_id: practiceId,
+        p_triggered_by: userId,
+      }
+    );
+    if (error) {
+      console.error("[Onboarding Email] Failed to queue:", error.message);
+    }
+  } catch (err) {
+    console.error("[Onboarding Email] Unexpected error:", err);
+  }
+}
+
 const key = (activePracticeId: string | null, unitedView: boolean) => [
   DatabaseTables.Selections,
   { p: activePracticeId, u: unitedView },
@@ -81,6 +107,7 @@ export function useSelections() {
 export function useAddSelection(onSuccess?: () => void) {
   const qc = useQueryClient();
   const { activePracticeId } = usePractice();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (input: AddSelectionInput) => {
@@ -112,6 +139,11 @@ export function useAddSelection(onSuccess?: () => void) {
         queryKey: [DatabaseTables.CampaignsCatalog],
         exact: false,
       });
+
+      // Queue first-time practice onboarding email (fire-and-forget)
+      if (activePracticeId && user?.id) {
+        queuePracticeOnboardingEmail(activePracticeId, user.id);
+      }
     },
   });
 }
@@ -200,6 +232,7 @@ type CopyPayload = {
 
 export function useCopyPracticeCampaigns() {
   const qc = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ sourceId, targetId }: CopyPayload) => {
@@ -223,6 +256,11 @@ export function useCopyPracticeCampaigns() {
         queryKey: [DatabaseTables.CampaignsCatalog],
         exact: false,
       });
+
+      // Queue first-time practice onboarding email for target practice (fire-and-forget)
+      if (targetId && user?.id) {
+        queuePracticeOnboardingEmail(targetId, user.id);
+      }
     },
 
     onError: (err: any) => {
