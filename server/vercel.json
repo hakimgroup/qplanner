@@ -8,7 +8,7 @@
   "crons": [
     {
       "path": "/api/process-onboarding-emails",
-      "schedule": "0 12 * * *"
+      "schedule": "21 12 * * *"
     },
     {
       "path": "/api/process-onboarding-emails",
