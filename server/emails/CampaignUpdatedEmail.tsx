@@ -13,26 +13,39 @@ import {
 	Tailwind,
 	Hr,
 } from "@react-email/components";
+import { format } from "date-fns";
 import * as React from "react";
 
-interface EmptyPlannerEmailProps {
+interface CampaignUpdatedEmailProps {
+	userName: string;
 	practiceName: string;
 	practiceId: string;
+	campaignName: string;
+	campaignCategory?: string;
+	fromDate: string;
+	toDate: string;
+	isBespoke?: boolean;
 	appUrl: string;
 }
 
-export const EmptyPlannerEmail = ({
+export const CampaignUpdatedEmail = ({
+	userName,
 	practiceName,
 	practiceId,
+	campaignName,
+	campaignCategory = "Campaign",
+	fromDate,
+	toDate,
+	isBespoke = false,
 	appUrl,
-}: EmptyPlannerEmailProps) => {
-	const planUrl = `${appUrl}/dashboard?practice=${practiceId}`;
+}: CampaignUpdatedEmailProps) => {
+	const planUrl = `${appUrl}/dashboard?practice=${practiceId}&tab=selected`;
 
 	return (
 		<Html>
 			<Head />
 			<Preview>
-				Your planner for {practiceName} is ready to go
+				Campaign updated: {campaignName} for {practiceName}
 			</Preview>
 			<Tailwind
 				config={{
@@ -41,7 +54,7 @@ export const EmptyPlannerEmail = ({
 							colors: {
 								brand: "#7b2eda",
 								offwhite: "#faf8fd",
-								brandRed: "#f01879",
+								blue: "#1e90ff",
 							},
 							spacing: {
 								0: "0px",
@@ -65,31 +78,32 @@ export const EmptyPlannerEmail = ({
 						</div>
 					</Section>
 					<Container className="bg-white p-45">
+						<Section style={badgeContainer}>
+							<span style={badge}>Campaign Updated</span>
+						</Section>
+
 						<Heading className="text-center my-0 leading-8">
-							Your Planner is Set Up!
+							Campaign Details Updated
 						</Heading>
 
 						<Section>
 							<Text className="text-base">
-								Your team started setting up{" "}
-								<Link className="text-brand font-bold">
-									{practiceName}
-								</Link>
-								, but it looks like your planner is currently empty.
+								Hi {userName || "there"},
 							</Text>
-
 							<Text className="text-base">
-								No worries! Head back in to browse our campaign catalog
-								and start planning your marketing activities.
+								You've updated a campaign in the marketing plan for{" "}
+								<Link className="text-brand font-bold">{practiceName}</Link>.
 							</Text>
 						</Section>
 
-						<Section style={emptyStateBox}>
-							<Text style={emptyStateText}>
-								Your plan is empty
-							</Text>
-							<Text style={emptyStateSubtext}>
-								Browse campaigns and add them to your plan
+						<Section style={campaignBox}>
+							<Text style={campaignName_style}>{campaignName}</Text>
+							<div style={badgeRow}>
+								<span style={categoryBadge}>{campaignCategory}</span>
+								{isBespoke && <span style={bespokeBadge}>Bespoke</span>}
+							</div>
+							<Text style={dateRange}>
+								{format(new Date(fromDate), "MMM d")} - {format(new Date(toDate), "MMM d, yyyy")}
 							</Text>
 						</Section>
 
@@ -98,7 +112,7 @@ export const EmptyPlannerEmail = ({
 								href={planUrl}
 								className="bg-brand text-white rounded-md py-3 px-[18px] mt-20"
 							>
-								Start Planning
+								View Plan
 							</Button>
 						</Section>
 
@@ -106,16 +120,8 @@ export const EmptyPlannerEmail = ({
 
 						<Section>
 							<Text style={paragraph}>
-								<strong>Need help getting started?</strong>
-							</Text>
-							<Text style={paragraph}>
-								Our campaign catalog has a variety of pre-built campaigns
-								ready to use. You can also create bespoke campaigns
-								tailored to your practice's needs.
-							</Text>
-							<Text style={paragraph}>
-								If you have any questions, reach out to the marketing team
-								for assistance.
+								This email confirms your changes have been saved. You can view and manage
+								this campaign in the planner at any time.
 							</Text>
 						</Section>
 					</Container>
@@ -131,7 +137,7 @@ export const EmptyPlannerEmail = ({
 	);
 };
 
-export default EmptyPlannerEmail;
+export default CampaignUpdatedEmail;
 
 const logoContainer = {
 	textAlign: "center" as const,
@@ -152,32 +158,74 @@ const logoImg = {
 	margin: "0 auto",
 };
 
-const emptyStateBox = {
-	backgroundColor: "#faf8fd",
-	border: "2px dashed #e5d5f8",
-	borderRadius: "8px",
-	padding: "24px",
+const badgeContainer = {
 	textAlign: "center" as const,
-	margin: "24px 0",
+	marginBottom: "16px",
 };
 
-const emptyStateText = {
+const badge = {
+	display: "inline-block",
+	backgroundColor: "#e6f3ff",
+	color: "#1e90ff",
+	padding: "6px 12px",
+	borderRadius: "16px",
+	fontSize: "12px",
+	fontWeight: "600" as const,
+	textTransform: "uppercase" as const,
+};
+
+const campaignBox = {
+	backgroundColor: "#f7f2fd",
+	borderRadius: "8px",
+	padding: "20px",
+	textAlign: "center" as const,
+	margin: "24px 0",
+	borderLeft: "4px solid #1e90ff",
+};
+
+const campaignName_style = {
 	fontSize: "18px",
 	fontWeight: "600" as const,
-	color: "#7b2eda",
+	color: "#333",
 	margin: "0 0 8px 0",
 };
 
-const emptyStateSubtext = {
+const badgeRow = {
+	marginBottom: "8px",
+};
+
+const categoryBadge = {
+	display: "inline-block",
+	backgroundColor: "#e5d5f8",
+	color: "#7b2eda",
+	padding: "4px 10px",
+	borderRadius: "12px",
+	fontSize: "12px",
+	fontWeight: "500" as const,
+	marginRight: "8px",
+};
+
+const bespokeBadge = {
+	display: "inline-block",
+	backgroundColor: "#fff3e6",
+	color: "#ff7f50",
+	padding: "4px 10px",
+	borderRadius: "12px",
+	fontSize: "12px",
+	fontWeight: "500" as const,
+};
+
+const dateRange = {
 	fontSize: "14px",
 	color: "#666",
 	margin: "0",
 };
 
 const paragraph = {
-	fontSize: "15px",
+	fontSize: "14px",
 	lineHeight: "1.5",
-	color: "#484848",
+	color: "#666",
+	textAlign: "center" as const,
 };
 
 const hr = {

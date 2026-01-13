@@ -4,13 +4,14 @@ import { useDisclosure } from "@mantine/hooks";
 import { toast } from "sonner";
 
 import { useMarkNotificationRead } from "@/hooks/notification.hooks";
-import { SelectionStatus } from "@/shared/shared.models";
+import { ActorNotificationType, SelectionStatus } from "@/shared/shared.models";
 import PracticeRespondModal from "./practiceRespondModal/PracticeRespondModal";
 import AdminReviewSubmissionModal from "@/components/assets/AdminReviewSubmissionModal";
 import { useSelectionById } from "@/hooks/selection.hooks";
 import { NotificationRow } from "@/models/notification.models";
 import StaleNotificationModal from "./StaleNotificationModal";
 import PracticeApprovalModal from "./practiceRespondModal/PracticeApprovalModal";
+import ActorNotificationModal from "./ActorNotificationModal";
 
 export function useNotificationOpen() {
 	// which notification are we interacting with right now?
@@ -26,7 +27,7 @@ export function useNotificationOpen() {
 
 	// which modal to show
 	const [modalVariant, setModalVariant] = useState<
-		"practiceRespond" | "adminReview" | "practiceApproval" | "stale" | null
+		"practiceRespond" | "adminReview" | "practiceApproval" | "stale" | "actor" | null
 	>(null);
 
 	// modal open/close
@@ -54,13 +55,21 @@ export function useNotificationOpen() {
 		const sel = liveSelection ?? null;
 		const currentStatus: SelectionStatus | null = sel?.status ?? null;
 
+		// Check if this is an actor notification (just informational, no action needed)
+		const actorNotificationTypes = Object.values(ActorNotificationType) as string[];
+		const isActorNotification = actorNotificationTypes.includes(activeNotification.type);
+
 		let variant:
 			| "practiceRespond"
 			| "adminReview"
 			| "practiceApproval"
-			| "stale";
+			| "stale"
+			| "actor";
 
-		if (activeNotification.type === SelectionStatus.Requested) {
+		if (isActorNotification) {
+			// Actor notifications are just confirmations - mark as read and show a simple view
+			variant = "actor";
+		} else if (activeNotification.type === SelectionStatus.Requested) {
 			if (currentStatus === SelectionStatus.Requested) {
 				variant = "practiceRespond";
 			} else {
@@ -146,6 +155,16 @@ export function useNotificationOpen() {
 		if (modalVariant === "practiceApproval") {
 			return (
 				<PracticeApprovalModal
+					opened={opened}
+					onClose={close}
+					notification={activeNotification}
+				/>
+			);
+		}
+
+		if (modalVariant === "actor") {
+			return (
+				<ActorNotificationModal
 					opened={opened}
 					onClose={close}
 					notification={activeNotification}

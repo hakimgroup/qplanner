@@ -5,6 +5,7 @@ import {
 	Head,
 	Heading,
 	Html,
+	Img,
 	Link,
 	Preview,
 	Section,
@@ -14,6 +15,22 @@ import {
 } from "@react-email/components";
 import { format } from "date-fns";
 import * as React from "react";
+
+// Category colors matching the client
+const categoryColors: Record<string, { bg: string; text: string }> = {
+	event: { bg: "#f3e8ff", text: "#7b2eda" },
+	"brand activation": { bg: "#ffece8", text: "#ff6348" },
+	campaign: { bg: "#e8f4ff", text: "#1e90ff" },
+	evergreen: { bg: "#e8fff0", text: "#10ac84" },
+	bespoke: { bg: "#ffe8f3", text: "#f01879" },
+};
+
+const getCategoryStyle = (category: string) => {
+	const key = category.toLowerCase();
+	return categoryColors[key] || categoryColors.campaign;
+};
+
+const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
 interface SelectionItem {
 	campaign_name: string;
@@ -36,7 +53,7 @@ export const WelcomeSummaryEmail = ({
 	selections,
 	appUrl,
 }: WelcomeSummaryEmailProps) => {
-	const planUrl = `${appUrl}/dashboard?practice=${practiceId}`;
+	const planUrl = `${appUrl}/dashboard?practice=${practiceId}&tab=selected`;
 
 	return (
 		<Html>
@@ -65,7 +82,13 @@ export const WelcomeSummaryEmail = ({
 				<Body className="bg-offwhite text-base font-sans">
 					<Section style={logoContainer}>
 						<div style={logoBox}>
-							<Text style={logoText}>HG</Text>
+							<Img
+								src="https://i.postimg.cc/0Q5wP963/hg-icon-white-rgb.png"
+								alt="HG"
+								width="36"
+								height="36"
+								style={logoImg}
+							/>
 						</div>
 					</Section>
 					<Container className="bg-white p-45">
@@ -91,12 +114,18 @@ export const WelcomeSummaryEmail = ({
 						<ul style={{ padding: 0, listStyle: "none" }}>
 							{selections.map((selection, i) => (
 								<li key={i} style={listItem}>
-									<strong style={{ fontSize: "15px" }}>
-										{selection.campaign_name}
-									</strong>
-									<Text style={categoryBadge}>
-										{selection.campaign_category}
-									</Text>
+									<div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+										<strong style={{ fontSize: "15px" }}>
+											{selection.campaign_name}
+										</strong>
+										<span style={{
+											...categoryBadgeInline,
+											backgroundColor: getCategoryStyle(selection.campaign_category).bg,
+											color: getCategoryStyle(selection.campaign_category).text,
+										}}>
+											{capitalize(selection.campaign_category)}
+										</span>
+									</div>
 									<Text style={{ marginTop: "4px", marginBottom: "0" }}>
 										<Link className="text-brand">
 											{format(new Date(selection.from_date), "MMM d")}
@@ -157,21 +186,16 @@ const logoContainer = {
 
 const logoBox = {
 	display: "inline-block",
-	width: "64px",
-	height: "64px",
 	borderRadius: "10px",
 	background: "linear-gradient(130deg, rgba(114, 100, 233, 1) 11%, rgba(214, 76, 168, 1) 85%)",
-	backgroundColor: "#7264e9", // Fallback for email clients that don't support gradients
+	backgroundColor: "#7264e9",
 	textAlign: "center" as const,
-	lineHeight: "64px",
+	padding: "14px",
 };
 
-const logoText = {
-	color: "#ffffff",
-	fontSize: "24px",
-	fontWeight: 700,
-	margin: 0,
-	lineHeight: "64px",
+const logoImg = {
+	display: "block",
+	margin: "0 auto",
 };
 
 const listItem = {
@@ -182,12 +206,15 @@ const listItem = {
 	borderLeft: "4px solid #7b2eda",
 };
 
-const categoryBadge = {
+const categoryBadgeInline = {
 	display: "inline-block",
-	fontSize: "12px",
-	color: "#666",
-	marginTop: "4px",
-	marginBottom: "0",
+	fontSize: "9px",
+	fontWeight: 600,
+	padding: "2px 6px",
+	borderRadius: "8px",
+	textTransform: "uppercase" as const,
+	letterSpacing: "0.3px",
+	verticalAlign: "middle",
 };
 
 const summaryText = {

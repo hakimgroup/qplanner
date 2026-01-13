@@ -7,11 +7,13 @@ import {
   Text,
   Divider,
   Center,
+  Button,
 } from "@mantine/core";
-import { IconCircleFilled } from "@tabler/icons-react";
+import { IconCircleFilled, IconMail } from "@tabler/icons-react";
 import Quick from "@/components/campaignsSetup/quick/Quick";
 import Guided from "@/components/campaignsSetup/guided/Guided";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import AppContext from "@/shared/AppContext";
 import { upperFirst } from "lodash";
 import { UserTabModes, ViewModes } from "@/models/general.models";
@@ -23,6 +25,8 @@ import { usePractice } from "@/shared/PracticeProvider";
 import CopyPracticeCampaigns from "@/components/practiceSelector/CopyPracticeCampaigns";
 import { updateState } from "@/shared/shared.utilities";
 import StyledTabs from "@/components/styledTabs/StyledTabs";
+import { sendPlannerOverviewEmails } from "@/api/emails";
+import { toast } from "sonner";
 
 export function DashboardContent() {
   const {
@@ -34,8 +38,43 @@ export function DashboardContent() {
   } = useContext(AppContext);
   const { activePracticeName, unitedView, setActivePracticeId, setUnitedView } =
     usePractice();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [sendingEmails, setSendingEmails] = useState(false);
+
+  // Handle tab URL parameter on mount
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl === UserTabModes.Selected || tabFromUrl === UserTabModes.Browse) {
+      updateState(setState, "filters.userSelectedTab", tabFromUrl);
+      // Clear the tab param from URL after applying it
+      searchParams.delete("tab");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isSelections = filters.userSelectedTab === UserTabModes.Selected;
+
+  // TEMPORARY: Test button for sending planner overview emails
+  const handleSendPlannerOverviewEmails = async () => {
+    setSendingEmails(true);
+    try {
+      const result = await sendPlannerOverviewEmails();
+      if (result.errors.length > 0) {
+        toast.warning(`Sent ${result.sent} emails with ${result.errors.length} errors`, {
+          description: result.errors.slice(0, 3).join(", "),
+        });
+      } else {
+        toast.success(`Sent ${result.sent} planner overview emails to ${result.practices.length} practices`);
+      }
+      console.log("[Test] Planner overview emails result:", result);
+    } catch (error: any) {
+      toast.error(error?.message ?? "Failed to send emails");
+      console.error("[Test] Planner overview emails error:", error);
+    } finally {
+      setSendingEmails(false);
+    }
+  };
 
   const handleTabChange = (tab: string) => {
     updateState(setState, "filters.userSelectedTab", tab);
@@ -60,6 +99,19 @@ export function DashboardContent() {
   return (
     <Paper pt={10} h="100%">
       <Stack gap={25}>
+        {/* TEMPORARY: Test button for sending planner overview emails - REMOVE AFTER TESTING */}
+        <Group justify="flex-end" pr={20}>
+          <Button
+            leftSection={<IconMail size={16} />}
+            loading={sendingEmails}
+            onClick={handleSendPlannerOverviewEmails}
+            color="violet"
+            variant="filled"
+          >
+            [TEST] Send Overview Emails
+          </Button>
+        </Group>
+
         <Banners />
         <StyledTabs
           value={filters.userSelectedTab}

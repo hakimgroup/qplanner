@@ -11,17 +11,88 @@ import {
   Text,
   useMantineTheme,
   Box,
+  ThemeIcon,
+  ScrollArea,
 } from "@mantine/core";
-import { IconBell, IconFileText } from "@tabler/icons-react";
+import {
+  IconBell,
+  IconPlus,
+  IconPencil,
+  IconTrash,
+  IconSparkles,
+  IconCalendarEvent,
+  IconStack2,
+  IconCopy,
+  IconFileText,
+  IconSend,
+  IconClipboardCheck,
+  IconClock,
+  IconBuilding,
+} from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
-import { AppRoutes } from "@/shared/shared.models";
+import { ActorNotificationType, AppRoutes, SelectionStatus } from "@/shared/shared.models";
 
 import StyledButton from "../styledButton/StyledButton";
 
 import { useNotifications } from "@/hooks/notification.hooks";
 import { useNotificationOpen } from "@/pages/notificationsCenter/useNotificationOpen.hook";
-import EmptyState from "../emptyState/EmptyState";
 import { useAuth } from "@/shared/AuthProvider";
+
+/**
+ * Get relative time string from a date
+ */
+function getRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSecs < 60) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/**
+ * Get notification icon and color based on type
+ */
+function getNotificationStyle(type: string): {
+  icon: typeof IconBell;
+  color: string;
+} {
+  switch (type) {
+    case ActorNotificationType.CampaignAdded:
+      return { icon: IconPlus, color: "green" };
+    case ActorNotificationType.CampaignUpdated:
+      return { icon: IconPencil, color: "blue" };
+    case ActorNotificationType.CampaignDeleted:
+      return { icon: IconTrash, color: "red" };
+    case ActorNotificationType.BespokeAdded:
+      return { icon: IconSparkles, color: "violet" };
+    case ActorNotificationType.BespokeEventAdded:
+      return { icon: IconCalendarEvent, color: "orange" };
+    case ActorNotificationType.BulkAdded:
+      return { icon: IconStack2, color: "teal" };
+    case ActorNotificationType.CampaignsCopied:
+      return { icon: IconCopy, color: "indigo" };
+    case SelectionStatus.Requested:
+      return { icon: IconSend, color: "orange" };
+    case SelectionStatus.InProgress:
+      return { icon: IconClipboardCheck, color: "blue" };
+    case SelectionStatus.AwaitingApproval:
+      return { icon: IconFileText, color: "violet" };
+    default:
+      return { icon: IconFileText, color: "blue" };
+  }
+}
 
 const Notification = () => {
   const T = useMantineTheme();
@@ -86,13 +157,8 @@ const Notification = () => {
 
           <Divider size="xs" color="gray.1" />
 
-          {/* Body list */}
-          <Box
-            style={{
-              maxHeight: 320,
-              overflowY: "auto",
-            }}
-          >
+          {/* Body list with ScrollArea */}
+          <ScrollArea.Autosize mah={380} type="auto" offsetScrollbars scrollbarSize={6}>
             {loadingNotifications && (
               <Flex align="center" justify="center" p={20}>
                 <Loader size="sm" />
@@ -111,10 +177,17 @@ const Notification = () => {
               !isError &&
               notifications &&
               notifications.length === 0 && (
-                <EmptyState
-                  title="No notifications"
-                  message="You're all caught up."
-                />
+                <Flex align="center" justify="center" py="xl" direction="column" gap="xs">
+                  <ThemeIcon size="xl" radius="xl" color="gray" variant="light">
+                    <IconBell size={20} />
+                  </ThemeIcon>
+                  <Text c="gray.6" size="sm" fw={500}>
+                    No notifications
+                  </Text>
+                  <Text c="gray.5" size="xs">
+                    You're all caught up!
+                  </Text>
+                </Flex>
               )}
 
             {!loadingNotifications &&
@@ -124,11 +197,11 @@ const Notification = () => {
                 const isUnread = !n.read_at;
                 const isThisOpening = openingId === n.id && isOpening;
 
+                // Get type-based icon and color
+                const style = getNotificationStyle(n.type);
+                const NotifIcon = style.icon;
+
                 // quick summary line for assets / message
-                // we'll try to pull some human-readable info:
-                // - if notification.type === "requested": "Assets requested"
-                // - if notification.type === "inProgress": "Practice submitted assets"
-                // - fallback to n.message
                 let summaryText = n.message || "";
                 if (!summaryText) {
                   if (n.type === "requested") {
@@ -159,58 +232,45 @@ const Notification = () => {
                     >
                       <Flex gap={10} align="flex-start">
                         <Box mt={3}>
-                          <IconFileText
-                            size={18}
-                            color={
-                              isUnread
-                                ? T.colors.blue[5]
-                                : T.colors.blue[3] ?? T.colors.blue[5]
-                            }
-                          />
+                          <ThemeIcon
+                            size="sm"
+                            radius="sm"
+                            color={style.color}
+                            variant="light"
+                          >
+                            <NotifIcon size={14} />
+                          </ThemeIcon>
                         </Box>
 
-                        <Stack w="100%" gap={5}>
-                          {/* Top row: campaign / practice / unread badge */}
-                          <Flex justify="space-between" w="100%">
-                            <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-                              <Text
-                                size="sm"
-                                fw={500}
-                                c="gray.9"
-                                lineClamp={1}
-                                style={{ wordBreak: "break-word" }}
-                              >
-                                {n.payload?.name || "Campaign"}
-                              </Text>
+                        <Stack w="100%" gap={4}>
+                          {/* Top row: campaign name + unread badge */}
+                          <Flex justify="space-between" w="100%" align="center">
+                            <Text
+                              size="sm"
+                              fw={600}
+                              c="dark.7"
+                              lineClamp={1}
+                              style={{ wordBreak: "break-word", flex: 1, minWidth: 0 }}
+                            >
+                              {n.payload?.name || "Campaign"}
+                            </Text>
 
-                              <Text
-                                size="xs"
-                                c="gray.7"
-                                lineClamp={1}
-                                style={{ wordBreak: "break-word" }}
-                              >
-                                {n.practice_name ? `${n.practice_name}` : "—"}
-                              </Text>
-                            </Stack>
-
-                            <Flex gap={6} align="flex-start">
+                            <Flex gap={6} align="center" style={{ flexShrink: 0 }}>
                               {isThisOpening && <Loader size="xs" />}
 
                               {isUnread && !isThisOpening && (
-                                <Badge color="red.6">
-                                  <Text size="xs" fw={600} mt={1}>
-                                    New
-                                  </Text>
+                                <Badge color="red.6" size="xs">
+                                  New
                                 </Badge>
                               )}
                             </Flex>
                           </Flex>
 
-                          {/* Middle row: summary text */}
+                          {/* Description text */}
                           {summaryText && (
                             <Text
                               size="xs"
-                              c="gray.7"
+                              c="dark.4"
                               style={{ wordBreak: "break-word" }}
                               lineClamp={2}
                             >
@@ -218,21 +278,30 @@ const Notification = () => {
                             </Text>
                           )}
 
-                          {/* Bottom row: timestamp */}
-                          <Text size="xs" c="gray.5">
-                            {n.created_at
-                              ? new Date(n.created_at).toLocaleString(
-                                  undefined,
-                                  {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )
-                              : ""}
-                          </Text>
+                          {/* Bottom row: practice + timestamp */}
+                          <Flex justify="space-between" align="center" mt={2}>
+                            {n.practice_name && (
+                              <Flex align="center" gap={4} style={{ flex: 1, minWidth: 0 }}>
+                                <IconBuilding size={12} color={T.colors[style.color]?.[5] || T.colors.blue[5]} />
+                                <Text
+                                  size="xs"
+                                  fw={500}
+                                  c={`${style.color}.6`}
+                                  lineClamp={1}
+                                  style={{ wordBreak: "break-word" }}
+                                >
+                                  {n.practice_name}
+                                </Text>
+                              </Flex>
+                            )}
+
+                            <Flex align="center" gap={3} style={{ flexShrink: 0 }}>
+                              <IconClock size={11} color={T.colors.gray[5]} />
+                              <Text size="xs" c="gray.5">
+                                {n.created_at ? getRelativeTime(n.created_at) : ""}
+                              </Text>
+                            </Flex>
+                          </Flex>
                         </Stack>
                       </Flex>
                     </Card>
@@ -241,7 +310,7 @@ const Notification = () => {
                   </Menu.Item>
                 );
               })}
-          </Box>
+          </ScrollArea.Autosize>
 
           {/* Footer */}
           <Stack gap={8} mb={10} pl={15} pr={15} pt={10}>

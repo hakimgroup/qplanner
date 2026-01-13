@@ -1,5 +1,6 @@
 // PracticeProvider.tsx
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/api/supabase";
 import { DatabaseTables } from "./shared.models";
 import { useAuth } from "./AuthProvider"; // ← use auth to know if signed in
@@ -30,6 +31,7 @@ export const PracticeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { user } = useAuth(); // ← signed-in user (null when logged out)
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [practices, setPractices] = useState<Practice[]>([]);
   const [activePracticeId, setActive] = useState<string | null>(() =>
@@ -65,6 +67,17 @@ export const PracticeProvider: React.FC<{ children: React.ReactNode }> = ({
       const list = (data ?? []) as Practice[];
       setPractices(list);
 
+      // Check for practice query param in URL
+      const practiceFromUrl = searchParams.get("practice");
+      if (practiceFromUrl && list.some((p) => p.id === practiceFromUrl)) {
+        setActive(practiceFromUrl);
+        localStorage.setItem("active_practice_id", practiceFromUrl);
+        // Clear the practice param from URL after applying it
+        searchParams.delete("practice");
+        setSearchParams(searchParams, { replace: true });
+        return;
+      }
+
       // Default to first practice (alphabetical)
       if (list.length === 0) {
         setActive(null);
@@ -84,7 +97,7 @@ export const PracticeProvider: React.FC<{ children: React.ReactNode }> = ({
       cancelled = true;
     };
     // Re-run when auth user changes
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setActivePracticeId = (id: string | null) => {
     setActive(id);

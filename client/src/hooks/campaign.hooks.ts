@@ -10,10 +10,131 @@ import {
 } from "@/models/campaign.models";
 import { useAuth } from "@/shared/AuthProvider";
 import { usePractice } from "@/shared/PracticeProvider";
-import { DatabaseTables, RPCFunctions } from "@/shared/shared.models";
+import { ActorNotificationType, DatabaseTables, RPCFunctions } from "@/shared/shared.models";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { sendActorEmail } from "@/api/emails";
+
+/**
+ * Check if a practice has been onboarded (received their onboarding summary email).
+ * Actor notifications/emails should only be sent after the practice is onboarded.
+ * Returns true if onboarded, false otherwise.
+ */
+async function isPracticeOnboarded(practiceId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from("practice_onboarding_emails")
+      .select("id, status")
+      .eq("practice_id", practiceId)
+      .eq("status", "sent")
+      .limit(1);
+
+    if (error) {
+      console.error("[Onboarding Check] Error:", error.message);
+      return false;
+    }
+
+    return data && data.length > 0;
+  } catch (err) {
+    console.error("[Onboarding Check] Unexpected error:", err);
+    return false;
+  }
+}
+
+/**
+ * Create an in-app notification for the actor (the user who performed the action).
+ * Errors are logged but not thrown to avoid affecting the main flow.
+ */
+async function createActorNotification({
+  type,
+  userId,
+  practiceId,
+  selectionId,
+  campaignId,
+  campaignName,
+  campaignCategory,
+  fromDate,
+  toDate,
+  isBespoke,
+}: {
+  type: ActorNotificationType;
+  userId: string;
+  practiceId: string;
+  selectionId?: string;
+  campaignId?: string;
+  campaignName: string;
+  campaignCategory?: string;
+  fromDate?: string;
+  toDate?: string;
+  isBespoke?: boolean;
+}): Promise<string | null> {
+  try {
+    let title: string;
+    let message: string;
+
+    switch (type) {
+      case ActorNotificationType.BespokeAdded:
+        title = "Bespoke Campaign Added";
+        message = `You created a bespoke campaign: "${campaignName}".`;
+        break;
+      case ActorNotificationType.BulkAdded:
+        title = "Campaigns Added";
+        message = `You added ${campaignName} to your plan.`;
+        break;
+      default:
+        title = "Campaign Action";
+        message = `Action performed on "${campaignName}".`;
+    }
+
+    const payload = {
+      name: campaignName,
+      category: campaignCategory || "Campaign",
+      from_date: fromDate,
+      to_date: toDate,
+      is_bespoke: isBespoke || false,
+      actor_action: type,
+    };
+
+    const { data: notification, error: notifError } = await supabase
+      .from(DatabaseTables.Notifications)
+      .insert({
+        type,
+        practice_id: practiceId,
+        selection_id: selectionId || null,
+        campaign_id: campaignId || null,
+        actor_user_id: userId,
+        audience: "practice", // Uses "practice" as audience type - notification_targets scopes to actor
+        title,
+        message,
+        payload,
+      })
+      .select("id")
+      .single();
+
+    if (notifError) {
+      console.error("[Actor Notification] Failed to create:", notifError.message);
+      return null;
+    }
+
+    const { error: targetError } = await supabase
+      .from("notification_targets")
+      .insert({
+        notification_id: notification.id,
+        user_id: userId,
+        practice_id: practiceId,
+      });
+
+    if (targetError) {
+      console.error("[Actor Notification] Failed to create target:", targetError.message);
+    }
+
+    return notification.id;
+  } catch (err) {
+    console.error("[Actor Notification] Unexpected error:", err);
+    return null;
+  }
+}
 
 /**
  * Queue the first-time practice onboarding email.
@@ -101,10 +222,10 @@ export const useCreateBespokeSelection = () => {
 
       if (error) throw error;
       // RPC returns the new selection_id (uuid)
-      return data as string;
+      return { selectionId: data as string, name, from, to };
     },
 
-    onSuccess: () => {
+    onSuccess: async ({ selectionId, name, from, to }) => {
       // Refresh all get_campaigns caches (united + practice-scoped)
       qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog],
@@ -114,6 +235,28 @@ export const useCreateBespokeSelection = () => {
       // Queue first-time practice onboarding email (fire-and-forget)
       if (activePracticeId && user?.id) {
         queuePracticeOnboardingEmail(activePracticeId, user.id);
+
+        // Check if practice has been onboarded before sending actor notification/email
+        const isOnboarded = await isPracticeOnboarded(activePracticeId);
+
+        if (isOnboarded) {
+          // Send actor email and create in-app notification (handled by server)
+          // Await to ensure notification is created before invalidating
+          await sendActorEmail({
+            type: "bespoke_added",
+            userId: user.id,
+            practiceId: activePracticeId,
+            selectionId,
+            campaignName: name,
+            campaignCategory: "Bespoke",
+            fromDate: format(from, "yyyy-MM-dd"),
+            toDate: format(to, "yyyy-MM-dd"),
+            isBespoke: true,
+          });
+
+          // Invalidate notifications to show the new actor notification
+          qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
+        }
       }
     },
   });
@@ -156,9 +299,15 @@ export function useBulkAddCampaigns() {
       );
 
       if (error) throw error;
-      return { result: data as { selection_id: string; campaign_id: string }[], practiceId: p_practice };
+      return {
+        result: data as { selection_id: string; campaign_id: string }[],
+        practiceId: p_practice,
+        campaignsCount: campaignIds.length,
+        from,
+        to,
+      };
     },
-    onSuccess: ({ result, practiceId }) => {
+    onSuccess: async ({ result, practiceId, campaignsCount, from, to }) => {
       const pid = practiceId ?? activePracticeId ?? null;
       // Refresh merged campaigns view
       qc.invalidateQueries({ queryKey: key(pid) });
@@ -166,6 +315,28 @@ export function useBulkAddCampaigns() {
       // Queue first-time practice onboarding email (fire-and-forget)
       if (pid && user?.id) {
         queuePracticeOnboardingEmail(pid, user.id);
+
+        // Check if practice has been onboarded before sending actor notification/email
+        const isOnboarded = await isPracticeOnboarded(pid);
+
+        if (isOnboarded) {
+          const fromDateStr = typeof from === 'string' ? from : from?.toISOString?.() || new Date().toISOString();
+          const toDateStr = typeof to === 'string' ? to : to?.toISOString?.() || new Date().toISOString();
+
+          // Send actor email and create in-app notification (handled by server)
+          // Await to ensure notification is created before invalidating
+          await sendActorEmail({
+            type: "bulk_added",
+            userId: user.id,
+            practiceId: pid,
+            campaignsCount,
+            fromDate: fromDateStr,
+            toDate: toDateStr,
+          });
+
+          // Invalidate notifications to show the new actor notification
+          qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
+        }
       }
     },
   });
@@ -272,9 +443,16 @@ export function useCreateBespokeEvent() {
 
       if (error) throw error;
       // RPC returns the new selection_id (uuid)
-      return { selectionId: data as string, practiceId };
+      return {
+        selectionId: data as string,
+        practiceId,
+        title: input.title,
+        eventType: input.eventType,
+        fromDate: format(input.eventFromDate, "yyyy-MM-dd"),
+        toDate: format(input.eventToDate, "yyyy-MM-dd"),
+      };
     },
-    onSuccess: async ({ selectionId, practiceId }) => {
+    onSuccess: async ({ selectionId, practiceId, title, eventType, fromDate, toDate }) => {
       // Refresh merged campaigns for the current practice context
       await qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog, activePracticeId],
@@ -284,6 +462,28 @@ export function useCreateBespokeEvent() {
       const pid = practiceId ?? activePracticeId;
       if (pid && user?.id) {
         queuePracticeOnboardingEmail(pid, user.id);
+
+        // Check if practice has been onboarded before sending actor notification/email
+        const isOnboarded = await isPracticeOnboarded(pid);
+
+        if (isOnboarded) {
+          // Send actor email and create in-app notification (handled by server)
+          // Await to ensure notification is created before invalidating
+          await sendActorEmail({
+            type: "bespoke_event_added",
+            userId: user.id,
+            practiceId: pid,
+            selectionId,
+            campaignName: title,
+            campaignCategory: eventType || "Event",
+            fromDate,
+            toDate,
+            isBespoke: true,
+          });
+
+          // Invalidate notifications to show the new actor notification
+          qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
+        }
       }
     },
     onError: (e) => {},

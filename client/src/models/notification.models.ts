@@ -1,6 +1,9 @@
 import { CreativeItem } from "@/pages/notificationsCenter/practiceRespondModal/CreativePicker";
-import { SelectionStatus } from "@/shared/shared.models";
+import { ActorNotificationType, SelectionStatus } from "@/shared/shared.models";
 import { Assets } from "./campaign.models";
+
+// Combined notification type that includes both workflow statuses and actor notification types
+export type NotificationType = SelectionStatus | ActorNotificationType;
 
 export type AdminAssetsPayload = {
 	selectionId: string;
@@ -39,7 +42,7 @@ export interface NotificationPayload {
 
 export type NotificationRow = {
 	id: string;
-	type: SelectionStatus;
+	type: NotificationType;
 	practice_id: string | null;
 	practice_name: string | null; // NEW
 	selection_id: string | null;

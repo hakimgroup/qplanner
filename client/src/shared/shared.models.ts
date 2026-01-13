@@ -68,6 +68,17 @@ export enum SelectionStatus {
   Live = "live",
 }
 
+// Actor notification types (for in-app notifications when user performs CRUD actions)
+export enum ActorNotificationType {
+  CampaignAdded = "campaignAdded",
+  CampaignUpdated = "campaignUpdated",
+  CampaignDeleted = "campaignDeleted",
+  BespokeAdded = "bespokeAdded",
+  BespokeEventAdded = "bespokeEventAdded",
+  BulkAdded = "bulkAdded",
+  CampaignsCopied = "campaignsCopied",
+}
+
 export enum SelectionsSource {
   Manual = "manual",
   Quick = "quick",

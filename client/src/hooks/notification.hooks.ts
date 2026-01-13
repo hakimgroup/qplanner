@@ -13,6 +13,10 @@ import {
 import { toast } from "sonner";
 import { requestAssetsBulk } from "@/api/selections";
 import { RequestAssetsBulkResponse } from "@/models/selection.models";
+import {
+  sendNotificationEmail,
+  sendBulkNotificationEmail,
+} from "@/api/emails";
 
 export function useUpdateSourceAssets() {
   const qc = useQueryClient();
@@ -60,7 +64,7 @@ export function useRequestAssets() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Request sent to practice");
 
       // Refresh admin views (selections list, notifications, etc.)
@@ -69,6 +73,11 @@ export function useRequestAssets() {
         exact: false,
       });
       qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+
+      // Send notification email (fire-and-forget)
+      if (data?.id) {
+        sendNotificationEmail({ notificationId: data.id });
+      }
     },
   });
 }
@@ -160,10 +169,15 @@ export function useSubmitAssets() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      // You’ll likely want to refetch notifications and campaigns
+    onSuccess: (data) => {
+      // You'll likely want to refetch notifications and campaigns
       qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
       qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans] }); // or whatever key you use for current selections/plans
+
+      // Send notification email to admins (fire-and-forget)
+      if (data?.id) {
+        sendNotificationEmail({ notificationId: data.id });
+      }
     },
   });
 }
@@ -197,6 +211,16 @@ export function useRequestAssetsBulk() {
         exact: false,
       });
       qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+
+      // Send consolidated bulk notification emails (one per practice)
+      // Extract notification IDs from successful results
+      const notificationIds = (res.results || [])
+        .filter((r: any) => r.status === "ok" && r.notification_id)
+        .map((r: any) => r.notification_id);
+
+      if (notificationIds.length > 0) {
+        sendBulkNotificationEmail({ notificationIds });
+      }
     },
     onError: (e: any) => {
       toast.error(e?.message ?? "Failed to request assets in bulk");
