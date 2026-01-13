@@ -32,7 +32,7 @@ interface Props {
 
 const PlansActions = ({ row, opened, closePanel }: Props) => {
   const T = useMantineTheme().colors;
-  const { mutate: updateSelection, isPending: saving } = useUpdateSelection();
+  const { mutate: updateSelection, isPending: saving } = useUpdateSelection(closePanel);
 
   return (
     <Drawer
@@ -130,12 +130,9 @@ const PlansActions = ({ row, opened, closePanel }: Props) => {
                 {
                   id: row.id,
                   patch: { status: v as any },
+                  campaignName: row?.campaign,
                 },
                 {
-                  onSuccess: () => {
-                    toast.success("Changes saved");
-                    closePanel();
-                  },
                   onError: (e: any) =>
                     toast.error(e?.message ?? "Could not save changes"),
                 }

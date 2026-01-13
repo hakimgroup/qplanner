@@ -48,7 +48,6 @@ const GuidedResult = ({ data, goBack, closeModal }: Props) => {
 			},
 			{
 				onSuccess: () => {
-					toast.success("Campaigns added to plan");
 					closeModal();
 					updateState(
 						setState,

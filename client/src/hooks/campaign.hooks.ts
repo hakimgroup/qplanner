@@ -226,6 +226,9 @@ export const useCreateBespokeSelection = () => {
     },
 
     onSuccess: async ({ selectionId, name, from, to }) => {
+      // Show toast notification
+      toast.success(`"${name}" added to your plan`);
+
       // Refresh all get_campaigns caches (united + practice-scoped)
       qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog],
@@ -308,6 +311,9 @@ export function useBulkAddCampaigns() {
       };
     },
     onSuccess: async ({ result, practiceId, campaignsCount, from, to }) => {
+      // Show toast notification
+      toast.success(`${campaignsCount} campaign${campaignsCount === 1 ? '' : 's'} added to your plan`);
+
       const pid = practiceId ?? activePracticeId ?? null;
       // Refresh merged campaigns view
       qc.invalidateQueries({ queryKey: key(pid) });
@@ -453,6 +459,9 @@ export function useCreateBespokeEvent() {
       };
     },
     onSuccess: async ({ selectionId, practiceId, title, eventType, fromDate, toDate }) => {
+      // Show toast notification
+      toast.success(`"${title}" event added to your plan`);
+
       // Refresh merged campaigns for the current practice context
       await qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog, activePracticeId],

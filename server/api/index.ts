@@ -1809,6 +1809,17 @@ app.post("/send-sample-emails", async (req: Request, res: Response) => {
 	}
 });
 
+// Health check endpoint for cron debugging
+app.get(["/cron-health", "/api/cron-health"], (req, res) => {
+	res.json({
+		status: "ok",
+		timestamp: new Date().toISOString(),
+		hasCronSecret: !!process.env.CRON_SECRET,
+		hasTestEmail: !!process.env.ONBOARDING_TEST_EMAIL,
+		testEmail: process.env.ONBOARDING_TEST_EMAIL || null,
+	});
+});
+
 app.use("/", (req, res) => {
 	res.send("Server is running.");
 });

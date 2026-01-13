@@ -165,7 +165,6 @@ const Bespoke = ({
       },
       {
         onSuccess: () => {
-          toast.success("Bespoke campaign added to plan");
           resetForm();
           close();
           updateState(

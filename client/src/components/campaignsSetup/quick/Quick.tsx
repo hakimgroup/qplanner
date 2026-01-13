@@ -130,7 +130,6 @@ const Quick = () => {
 			},
 			{
 				onSuccess: () => {
-					toast.success("Campaigns added to plan");
 					close(); // cache invalidation is handled inside the hook
 					updateState(
 						setState,

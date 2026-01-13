@@ -219,7 +219,6 @@ const BulkAdd = ({ opened = false, closeModal, selections }: BulkAddProps) => {
 			},
 			{
 				onSuccess: () => {
-					toast.success("Campaigns added to plan");
 					closeModal(); // cache invalidation is handled inside the hook
 				},
 				onError: (e: any) => {

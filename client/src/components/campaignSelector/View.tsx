@@ -71,6 +71,12 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
     useDisclosure(false);
   const [addOpened, { toggle: toggleAdd }] = useDisclosure(false);
 
+  // Combined callback for drawer close + tab switch
+  const handleAddSuccess = () => {
+    closeDrawer();
+    updateState(setState, "filters.userSelectedTab", UserTabModes.Selected);
+  };
+
   const availFrom = c.availability?.from ? new Date(c.availability.from) : null;
   const availTo = c.availability?.to ? new Date(c.availability.to) : null;
 
@@ -88,8 +94,8 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
   }));
 
   const { mutate: addSelection, isPending: adding } =
-    useAddSelection(closeDrawer);
-  const { mutate: deleteSelection, isPending: deleting } = useDeleteSelection();
+    useAddSelection(handleAddSuccess);
+  const { mutate: deleteSelection, isPending: deleting } = useDeleteSelection(handleAddSuccess);
 
   const Objectives = ({ noTitle = false }) => (
     <Stack gap={5}>
@@ -208,17 +214,10 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
         to_date: format(campaign.dateRange.to as Date, "yyyy-MM-dd"),
         status: SelectionStatus.OnPlan,
         source: SelectionsSource.Manual,
+        campaignName: c.name,
+        campaignCategory: c.category,
       },
       {
-        onSuccess: () => {
-          toast.success(`Added "${c.name}" to plan`);
-          closeDrawer();
-          updateState(
-            setState,
-            "filters.userSelectedTab",
-            UserTabModes.Selected
-          );
-        },
         onError: (e: any) => {
           toast.error(e?.message ?? "Could not add to plan");
         },
@@ -228,12 +227,13 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 
   const onRemove = () => {
     deleteSelection(
-      { selectionId: c.selection_id, bespokeId: c.bespoke_campaign_id },
       {
-        onSuccess: () => {
-          toast.success("Removed from plan");
-          closeDrawer();
-        },
+        selectionId: c.selection_id,
+        bespokeId: c.bespoke_campaign_id,
+        campaignName: c.name,
+        campaignCategory: c.category,
+      },
+      {
         onError: (e: any) => toast.error(e.message ?? "Could not remove"),
       }
     );

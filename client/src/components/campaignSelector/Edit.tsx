@@ -21,7 +21,7 @@ import {
 } from "@tabler/icons-react";
 import CampaignDates from "../campaignDates/CampaignDates";
 import StyledButton from "../styledButton/StyledButton";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import {
   differenceInCalendarDays,
   format,
@@ -35,6 +35,9 @@ import { toast } from "sonner";
 import { SelectionStatus } from "@/shared/shared.models";
 import { Campaign } from "@/models/campaign.models";
 import { startCase } from "lodash";
+import AppContext from "@/shared/AppContext";
+import { UserTabModes } from "@/models/general.models";
+import { updateState } from "@/shared/shared.utilities";
 
 type DateRange = { from: Date | null; to: Date | null };
 
@@ -50,6 +53,13 @@ interface EditProps {
 
 const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
   const T = useMantineTheme();
+  const { setState } = useContext(AppContext);
+
+  // Combined callback for modal close + tab switch
+  const handleSuccess = () => {
+    closeModal();
+    updateState(setState, "filters.userSelectedTab", UserTabModes.Selected);
+  };
 
   // ---- Local UI state (dates, status, notes)
   const [campaign, setCampaign] = useState<{ dateRange: DateRange }>({
@@ -71,8 +81,8 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
   }, [s, opened]);
 
   // ---- Mutations
-  const { mutate: updateSelection, isPending: saving } = useUpdateSelection();
-  const { mutate: deleteSelection, isPending: removing } = useDeleteSelection();
+  const { mutate: updateSelection, isPending: saving } = useUpdateSelection(handleSuccess);
+  const { mutate: deleteSelection, isPending: removing } = useDeleteSelection(handleSuccess);
 
   // ---- Header chip examples (kept, but derive from selection if provided)
   const Objectives = () => {
@@ -135,12 +145,10 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
           status: statusValue ?? undefined,
           notes: notes ?? undefined,
         },
+        campaignName: s.name,
+        campaignCategory: s.category,
       },
       {
-        onSuccess: () => {
-          toast.success("Changes saved");
-          closeModal();
-        },
         onError: (e: any) =>
           toast.error(e?.message ?? "Could not save changes"),
       }
@@ -149,12 +157,13 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 
   const handleRemove = () => {
     deleteSelection(
-      { selectionId: s.selection_id, bespokeId: s.bespoke_campaign_id },
       {
-        onSuccess: () => {
-          toast.success("Removed from plan");
-          closeModal();
-        },
+        selectionId: s.selection_id,
+        bespokeId: s.bespoke_campaign_id,
+        campaignName: s.name,
+        campaignCategory: s.category,
+      },
+      {
         onError: (e: any) => toast.error(e?.message ?? "Could not remove"),
       }
     );

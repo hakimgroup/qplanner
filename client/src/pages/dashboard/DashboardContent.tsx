@@ -112,8 +112,8 @@ export function DashboardContent() {
 		<Paper pt={10} h="100%">
 			<Stack gap={25}>
 				{/* TEMPORARY: Test button for sending planner overview emails - REMOVE AFTER TESTING */}
-				<Group justify="flex-end" pr={20}>
-					{/* <Button
+				{/* <Group justify="flex-end" pr={20}>
+          <Button
             leftSection={<IconMail size={16} />}
             loading={sendingEmails}
             onClick={handleSendPlannerOverviewEmails}
@@ -121,8 +121,8 @@ export function DashboardContent() {
             variant="filled"
           >
             [TEST] Send Overview Emails
-          </Button> */}
-				</Group>
+          </Button>
+        </Group> */}
 
 				<Banners />
 				<StyledTabs

@@ -247,7 +247,7 @@ export function useSelections() {
   });
 }
 
-export function useAddSelection(onSuccess?: () => void) {
+export function useAddSelection(onSuccess?: (campaignName?: string) => void) {
   const qc = useQueryClient();
   const { activePracticeId } = usePractice();
   const { user } = useAuth();
@@ -283,7 +283,12 @@ export function useAddSelection(onSuccess?: () => void) {
       };
     },
     onSuccess: async ({ selection, campaignName, campaignCategory }) => {
-      onSuccess && onSuccess();
+      // Show toast notification
+      toast.success(`"${campaignName || 'Campaign'}" added to your plan`);
+
+      // Call onSuccess callback (used for tab switching)
+      onSuccess && onSuccess(campaignName);
+
       qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog],
         exact: false,
@@ -338,7 +343,7 @@ export function useAddSelection(onSuccess?: () => void) {
   });
 }
 
-export function useUpdateSelection() {
+export function useUpdateSelection(onSuccess?: (campaignName?: string) => void) {
   const qc = useQueryClient();
   const { user } = useAuth();
 
@@ -354,6 +359,12 @@ export function useUpdateSelection() {
       return { selection: data as Selection, campaignName, campaignCategory };
     },
     onSuccess: async ({ selection, campaignName, campaignCategory }) => {
+      // Show toast notification
+      toast.success(`"${campaignName || 'Campaign'}" updated`);
+
+      // Call onSuccess callback (used for tab switching)
+      onSuccess && onSuccess(campaignName);
+
       //Invalidate ALL cached get_campaigns variants (united + any practiceId)
       qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog],
@@ -432,7 +443,7 @@ type DeleteSelectionArgs = {
   isBespoke?: boolean;
 };
 
-export function useDeleteSelection() {
+export function useDeleteSelection(onSuccess?: (campaignName?: string) => void) {
   const qc = useQueryClient();
   const { user } = useAuth();
 
@@ -497,6 +508,12 @@ export function useDeleteSelection() {
     },
 
     onSuccess: async ({ campaignName, campaignCategory, practiceId, isBespoke, selectionId }) => {
+      // Show toast notification
+      toast.success(`"${campaignName || 'Campaign'}" removed from your plan`);
+
+      // Call onSuccess callback (used for tab switching)
+      onSuccess && onSuccess(campaignName);
+
       // refresh anything that depends on selections
       qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
       qc.invalidateQueries({ queryKey: [DatabaseTables.Selections] });

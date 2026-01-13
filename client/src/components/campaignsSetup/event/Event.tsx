@@ -187,7 +187,6 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
       },
       {
         onSuccess: () => {
-          toast.success("Event created");
           handleReset();
           close();
           updateState(
