@@ -113,16 +113,16 @@ export function DashboardContent() {
 			<Stack gap={25}>
 				{/* TEMPORARY: Test button for sending planner overview emails - REMOVE AFTER TESTING */}
 				{/* <Group justify="flex-end" pr={20}>
-          <Button
-            leftSection={<IconMail size={16} />}
-            loading={sendingEmails}
-            onClick={handleSendPlannerOverviewEmails}
-            color="violet"
-            variant="filled"
-          >
-            [TEST] Send Overview Emails
-          </Button>
-        </Group> */}
+					<Button
+						leftSection={<IconMail size={16} />}
+						loading={sendingEmails}
+						onClick={handleSendPlannerOverviewEmails}
+						color="violet"
+						variant="filled"
+					>
+						[TEST] Send Overview Emails
+					</Button>
+				</Group> */}
 
 				<Banners />
 				<StyledTabs

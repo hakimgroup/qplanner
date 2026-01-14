@@ -463,7 +463,7 @@ app.all(["/process-onboarding-emails", "/api/process-onboarding-emails"], async 
 				const { error: sendError } = await resend.emails.send({
 					from: "HG Planner <noreply@planner.hakimgroup.io>",
 					to: finalRecipients,
-					subject: testEmailOverride ? `[TEST] ${emailSubject}` : emailSubject,
+					subject: emailSubject,
 					html: emailHtml,
 				});
 
@@ -646,12 +646,11 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 
 		// 6. Send email
 		const finalRecipients = testEmailOverride ? [testEmailOverride] : recipientEmails;
-		const finalSubject = testEmailOverride ? `[TEST] ${emailSubject}` : emailSubject;
 
 		const { error: sendError } = await resend.emails.send({
 			from: "HG Planner <noreply@planner.hakimgroup.io>",
 			to: finalRecipients,
-			subject: finalSubject,
+			subject: emailSubject,
 			html: emailHtml,
 		});
 
@@ -809,13 +808,12 @@ app.post("/send-bulk-notification-email", async (req: Request, res: Response) =>
 
 			const emailSubject = `Action Required: ${campaigns.length} campaign${campaigns.length !== 1 ? "s" : ""} need your input`;
 			const finalRecipients = testEmailOverride ? [testEmailOverride] : recipientEmails;
-			const finalSubject = testEmailOverride ? `[TEST] ${emailSubject}` : emailSubject;
 
 			// Send email
 			const { error: sendError } = await resend.emails.send({
 				from: "HG Planner <noreply@planner.hakimgroup.io>",
 				to: finalRecipients,
-				subject: finalSubject,
+				subject: emailSubject,
 				html: emailHtml,
 			});
 
@@ -1008,12 +1006,11 @@ app.post("/send-actor-email", async (req: Request, res: Response) => {
 
 		// 4. Send email
 		const recipientEmail = testEmailOverride || user.email;
-		const finalSubject = testEmailOverride ? `[TEST] ${emailSubject}` : emailSubject;
 
 		const { error: sendError } = await resend.emails.send({
 			from: "HG Planner <noreply@planner.hakimgroup.io>",
 			to: [recipientEmail],
-			subject: finalSubject,
+			subject: emailSubject,
 			html: emailHtml,
 		});
 
@@ -1335,9 +1332,7 @@ app.post("/send-planner-overview-emails", async (req: Request, res: Response) =>
 						})
 					);
 
-					const emailSubject = testEmailOverride
-						? `[TEST] HG Marketing Planner: your 2026 planned activity + next steps`
-						: `HG Marketing Planner: your 2026 planned activity + next steps`;
+					const emailSubject = `HG Marketing Planner: your 2026 planned activity + next steps`;
 
 					emailsToSend.push({
 						from: "HG Planner <noreply@planner.hakimgroup.io>",
