@@ -77,14 +77,27 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
     updateState(setState, "filters.userSelectedTab", UserTabModes.Selected);
   };
 
-  const availFrom = c.availability?.from ? new Date(c.availability.from) : null;
+  // One week from today - minimum selectable date
+  const oneWeekFromNow = addDays(new Date(), 7);
+
+  // Campaign availability bounds
+  const rawAvailFrom = c.availability?.from ? new Date(c.availability.from) : null;
   const availTo = c.availability?.to ? new Date(c.availability.to) : null;
 
-  const defaultFrom = c.availability?.from
-    ? new Date(c.availability.from)
-    : new Date();
+  // Effective minimum date is the later of (availability.from, one week from now)
+  const availFrom = rawAvailFrom && isAfter(rawAvailFrom, oneWeekFromNow)
+    ? rawAvailFrom
+    : oneWeekFromNow;
 
-  const defaultTo = addDays(addMonths(defaultFrom, 1), -1);
+  // Default start date: use effective min date (one week from now or availability.from, whichever is later)
+  const defaultFrom = rawAvailFrom && isAfter(rawAvailFrom, oneWeekFromNow)
+    ? rawAvailFrom
+    : oneWeekFromNow;
+
+  // Default end date: extend to max availability if possible, otherwise 1 month from start
+  const defaultTo = availTo
+    ? availTo
+    : addDays(addMonths(defaultFrom, 1), -1);
 
   const [campaign, setCampaign] = useState<{ dateRange: DateRange }>(() => ({
     dateRange: {

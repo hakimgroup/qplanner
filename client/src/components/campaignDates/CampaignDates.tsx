@@ -20,8 +20,9 @@ interface CampaignDatesProps {
 	gap?: number;
 	required?: boolean;
 
-	/** Optional bounds: when BOTH are provided, user can only pick within [minDate, maxDate] */
+	/** Optional minimum selectable date */
 	minDate?: Date;
+	/** Optional maximum selectable date */
 	maxDate?: Date;
 
 	/** When true, show only the "from" input and use it as both from & to */
@@ -47,17 +48,15 @@ const CampaignDates = ({
 	isSingleDate = false,
 	required = false,
 }: CampaignDatesProps) => {
-	const hasBounds = !!minDate && !!maxDate;
-
 	const norm = (d: Date | null) => (d ? startOfDay(d) : d);
-	const minN = hasBounds ? startOfDay(minDate as Date) : null;
-	const maxN = hasBounds ? startOfDay(maxDate as Date) : null;
+	const minN = minDate ? startOfDay(minDate) : null;
+	const maxN = maxDate ? startOfDay(maxDate) : null;
 
 	const clampToBounds = (d: Date | null) => {
-		if (!hasBounds || !d) return d;
+		if (!d) return d;
 		const nd = startOfDay(d);
-		if (isBefore(nd, minN!)) return minN;
-		if (isAfter(nd, maxN!)) return maxN;
+		if (minN && isBefore(nd, minN)) return minN;
+		if (maxN && isAfter(nd, maxN)) return maxN;
 		return nd;
 	};
 
@@ -95,27 +94,26 @@ const CampaignDates = ({
 	const toVal = norm(dateRange.to);
 
 	// For the START picker:
-	//  - min is global min
+	//  - min is global min (minN)
 	//  - max is the earlier of (global max, selected end date if present)
-	const startMinDate = hasBounds ? (minN as Date) : undefined;
-	const startMaxDate =
-		toVal && maxN
-			? isBefore(toVal, maxN)
-				? toVal
-				: (maxN as Date)
-			: toVal || (hasBounds ? (maxN as Date) : undefined);
+	const startMinDate = minN ?? undefined;
+	const startMaxDate = (() => {
+		if (toVal && maxN) {
+			return isBefore(toVal, maxN) ? toVal : maxN;
+		}
+		return toVal ?? maxN ?? undefined;
+	})();
 
 	// For the END picker:
 	//  - min is the later of (global min, selected start date if present)
-	//  - max is global max
-	const endMinDate =
-		fromVal && minN
-			? isAfter(fromVal, minN)
-				? fromVal
-				: (minN as Date)
-			: fromVal || (hasBounds ? (minN as Date) : undefined);
-
-	const endMaxDate = hasBounds ? (maxN as Date) : undefined;
+	//  - max is global max (maxN)
+	const endMinDate = (() => {
+		if (fromVal && minN) {
+			return isAfter(fromVal, minN) ? fromVal : minN;
+		}
+		return fromVal ?? minN ?? undefined;
+	})();
+	const endMaxDate = maxN ?? undefined;
 
 	return (
 		<Stack gap={5}>

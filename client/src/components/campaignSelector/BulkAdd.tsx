@@ -75,6 +75,9 @@ const BulkAdd = ({ opened = false, closeModal, selections }: BulkAddProps) => {
 		);
 	}, [allCampaigns?.data, selections]);
 
+	// One week from today - minimum selectable date
+	const oneWeekFromNow = useMemo(() => addDays(new Date(), 7), []);
+
 	// Compute an intersection availability across selected campaigns (if any provide availability)
 	const { minDate, maxDate } = useMemo(() => {
 		// Gather all [from, to] date pairs for campaigns that have availability
@@ -87,12 +90,7 @@ const BulkAdd = ({ opened = false, closeModal, selections }: BulkAddProps) => {
 				pairs.push({ from, to });
 			}
 		}
-		if (pairs.length === 0) {
-			return {
-				minDate: undefined as Date | undefined,
-				maxDate: undefined as Date | undefined,
-			};
-		}
+
 		// Intersection = [max(all from), min(all to)]
 		const safeMax = (arr: Date[]) =>
 			arr.length ? dateMax(arr) : undefined;
@@ -101,22 +99,32 @@ const BulkAdd = ({ opened = false, closeModal, selections }: BulkAddProps) => {
 
 		const maxFrom = safeMax(pairs.map((p) => p.from));
 		const minTo = safeMin(pairs.map((p) => p.to));
-		if (isAfter(maxFrom, minTo)) {
-			// Empty intersection -> no common window; allow any date (no min/max),
-			// or you could choose to block and force user to adjust selections.
-			return { minDate: undefined, maxDate: undefined };
-		}
-		return { minDate: maxFrom, maxDate: minTo };
-	}, [selectedCampaigns]);
 
-	// Default date range: if intersection exists, use [minDate, min(minDate+1m-1, maxDate)], else use today → +1m-1d
-	const today = new Date();
-	const defaultFrom = minDate ?? today;
-	const defaultTo = (() => {
-		const candidate = addDays(addMonths(defaultFrom, 1), -1);
-		if (maxDate && isAfter(candidate, maxDate)) return maxDate;
-		return candidate;
-	})();
+		// Effective minDate is the later of (intersection start, one week from now)
+		let effectiveMin: Date | undefined;
+		if (maxFrom) {
+			effectiveMin = isAfter(maxFrom, oneWeekFromNow) ? maxFrom : oneWeekFromNow;
+		} else {
+			effectiveMin = oneWeekFromNow;
+		}
+
+		if (pairs.length === 0) {
+			return {
+				minDate: oneWeekFromNow,
+				maxDate: undefined as Date | undefined,
+			};
+		}
+
+		if (maxFrom && minTo && isAfter(effectiveMin, minTo)) {
+			// Empty intersection or dates too close -> still enforce one week minimum
+			return { minDate: oneWeekFromNow, maxDate: undefined };
+		}
+		return { minDate: effectiveMin, maxDate: minTo };
+	}, [selectedCampaigns, oneWeekFromNow]);
+
+	// Default date range: use full availability if possible
+	const defaultFrom = minDate ?? oneWeekFromNow;
+	const defaultTo = maxDate ?? addDays(addMonths(defaultFrom, 1), -1);
 
 	const [campaign, setCampaign] = useState<{ dateRange: DateRange }>({
 		dateRange: { from: defaultFrom, to: defaultTo },
@@ -145,10 +153,10 @@ const BulkAdd = ({ opened = false, closeModal, selections }: BulkAddProps) => {
 		)}`;
 	}, [campaign.dateRange]);
 
-	// Apply quick option from current "from" (or today if not set)
+	// Apply quick option from current "from" (or minDate if not set)
 	const safeStart = () => {
 		const f = campaign.dateRange.from;
-		return f && isValidDate(f) ? f : today;
+		return f && isValidDate(f) ? f : (minDate ?? oneWeekFromNow);
 	};
 
 	const applyQuickOption = (opt: (typeof quickDateOptions)[number]) => {
