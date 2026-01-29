@@ -1,5 +1,5 @@
 import StyledTabs from "@/components/styledTabs/StyledTabs";
-import { Center, Container, Group, Stack, Text } from "@mantine/core";
+import { Center, Container, Stack, Text } from "@mantine/core";
 import { useState } from "react";
 import NotificationsFilters from "./NotificationsFilters";
 import NotificationsList from "./NotificationsList";

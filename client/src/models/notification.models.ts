@@ -38,6 +38,7 @@ export interface NotificationPayload {
 	campaign_id?: string;
 	chosen_creative?: string;
 	markup_link?: string;
+	assets_link?: string;
 }
 
 export type NotificationRow = {
