@@ -120,7 +120,8 @@ function CreativeInputs({
 							<Stack gap={8}>
 								<Group justify="space-between" align="center">
 									<Text size="xs" fw={600} c="indigo.9">
-										{`Creative ${idx + 1}`}
+										{item.label?.trim() ||
+											`Creative ${idx + 1}`}
 									</Text>
 									{creatives.length > 1 && (
 										<ActionIcon
@@ -134,29 +135,49 @@ function CreativeInputs({
 									)}
 								</Group>
 
-								<Image
-									src={item.url || undefined}
-									radius="sm"
-									height={160}
-									alt={`Creative ${idx + 1}`}
+								{item.url?.trim() && (
+									<Image
+										src={item.url}
+										radius="sm"
+										height={160}
+										alt={
+											item.label?.trim() ||
+											`Creative ${idx + 1}`
+										}
+									/>
+								)}
+
+								<TextInput
+									label={
+										<Text size="xs" fw={500} c="gray.7">
+											Name
+										</Text>
+									}
+									placeholder={`Creative ${idx + 1}`}
+									value={item.label || ""}
+									onChange={(e) =>
+										updateCreativeLabel(
+											idx,
+											e.currentTarget.value
+										)
+									}
+									radius="md"
 								/>
 
 								<TextInput
 									label={
 										<Text size="xs" fw={500} c="gray.7">
-											Replace URL
+											Image URL
 										</Text>
 									}
 									placeholder="https://image-url-or-asset.jpg"
 									value={item.url}
-									onChange={(e) => {
-										const next = e.currentTarget.value;
-										updateCreativeUrl(idx, next);
-										updateCreativeLabel(
+									onChange={(e) =>
+										updateCreativeUrl(
 											idx,
-											`Creative ${idx + 1}`
-										);
-									}}
+											e.currentTarget.value
+										)
+									}
 									radius="md"
 								/>
 							</Stack>
@@ -170,27 +191,41 @@ function CreativeInputs({
 							key={idx}
 							gap={6}
 							wrap="nowrap"
-							align="center"
+							align="flex-end"
 							w="100%"
 						>
 							<TextInput
+								placeholder={`Creative ${idx + 1}`}
+								value={item.label || ""}
+								onChange={(e) =>
+									updateCreativeLabel(
+										idx,
+										e.currentTarget.value
+									)
+								}
+								radius="md"
+								style={{ flex: 1, maxWidth: 180 }}
+								label={
+									<Text size="xs" fw={500} c="gray.7">
+										Name
+									</Text>
+								}
+							/>
+
+							<TextInput
 								placeholder="https://image-url-or-asset.jpg"
 								value={item.url}
-								onChange={(e) => {
+								onChange={(e) =>
 									updateCreativeUrl(
 										idx,
 										e.currentTarget.value
-									);
-									updateCreativeLabel(
-										idx,
-										`Creative ${idx + 1}`
-									);
-								}}
+									)
+								}
 								radius="md"
-								style={{ flex: 1 }}
+								style={{ flex: 2 }}
 								label={
 									<Text size="xs" fw={500} c="gray.7">
-										{`Creative ${idx + 1}`}
+										Image URL
 									</Text>
 								}
 							/>
