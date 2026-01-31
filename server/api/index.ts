@@ -1841,6 +1841,127 @@ app.post("/send-sample-emails", async (req: Request, res: Response) => {
 	}
 });
 
+// ============================================================================
+// CRON: Activate Live Campaigns
+// Runs daily at 8am UK time to update confirmed selections to live status
+// ============================================================================
+app.all(["/activate-live-campaigns", "/api/activate-live-campaigns"], async (req: Request, res: Response) => {
+	const startTime = Date.now();
+
+	console.log(`[Activate Live] Endpoint called - Method: ${req.method}, Path: ${req.path}`);
+
+	// Verify cron secret (for security)
+	const authHeader = req.headers.authorization;
+	const cronSecretHeader = req.headers["x-cron-secret"];
+	const expectedSecret = process.env.CRON_SECRET;
+
+	const providedSecret = authHeader?.replace("Bearer ", "") || cronSecretHeader;
+
+	console.log(`[Activate Live] Auth check - Has auth header: ${!!authHeader}, Has cron secret header: ${!!cronSecretHeader}, Has expected secret env: ${!!expectedSecret}`);
+
+	if (expectedSecret && providedSecret !== expectedSecret) {
+		console.error("[Activate Live] Unauthorized request - invalid cron secret");
+		return res.status(401).json({ error: "Unauthorized" });
+	}
+
+	const results = {
+		processed: 0,
+		activated: 0,
+		skipped: 0,
+		errors: [] as string[],
+	};
+
+	try {
+		// Get today's date in UK timezone (Europe/London)
+		const ukDate = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
+		console.log(`[Activate Live] Today's UK date: ${ukDate}`);
+
+		// Query all selections with status='confirmed' and from_date = today
+		const { data: selections, error: queryError } = await supabase
+			.from("selections")
+			.select("id, practice_id, campaign_id, bespoke_campaign_id, from_date, status")
+			.eq("status", "confirmed")
+			.eq("from_date", ukDate);
+
+		if (queryError) {
+			console.error("[Activate Live] Query error:", queryError);
+			return res.status(500).json({ error: queryError.message });
+		}
+
+		if (!selections || selections.length === 0) {
+			console.log("[Activate Live] No confirmed selections to activate today");
+			return res.status(200).json({
+				...results,
+				message: "No confirmed selections to activate",
+				ukDate,
+				durationMs: Date.now() - startTime
+			});
+		}
+
+		console.log(`[Activate Live] Found ${selections.length} selections to activate`);
+
+		// Process each selection
+		for (const selection of selections) {
+			results.processed++;
+
+			try {
+				// Update selection status to 'live'
+				const { error: updateError } = await supabase
+					.from("selections")
+					.update({ status: "live" })
+					.eq("id", selection.id);
+
+				if (updateError) {
+					console.error(`[Activate Live] Failed to update selection ${selection.id}:`, updateError);
+					results.errors.push(`Selection ${selection.id}: ${updateError.message}`);
+					continue;
+				}
+
+				// Log to selection_status_history
+				const { error: historyError } = await supabase
+					.from("selection_status_history")
+					.insert({
+						selection_id: selection.id,
+						old_status: "confirmed",
+						new_status: "live",
+						changed_at: new Date().toISOString(),
+						changed_by: null, // System change
+						notes: "Campaign has gone live."
+					});
+
+				if (historyError) {
+					console.warn(`[Activate Live] Failed to log history for selection ${selection.id}:`, historyError);
+					// Don't fail the whole process for history logging failures
+				}
+
+				results.activated++;
+				console.log(`[Activate Live] Activated selection ${selection.id}`);
+
+			} catch (selectionError: any) {
+				console.error(`[Activate Live] Error processing selection ${selection.id}:`, selectionError);
+				results.errors.push(`Selection ${selection.id}: ${selectionError.message}`);
+			}
+		}
+
+		const durationMs = Date.now() - startTime;
+		console.log(`[Activate Live] Completed - Activated ${results.activated}/${results.processed} selections in ${durationMs}ms`);
+
+		return res.status(200).json({
+			...results,
+			ukDate,
+			durationMs,
+			message: `Activated ${results.activated} selections`
+		});
+
+	} catch (error: any) {
+		console.error("[Activate Live] Unexpected error:", error);
+		return res.status(500).json({
+			error: error.message,
+			durationMs: Date.now() - startTime
+		});
+	}
+});
+
 // Health check endpoint for cron debugging
 app.get(["/cron-health", "/api/cron-health"], (req, res) => {
 	res.json({
