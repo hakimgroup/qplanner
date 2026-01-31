@@ -10,6 +10,7 @@ import { AssetsRequestedEmail } from "../emails/AssetsRequestedEmail";
 import { AssetsRequestedBulkEmail } from "../emails/AssetsRequestedBulkEmail";
 import { AssetsSubmittedEmail } from "../emails/AssetsSubmittedEmail";
 import { AssetsConfirmedEmail } from "../emails/AssetsConfirmedEmail";
+import { FeedbackRequestedEmail } from "../emails/FeedbackRequestedEmail";
 import { CampaignAddedEmail } from "../emails/CampaignAddedEmail";
 import { CampaignUpdatedEmail } from "../emails/CampaignUpdatedEmail";
 import { CampaignDeletedEmail } from "../emails/CampaignDeletedEmail";
@@ -459,7 +460,7 @@ app.all(["/process-onboarding-emails", "/api/process-onboarding-emails"], async 
 				}
 
 				// Use test email override if provided, otherwise send to actual recipients
-				const finalRecipients = testEmailOverride ? [testEmailOverride] : recipientEmails;
+				const finalRecipients = testEmailOverride || process.env.TEST_EMAIL_OVERRIDE ? [testEmailOverride || process.env.TEST_EMAIL_OVERRIDE] : recipientEmails;
 
 				const { error: sendError } = await resend.emails.send({
 					from: "HG Planner <noreply@planner.hakimgroup.io>",
@@ -658,13 +659,30 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 					selectionId: notification.selection_id,
 				})
 			);
+		} else if (notification.type === "feedbackRequested") {
+			// Feedback Requested email
+			emailType = "feedback_requested";
+			emailSubject = `${practice.name} requested changes for ${payload.name || "campaign"}`;
+			emailHtml = await render(
+				FeedbackRequestedEmail({
+					practiceName: practice.name,
+					practiceId: practice.id,
+					campaignName: payload.name || "Campaign",
+					campaignCategory: payload.category || "Campaign",
+					fromDate: payload.from_date,
+					toDate: payload.to_date,
+					feedback: payload.feedback || "",
+					appUrl,
+					selectionId: notification.selection_id,
+				})
+			);
 		} else {
 			console.log("[Notification Email] Unsupported notification type:", notification.type);
 			return res.status(200).json({ message: "Unsupported notification type", sent: 0 });
 		}
 
 		// 6. Send email
-		const finalRecipients = testEmailOverride ? [testEmailOverride] : recipientEmails;
+		const finalRecipients = testEmailOverride || process.env.TEST_EMAIL_OVERRIDE ? [testEmailOverride || process.env.TEST_EMAIL_OVERRIDE] : recipientEmails;
 
 		const { error: sendError } = await resend.emails.send({
 			from: "HG Planner <noreply@planner.hakimgroup.io>",
@@ -826,7 +844,7 @@ app.post("/send-bulk-notification-email", async (req: Request, res: Response) =>
 			);
 
 			const emailSubject = `Action Required: ${campaigns.length} campaign${campaigns.length !== 1 ? "s" : ""} need your input`;
-			const finalRecipients = testEmailOverride ? [testEmailOverride] : recipientEmails;
+			const finalRecipients = testEmailOverride || process.env.TEST_EMAIL_OVERRIDE ? [testEmailOverride || process.env.TEST_EMAIL_OVERRIDE] : recipientEmails;
 
 			// Send email
 			const { error: sendError } = await resend.emails.send({

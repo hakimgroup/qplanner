@@ -238,6 +238,45 @@ export function useConfirmAssets() {
   });
 }
 
+export type RequestRevisionArgs = {
+  selectionId: string;
+  feedback: string;
+};
+
+export function useRequestRevision() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ selectionId, feedback }: RequestRevisionArgs) => {
+      const { data, error } = await supabase.rpc(RPCFunctions.RequestRevision, {
+        p_selection_id: selectionId,
+        p_feedback: feedback,
+      });
+      if (error) throw error;
+      // RPC returns {success, error, id, ...} - check success flag
+      if (data && !data.success) {
+        throw new Error(data.error || "Failed to submit feedback");
+      }
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success("Feedback submitted successfully");
+
+      // Refresh notifications and plans
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Notifications],
+        exact: false,
+      });
+      qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+
+      // Send notification email to admins (fire-and-forget)
+      if (data?.id) {
+        sendNotificationEmail({ notificationId: data.id });
+      }
+    },
+  });
+}
+
 export function useRequestAssetsBulk() {
   const qc = useQueryClient();
 

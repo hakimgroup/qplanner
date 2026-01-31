@@ -8,6 +8,7 @@ import { ActorNotificationType, SelectionStatus } from "@/shared/shared.models";
 import PracticeRespondModal from "./practiceRespondModal/PracticeRespondModal";
 import AdminReviewSubmissionModal from "@/components/assets/AdminReviewSubmissionModal";
 import AdminConfirmedModal from "@/components/assets/AdminConfirmedModal";
+import AdminFeedbackModal from "@/components/assets/AdminFeedbackModal";
 import { useSelectionById } from "@/hooks/selection.hooks";
 import { NotificationRow } from "@/models/notification.models";
 import StaleNotificationModal from "./StaleNotificationModal";
@@ -28,7 +29,7 @@ export function useNotificationOpen() {
 
 	// which modal to show
 	const [modalVariant, setModalVariant] = useState<
-		"practiceRespond" | "adminReview" | "practiceApproval" | "adminConfirmed" | "stale" | "actor" | null
+		"practiceRespond" | "adminReview" | "practiceApproval" | "adminConfirmed" | "adminFeedback" | "stale" | "actor" | null
 	>(null);
 
 	// modal open/close
@@ -65,6 +66,7 @@ export function useNotificationOpen() {
 			| "adminReview"
 			| "practiceApproval"
 			| "adminConfirmed"
+			| "adminFeedback"
 			| "stale"
 			| "actor";
 
@@ -90,6 +92,8 @@ export function useNotificationOpen() {
 			}
 		} else if (activeNotification.type === SelectionStatus.Confirmed) {
 			variant = "adminConfirmed";
+		} else if (activeNotification.type === "feedbackRequested") {
+			variant = "adminFeedback";
 		} else {
 			variant = "stale";
 		}
@@ -174,6 +178,17 @@ export function useNotificationOpen() {
 		if (modalVariant === "adminConfirmed") {
 			return (
 				<AdminConfirmedModal
+					opened={opened}
+					onClose={close}
+					notification={activeNotification}
+					selection={selectionData}
+				/>
+			);
+		}
+
+		if (modalVariant === "adminFeedback") {
+			return (
+				<AdminFeedbackModal
 					opened={opened}
 					onClose={close}
 					notification={activeNotification}

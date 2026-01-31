@@ -52,6 +52,7 @@ export enum RPCFunctions {
   DeleteSelection = "delete_selection",
   QueuePracticeOnboardingEmail = "queue_practice_onboarding_email",
   ConfirmAssets = "confirm_assets",
+  RequestRevision = "request_revision",
 }
 
 export enum UserRoles {
