@@ -3,7 +3,7 @@ import { ActorNotificationType, SelectionStatus } from "@/shared/shared.models";
 import { Assets } from "./campaign.models";
 
 // Combined notification type that includes both workflow statuses and actor notification types
-export type NotificationType = SelectionStatus | ActorNotificationType;
+export type NotificationType = SelectionStatus | ActorNotificationType | "feedbackRequested";
 
 export type AdminAssetsPayload = {
 	selectionId: string;
