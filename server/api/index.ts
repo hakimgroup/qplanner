@@ -9,6 +9,7 @@ import { EmptyPlannerEmail } from "../emails/EmptyPlannerEmail";
 import { AssetsRequestedEmail } from "../emails/AssetsRequestedEmail";
 import { AssetsRequestedBulkEmail } from "../emails/AssetsRequestedBulkEmail";
 import { AssetsSubmittedEmail } from "../emails/AssetsSubmittedEmail";
+import { AssetsConfirmedEmail } from "../emails/AssetsConfirmedEmail";
 import { CampaignAddedEmail } from "../emails/CampaignAddedEmail";
 import { CampaignUpdatedEmail } from "../emails/CampaignUpdatedEmail";
 import { CampaignDeletedEmail } from "../emails/CampaignDeletedEmail";
@@ -634,6 +635,24 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 					toDate: payload.to_date,
 					chosenCreative: payload.chosen_creative,
 					assets: payload.assets || {},
+					note: payload.note,
+					appUrl,
+					selectionId: notification.selection_id,
+				})
+			);
+		} else if (notification.type === "confirmed") {
+			// Assets Confirmed email
+			emailType = "assets_confirmed";
+			emailSubject = `${practice.name} confirmed assets for ${payload.name || "campaign"}`;
+			emailHtml = await render(
+				AssetsConfirmedEmail({
+					practiceName: practice.name,
+					practiceId: practice.id,
+					campaignName: payload.name || "Campaign",
+					campaignCategory: payload.category || "Campaign",
+					fromDate: payload.from_date,
+					toDate: payload.to_date,
+					chosenCreative: payload.chosen_creative,
 					note: payload.note,
 					appUrl,
 					selectionId: notification.selection_id,

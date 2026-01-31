@@ -199,6 +199,45 @@ export function useMarkNotificationRead() {
   });
 }
 
+export type ConfirmAssetsArgs = {
+  selectionId: string;
+  note?: string | null;
+};
+
+export function useConfirmAssets() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ selectionId, note }: ConfirmAssetsArgs) => {
+      const { data, error } = await supabase.rpc(RPCFunctions.ConfirmAssets, {
+        p_selection_id: selectionId,
+        p_note: note ?? null,
+      });
+      if (error) throw error;
+      // RPC returns {success, error, id, ...} - check success flag
+      if (data && !data.success) {
+        throw new Error(data.error || "Failed to confirm assets");
+      }
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success("Assets confirmed successfully");
+
+      // Refresh notifications and plans
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Notifications],
+        exact: false,
+      });
+      qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+
+      // Send notification email to admins (fire-and-forget)
+      if (data?.id) {
+        sendNotificationEmail({ notificationId: data.id });
+      }
+    },
+  });
+}
+
 export function useRequestAssetsBulk() {
   const qc = useQueryClient();
 

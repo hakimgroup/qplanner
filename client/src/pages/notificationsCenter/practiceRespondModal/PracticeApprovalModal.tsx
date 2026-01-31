@@ -1,4 +1,5 @@
 import StyledButton from "@/components/styledButton/StyledButton";
+import { useConfirmAssets } from "@/hooks/notification.hooks";
 import { NotificationRow } from "@/models/notification.models";
 import {
 	Modal,
@@ -21,6 +22,11 @@ import {
 	IconCalendar,
 	IconCategory,
 	IconSparkles,
+	IconThumbUp,
+	IconThumbUpFilled,
+	IconCopyCheckFilled,
+	IconCircleCheckFilled,
+	IconClipboard,
 } from "@tabler/icons-react";
 import { format, parseISO } from "date-fns";
 
@@ -36,6 +42,19 @@ export default function PracticeApprovalModal({
 	notification: ntf,
 }: PracticeApprovalModalProps) {
 	const T = useMantineTheme().colors;
+	const { mutate: confirmAssets, isPending: isConfirming } = useConfirmAssets();
+
+	const handleConfirmAssets = () => {
+		if (!ntf?.selection_id) return;
+		confirmAssets(
+			{ selectionId: ntf.selection_id },
+			{
+				onSuccess: () => {
+					onClose();
+				},
+			}
+		);
+	};
 
 	const hasMarkupLink = !!ntf?.payload?.markup_link;
 	const hasAssetsLink = !!ntf?.payload?.assets_link;
@@ -318,12 +337,24 @@ export default function PracticeApprovalModal({
 				)}
 
 				{/* Actions */}
-				<Group justify="flex-end" mt="xs">
-					<StyledButton variant="default" onClick={onClose}>
-						Close
-					</StyledButton>
-					<Button onClick={() => {}}>Mark as Reviewed</Button>
-				</Group>
+				<Flex align={"center"} justify={"space-between"}>
+					<Button
+						color="teal.7"
+						rightSection={<IconThumbUpFilled size={14} />}
+						onClick={handleConfirmAssets}
+						loading={isConfirming}
+						disabled={!ntf?.selection_id}
+					>
+						Confirm Assets
+					</Button>
+					<Button
+						rightSection={<IconClipboard size={14} />}
+						onClick={() => {}}
+						disabled={isConfirming}
+					>
+						Leave Feedback
+					</Button>
+				</Flex>
 			</Stack>
 		</Modal>
 	);

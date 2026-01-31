@@ -7,6 +7,7 @@ import { useMarkNotificationRead } from "@/hooks/notification.hooks";
 import { ActorNotificationType, SelectionStatus } from "@/shared/shared.models";
 import PracticeRespondModal from "./practiceRespondModal/PracticeRespondModal";
 import AdminReviewSubmissionModal from "@/components/assets/AdminReviewSubmissionModal";
+import AdminConfirmedModal from "@/components/assets/AdminConfirmedModal";
 import { useSelectionById } from "@/hooks/selection.hooks";
 import { NotificationRow } from "@/models/notification.models";
 import StaleNotificationModal from "./StaleNotificationModal";
@@ -27,7 +28,7 @@ export function useNotificationOpen() {
 
 	// which modal to show
 	const [modalVariant, setModalVariant] = useState<
-		"practiceRespond" | "adminReview" | "practiceApproval" | "stale" | "actor" | null
+		"practiceRespond" | "adminReview" | "practiceApproval" | "adminConfirmed" | "stale" | "actor" | null
 	>(null);
 
 	// modal open/close
@@ -63,6 +64,7 @@ export function useNotificationOpen() {
 			| "practiceRespond"
 			| "adminReview"
 			| "practiceApproval"
+			| "adminConfirmed"
 			| "stale"
 			| "actor";
 
@@ -80,7 +82,14 @@ export function useNotificationOpen() {
 		} else if (
 			activeNotification.type === SelectionStatus.AwaitingApproval
 		) {
-			variant = "practiceApproval";
+			// Only show approval modal if selection is still awaiting approval
+			if (currentStatus === SelectionStatus.AwaitingApproval) {
+				variant = "practiceApproval";
+			} else {
+				variant = "stale";
+			}
+		} else if (activeNotification.type === SelectionStatus.Confirmed) {
+			variant = "adminConfirmed";
 		} else {
 			variant = "stale";
 		}
@@ -158,6 +167,17 @@ export function useNotificationOpen() {
 					opened={opened}
 					onClose={close}
 					notification={activeNotification}
+				/>
+			);
+		}
+
+		if (modalVariant === "adminConfirmed") {
+			return (
+				<AdminConfirmedModal
+					opened={opened}
+					onClose={close}
+					notification={activeNotification}
+					selection={selectionData}
 				/>
 			);
 		}
