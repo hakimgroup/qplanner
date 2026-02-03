@@ -68,6 +68,8 @@ export type PlanRow = {
   practiceid: string;
   bespoke_id: string;
   creatives: Creatives[];
+  markup_link: string | null;
+  assets_link: string | null;
 };
 
 export type PlansFilter = {

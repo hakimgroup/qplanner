@@ -5,7 +5,8 @@ import {
   currentStage,
   formatAvailabilityForUI,
 } from "@/shared/shared.utilities";
-import { Badge, Stack, Text, Title, useMantineTheme } from "@mantine/core";
+import { Badge, Button, Stack, Text, Title, useMantineTheme } from "@mantine/core";
+import { IconExternalLink } from "@tabler/icons-react";
 import { ColDef } from "ag-grid-community";
 import { format } from "date-fns";
 import { startCase, toLower } from "lodash";
@@ -125,6 +126,58 @@ const CampaignStatusDashboard = () => {
           {currentStage(p?.data.status).label}
         </Badge>
       ),
+    },
+
+    {
+      field: "markup_link",
+      headerName: "Markup",
+      width: 130,
+      minWidth: 110,
+      sortable: false,
+      filter: false,
+      pinned: "right",
+      cellRenderer: ({ value }) =>
+        value ? (
+          <Button
+            component="a"
+            href={value}
+            target="_blank"
+            size="compact-xs"
+            variant="light"
+            color="violet"
+            rightSection={<IconExternalLink size={14} />}
+          >
+            Markup
+          </Button>
+        ) : (
+          <Text size="sm" c="gray.4">—</Text>
+        ),
+    },
+
+    {
+      field: "assets_link",
+      headerName: "Assets",
+      width: 130,
+      minWidth: 110,
+      sortable: false,
+      filter: false,
+      pinned: "right",
+      cellRenderer: ({ value }) =>
+        value ? (
+          <Button
+            component="a"
+            href={value}
+            target="_blank"
+            size="compact-xs"
+            variant="light"
+            color="teal"
+            rightSection={<IconExternalLink size={14} />}
+          >
+            Assets
+          </Button>
+        ) : (
+          <Text size="sm" c="gray.4">—</Text>
+        ),
     },
   ];
 
