@@ -11,6 +11,7 @@ import { AssetsRequestedBulkEmail } from "../emails/AssetsRequestedBulkEmail";
 import { AssetsSubmittedEmail } from "../emails/AssetsSubmittedEmail";
 import { AssetsConfirmedEmail } from "../emails/AssetsConfirmedEmail";
 import { FeedbackRequestedEmail } from "../emails/FeedbackRequestedEmail";
+import { AwaitingApprovalEmail } from "../emails/AwaitingApprovalEmail";
 import { CampaignAddedEmail } from "../emails/CampaignAddedEmail";
 import { CampaignUpdatedEmail } from "../emails/CampaignUpdatedEmail";
 import { CampaignDeletedEmail } from "../emails/CampaignDeletedEmail";
@@ -672,6 +673,25 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 					fromDate: payload.from_date,
 					toDate: payload.to_date,
 					feedback: payload.feedback || "",
+					appUrl,
+					selectionId: notification.selection_id,
+				})
+			);
+		} else if (notification.type === "awaitingApproval") {
+			// Awaiting Approval email (sent to practice when artwork is ready)
+			emailType = "awaiting_approval";
+			emailSubject = `Action Required: Artwork ready for approval — ${payload.name || "campaign"}`;
+			emailHtml = await render(
+				AwaitingApprovalEmail({
+					practiceName: practice.name,
+					practiceId: practice.id,
+					campaignName: payload.name || "Campaign",
+					campaignCategory: payload.category || "Campaign",
+					fromDate: payload.from_date,
+					toDate: payload.to_date,
+					markupLink: payload.markup_link,
+					assetsLink: payload.assets_link,
+					note: payload.note,
 					appUrl,
 					selectionId: notification.selection_id,
 				})
