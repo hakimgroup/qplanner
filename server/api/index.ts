@@ -1155,6 +1155,40 @@ app.post("/send-actor-email", async (req: Request, res: Response) => {
 				notificationMessage = `Action performed on "${campaignName || "a campaign"}".`;
 		}
 
+		// Fetch reference_links, original_notes, requirements from DB for bespoke types
+		let referenceLinks: any = null;
+		let originalNotes: string | null = null;
+		let requirements: string | null = null;
+
+		if (selectionId && (type === "bespoke_added" || type === "bespoke_event_added")) {
+			try {
+				const { data: selData } = await supabase
+					.from("selections")
+					.select("notes, reference_links, bespoke_campaign_id")
+					.eq("id", selectionId)
+					.single();
+
+				if (selData) {
+					originalNotes = selData.notes;
+					referenceLinks = selData.reference_links;
+
+					if (selData.bespoke_campaign_id) {
+						const { data: bcData } = await supabase
+							.from("bespoke_campaigns")
+							.select("reference_links, requirements")
+							.eq("id", selData.bespoke_campaign_id)
+							.single();
+						if (bcData) {
+							referenceLinks = bcData.reference_links || referenceLinks;
+							requirements = bcData.requirements;
+						}
+					}
+				}
+			} catch (fetchErr: any) {
+				console.error("[Actor Notification] Failed to fetch bespoke details:", fetchErr.message);
+			}
+		}
+
 		// Insert notification
 		const { data: notification, error: notifError } = await supabase
 			.from("notifications")
@@ -1173,6 +1207,9 @@ app.post("/send-actor-email", async (req: Request, res: Response) => {
 					to_date: toDate,
 					is_bespoke: isBespoke || false,
 					actor_action: notificationType,
+					reference_links: referenceLinks,
+					original_notes: originalNotes,
+					requirements: requirements,
 				},
 			})
 			.select("id")
