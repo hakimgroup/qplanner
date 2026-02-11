@@ -240,6 +240,7 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
         rows={data && data.length ? data : []}
         cols={colDefs}
         enableSelection={true}
+        pagination={false}
         height={550}
         onSelect={(r) => {
           setSelectedRowIds(r.map((cp) => cp.id));

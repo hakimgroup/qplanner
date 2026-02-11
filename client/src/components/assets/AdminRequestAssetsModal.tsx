@@ -62,12 +62,14 @@ function CreativeInputs({
 	removeCreative,
 	updateCreativeUrl,
 	updateCreativeLabel,
+	updateCreativeAssetsLink,
 }: {
 	creatives: Creatives[];
 	addCreative: () => void;
 	removeCreative: (idx: number) => void;
 	updateCreativeUrl: (idx: number, val: string) => void;
 	updateCreativeLabel: (idx: number, val: string) => void;
+	updateCreativeAssetsLink: (idx: number, val: string) => void;
 }) {
 	const hasAnyUrl = creatives.some((c) => c.url?.trim());
 	const T = useMantineTheme().colors;
@@ -114,7 +116,7 @@ function CreativeInputs({
 							px="md"
 							py="sm"
 							shadow="xs"
-							mah={300}
+							mah={420}
 							style={{ borderColor: T.blue[1] }}
 						>
 							<Stack gap={8}>
@@ -180,6 +182,23 @@ function CreativeInputs({
 									}
 									radius="md"
 								/>
+
+								<TextInput
+									label={
+										<Text size="xs" fw={500} c="gray.7">
+											Assets Link
+										</Text>
+									}
+									placeholder="https://assets-link (optional)"
+									value={item.assets_link || ""}
+									onChange={(e) =>
+										updateCreativeAssetsLink(
+											idx,
+											e.currentTarget.value
+										)
+									}
+									radius="md"
+								/>
 							</Stack>
 						</Card>
 					))}
@@ -226,6 +245,24 @@ function CreativeInputs({
 								label={
 									<Text size="xs" fw={500} c="gray.7">
 										Image URL
+									</Text>
+								}
+							/>
+
+							<TextInput
+								placeholder="https://assets-link (optional)"
+								value={item.assets_link || ""}
+								onChange={(e) =>
+									updateCreativeAssetsLink(
+										idx,
+										e.currentTarget.value
+									)
+								}
+								radius="md"
+								style={{ flex: 2 }}
+								label={
+									<Text size="xs" fw={500} c="gray.7">
+										Assets Link
 									</Text>
 								}
 							/>
@@ -474,8 +511,8 @@ export default function AdminRequestAssetsModal({
 		cloneAssets(selection.assets)
 	);
 
-	// creatives (up to 4 {url,label})
-	const defaultCreatives = [{ url: "", label: "" }];
+	// creatives (up to 4 {url,label,assets_link})
+	const defaultCreatives = [{ url: "", label: "", assets_link: "" }];
 	const [creatives, setCreatives] = useState<Creatives[]>(
 		selection.creatives ?? defaultCreatives
 	);
@@ -495,7 +532,7 @@ export default function AdminRequestAssetsModal({
 	// Creatives handlers
 	const addCreative = () => {
 		if (creatives.length >= 4) return;
-		setCreatives((l) => [...l, { url: "", label: "" }]);
+		setCreatives((l) => [...l, { url: "", label: "", assets_link: "" }]);
 	};
 
 	const removeCreative = (idx: number) => {
@@ -514,6 +551,14 @@ export default function AdminRequestAssetsModal({
 		setCreatives((l) => {
 			const c = [...l];
 			c[idx] = { ...c[idx], label: val };
+			return c;
+		});
+	};
+
+	const updateCreativeAssetsLink = (idx: number, val: string) => {
+		setCreatives((l) => {
+			const c = [...l];
+			c[idx] = { ...c[idx], assets_link: val };
 			return c;
 		});
 	};
@@ -565,6 +610,7 @@ export default function AdminRequestAssetsModal({
 			.map((c, idx) => ({
 				url: c.url.trim(),
 				label: c.label?.trim() || `Creative ${idx + 1}`,
+				assets_link: c.assets_link?.trim() || null,
 			}));
 
 		if (applyToCatalog) {
@@ -686,6 +732,7 @@ export default function AdminRequestAssetsModal({
 					removeCreative={removeCreative}
 					updateCreativeUrl={updateCreativeUrl}
 					updateCreativeLabel={updateCreativeLabel}
+					updateCreativeAssetsLink={updateCreativeAssetsLink}
 				/>
 
 				{/* Printed Assets */}

@@ -22,6 +22,7 @@ import AdminCampaigns from "./pages/admin/adminPages/campaigns/AdminCampaigns";
 import { TierProvider } from "./shared/TierProvider";
 import NotificationsCenter from "./pages/notificationsCenter/NotificationsCenter";
 import AdminNotifications from "./pages/admin/adminPages/notifications/AdminNotifications";
+import Practices from "./pages/admin/adminPages/practices/Practices";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
@@ -104,6 +105,10 @@ export default function App() {
                         element={<AdminCampaigns />}
                       />
                       <Route path={AppRoutes.Bespoke} element={<Plans />} />
+                      <Route
+                        path={AppRoutes.Practices}
+                        element={<Practices />}
+                      />
                       <Route
                         path={AppRoutes.PeopleAccess}
                         element={<PeopleAccess />}

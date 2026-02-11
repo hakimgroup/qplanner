@@ -8,9 +8,10 @@ import {
 	TextInput,
 	useMantineTheme,
 	Group,
+	Button,
 } from "@mantine/core";
 import filtersData from "@/filters.json";
-import { IconSearch } from "@tabler/icons-react";
+import { IconDownload, IconSearch } from "@tabler/icons-react";
 import { useDebouncedValue } from "@mantine/hooks";
 import { useMemo, useState } from "react";
 import PeopleAccessTable from "./PeopleAccessTable";
@@ -54,6 +55,31 @@ const PeopleAccess = () => {
 			);
 		});
 	}, [users, debounced]);
+
+	const exportCsv = () => {
+		const headers = ["id", "email", "first_name", "last_name", "role"];
+		const escape = (v: any) => {
+			const s = (v ?? "").toString();
+			return s.includes(",") || s.includes('"') || s.includes("\n")
+				? `"${s.replace(/"/g, '""')}"`
+				: s;
+		};
+		const csvRows = [
+			headers.join(","),
+			...filteredUsers.map((u: any) =>
+				headers.map((h) => escape(u[h])).join(",")
+			),
+		];
+		const blob = new Blob([csvRows.join("\n")], {
+			type: "text/csv;charset=utf-8;",
+		});
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = "allowed_users_export.csv";
+		a.click();
+		URL.revokeObjectURL(url);
+	};
 
 	return (
 		<Stack gap={25}>
@@ -120,6 +146,15 @@ const PeopleAccess = () => {
 
 						{signedInUserRole === UserRoles.SuperAdmin && (
 							<Group>
+								<Button
+									variant="light"
+									color="teal"
+									leftSection={<IconDownload size={14} />}
+									onClick={exportCsv}
+									disabled={filteredUsers.length === 0}
+								>
+									Export CSV
+								</Button>
 								<AddUserModal />
 								<AllowedUsersCsvUploader />
 							</Group>

@@ -42,6 +42,7 @@ export interface Assets {
 export interface Creatives {
   url?: string;
   label?: string;
+  assets_link?: string | null;
 }
 
 export interface Campaign {

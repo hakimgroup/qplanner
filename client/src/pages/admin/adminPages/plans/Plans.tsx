@@ -12,8 +12,13 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
-import { IconDownload, IconMessage, IconSearch } from "@tabler/icons-react";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconDownload,
+  IconSearch,
+} from "@tabler/icons-react";
+import { useContext, useEffect, useRef, useState } from "react";
 import filtersData from "@/filters.json";
 import { usePractice } from "@/shared/PracticeProvider";
 import StyledButton from "@/components/styledButton/StyledButton";
@@ -26,9 +31,13 @@ import { AppRoutes } from "@/shared/shared.models";
 import AppContext from "@/shared/AppContext";
 import { startCase } from "lodash";
 import PlansMetaSummary from "./PlansMetaSummary";
-import { useRequestAssetsBulk } from "@/hooks/notification.hooks";
-import { toast } from "sonner";
 import BulkRequestButton from "@/components/assets/BulkRequestButton";
+
+const PAGE_SIZES = [
+  { label: "25 / page", value: "25" },
+  { label: "50 / page", value: "50" },
+  { label: "100 / page", value: "100" },
+];
 
 const Plans = () => {
   const T = useMantineTheme().colors;
@@ -49,40 +58,47 @@ const Plans = () => {
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const isBespokeRoute = pathname === `${AppRoutes.Admin}/${AppRoutes.Bespoke}`;
 
-  // Local search (debounced)
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+
+  // Server-side search (debounced)
   const [query, setQuery] = useState("");
-  const [debounced] = useDebouncedValue(query, 200);
+  const [debounced] = useDebouncedValue(query, 300);
 
-  // Server data (filtered by the dropdown filters)
+  const offset = (page - 1) * pageSize;
+
+  // Server data (filtered + paginated + searched)
   const { data: plansResponse, isFetching } = usePlans(
-    normalizeAllToNull(plansFilters)
+    normalizeAllToNull({
+      ...plansFilters,
+      limit: pageSize,
+      offset,
+      search: debounced || null,
+    })
   );
-  const { mutate: requestBulk, isPending } = useRequestAssetsBulk();
 
-  // plansResponse will either be undefined (first render / error) or { data: [...], meta: {...} }
   const data = plansResponse?.data ?? [];
   const meta = plansResponse?.meta ?? null;
+  const total = meta?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  // Client-side search across campaign & practice
-  const filteredData = useMemo(() => {
-    const q = debounced.trim().toLowerCase();
-    if (!q) return data ?? [];
-    return (data ?? []).filter((row) => {
-      const campaign = String(row?.campaign ?? "").toLowerCase();
-      const practice = String(row?.practice ?? "").toLowerCase();
-      return campaign.includes(q) || practice.includes(q);
-    });
-  }, [data, debounced]);
+  // Reset page to 1 when filters or search change
+  useEffect(() => {
+    setPage(1);
+  }, [plansFilters, debounced, pageSize]);
 
   useEffect(() => {
     setPlansFilters((prev) => {
-      // only update if needed (prevents useless renders/refetches)
       if (prev.isBespoke === isBespokeRoute) return prev;
       return { ...prev, isBespoke: isBespokeRoute };
     });
-    // (optional) clear selections when switching tabs
     setSelectedRowIds([]);
   }, [isBespokeRoute]);
+
+  // Pagination info text
+  const showingFrom = total === 0 ? 0 : offset + 1;
+  const showingTo = Math.min(offset + pageSize, total);
 
   return (
     <Stack gap={25}>
@@ -286,15 +302,64 @@ const Plans = () => {
           <Title order={3}>
             Plan Items{" "}
             <Text span fz={"h3"} fw={700} c={"blue.3"}>
-              ({filteredData?.length ?? 0})
+              ({total})
             </Text>
           </Title>
-          <PlansTable
-            ref={plansRef}
-            data={filteredData}
-            loading={isFetching}
-            setSelectedRowIds={(ids) => setSelectedRowIds(ids)}
-          />
+          <Stack gap={12}>
+            <PlansTable
+              ref={plansRef}
+              data={data}
+              loading={isFetching}
+              setSelectedRowIds={(ids) => setSelectedRowIds(ids)}
+            />
+
+            {/* Pagination Controls */}
+            <Group justify="space-between" align="center">
+              <Text size="sm" c="blue.8" fw={500}>
+              {total > 0
+                ? `Showing ${showingFrom}–${showingTo} of ${total}`
+                : "No results"}
+            </Text>
+
+            <Group gap={8} align="center">
+              <Select
+                size="xs"
+                radius={10}
+                w={120}
+                data={PAGE_SIZES}
+                value={String(pageSize)}
+                onChange={(v) => setPageSize(Number(v) || 50)}
+                allowDeselect={false}
+              />
+
+              <Button
+                variant="default"
+                size="xs"
+                radius={10}
+                leftSection={<IconChevronLeft size={14} />}
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Previous
+              </Button>
+
+              <Text size="sm" fw={600} c="gray.7">
+                {page} / {totalPages}
+              </Text>
+
+              <Button
+                variant="default"
+                size="xs"
+                radius={10}
+                rightSection={<IconChevronRight size={14} />}
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                Next
+              </Button>
+            </Group>
+          </Group>
+          </Stack>
         </Stack>
       </Card>
     </Stack>

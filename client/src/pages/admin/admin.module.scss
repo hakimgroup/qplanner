@@ -53,4 +53,18 @@ $transition: 150ms ease;
 			color: var(--mantine-color-violet-9);
 		}
 	}
+
+	/* Stronger active indicator when sidebar is collapsed (icon-only) */
+	.linkIcon.active {
+		background: var(--mantine-color-violet-1);
+		color: var(--mantine-color-violet-9);
+
+		svg {
+			color: var(--mantine-color-violet-9) !important;
+		}
+
+		&:hover {
+			background: var(--mantine-color-violet-1);
+		}
+	}
 }

@@ -45,6 +45,7 @@ export interface Plans {
     live: number;
     onPlan: number;
     requested: number;
+    total: number;
   };
 }
 
@@ -79,6 +80,9 @@ export type PlansFilter = {
   source?: string | null;
   tier?: string | null;
   isBespoke?: boolean;
+  limit?: number;
+  offset?: number;
+  search?: string | null;
 };
 
 export type BulkResultItem = {

@@ -65,6 +65,28 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 			const { data, error } = await supabase.auth.getSession();
 			if (!mounted) return;
 
+			// Dev auto-login: if no session and dev credentials are set, sign in automatically
+			if (
+				!data.session &&
+				import.meta.env.VITE_DEV_USER_EMAIL &&
+				import.meta.env.VITE_DEV_USER_PASSWORD
+			) {
+				const { data: devData, error: devError } =
+					await supabase.auth.signInWithPassword({
+						email: import.meta.env.VITE_DEV_USER_EMAIL,
+						password: import.meta.env.VITE_DEV_USER_PASSWORD,
+					});
+				if (!mounted) return;
+				if (devError) {
+					console.error("[Dev Auth] Auto-login failed:", devError.message);
+					setLoading(false);
+					return;
+				}
+				setUser(devData.session?.user ?? null);
+				setLoading(false);
+				return;
+			}
+
 			if (error) setUserError(true);
 			setUser(data.session?.user ?? null);
 			setLoading(false);

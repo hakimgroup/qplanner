@@ -26,6 +26,7 @@ export enum DatabaseTables {
   BespokeCampaigns = "bespoke_campaigns",
   Notifications = "notifications",
   CommunicationLogs = "selection_status_history",
+  PracticeMembers = "practice_members",
 }
 
 export enum RPCFunctions {

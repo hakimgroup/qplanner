@@ -14,6 +14,7 @@ interface Props {
   autoHeight?: boolean;
   height?: number;
   enableSelection?: boolean;
+  pagination?: boolean;
   csvDefaults?: Partial<CsvExportParams>;
   onSelect?: (row: any[]) => void;
 }
@@ -35,6 +36,7 @@ const Table = forwardRef<TableHandle, Props>(function Table(
     height = 300,
     autoHeight,
     enableSelection,
+    pagination = true,
     onSelect,
     loading,
     csvDefaults,
@@ -152,7 +154,7 @@ const Table = forwardRef<TableHandle, Props>(function Table(
         onCellValueChanged={(event) =>
           console.log(`New Cell Value: ${event.value}`)
         }
-        pagination
+        pagination={pagination}
         // loadingOverlayComponent={<Loader color="blue.3" />}
       />
     </Box>

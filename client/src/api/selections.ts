@@ -7,7 +7,7 @@ import { RPCFunctions } from "@/shared/shared.models";
 import { supabase } from "./supabase";
 
 export async function fetchPlans(filters: PlansFilter = {}): Promise<Plans> {
-  const { practiceIds, status, category, source, tier, isBespoke } = filters;
+  const { practiceIds, status, category, source, tier, isBespoke, limit, offset, search } = filters;
 
   const { data, error } = await supabase.rpc(
     RPCFunctions.GetPlans ?? "get_plans",
@@ -18,6 +18,9 @@ export async function fetchPlans(filters: PlansFilter = {}): Promise<Plans> {
       p_source: source ?? null,
       p_tier: tier ?? null,
       p_is_bespoke: isBespoke ?? false,
+      p_limit: limit ?? null,
+      p_offset: offset ?? 0,
+      p_search: search || null,
     }
   );
 
