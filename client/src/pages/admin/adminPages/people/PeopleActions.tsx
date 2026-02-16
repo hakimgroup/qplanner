@@ -21,6 +21,8 @@ import { IconCircleFilled, IconEdit, IconSearch } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { useDebouncedValue } from "@mantine/hooks";
 import { useUpdateUser } from "@/pages/auth/auth.hooks";
+import { useAuth } from "@/shared/AuthProvider";
+import { UserRoles } from "@/shared/shared.models";
 
 interface Props {
   row: AllowedUser;
@@ -33,6 +35,7 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
   const isView = mode === "view";
   const T = useMantineTheme().colors;
   const { practices } = usePractice();
+  const { role: currentUserRole } = useAuth();
   const name = `${upperFirst(row?.first_name)} ${upperFirst(row?.last_name)}`;
 
   const [query, setQuery] = useState("");
@@ -118,7 +121,10 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
               size="xs"
               radius="md"
               data={roles.filter(
-                (r) => row.role === "super_admin" || r.value !== "super_admin"
+                (r) =>
+                  r.value !== "super_admin" ||
+                  row.role === "super_admin" ||
+                  currentUserRole === UserRoles.SuperAdmin
               )}
               value={roleValue}
               onChange={(v) => setRoleValue(v)}
