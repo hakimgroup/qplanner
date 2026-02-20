@@ -23,6 +23,7 @@ import { TierProvider } from "./shared/TierProvider";
 import NotificationsCenter from "./pages/notificationsCenter/NotificationsCenter";
 import AdminNotifications from "./pages/admin/adminPages/notifications/AdminNotifications";
 import Practices from "./pages/admin/adminPages/practices/Practices";
+import Settings from "./pages/admin/adminPages/settings/Settings";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
@@ -116,6 +117,10 @@ export default function App() {
                       <Route
                         path={AppRoutes.Notifications}
                         element={<AdminNotifications />}
+                      />
+                      <Route
+                        path={AppRoutes.Settings}
+                        element={<Settings />}
                       />
                     </Route>
 

@@ -43,6 +43,7 @@ export interface Plans {
     confirmed: number;
     inProgress: number;
     live: number;
+    completed: number;
     onPlan: number;
     requested: number;
     total: number;

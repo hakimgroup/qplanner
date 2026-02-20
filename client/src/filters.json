@@ -68,6 +68,10 @@
     {
       "label": "Live",
       "value": "live"
+    },
+    {
+      "label": "Completed",
+      "value": "completed"
     }
   ],
   "sources": [

@@ -139,6 +139,7 @@ export type AllowedUser = {
   role: Role;
   created_at: string;
   last_login?: string | null;
+  email_notifications_enabled?: boolean;
   assigned_practices?: Practice[];
 };
 

@@ -585,7 +585,7 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 		const userIds = targets.map((t: any) => t.user_id).filter(Boolean);
 		const { data: users, error: usersError } = await supabase
 			.from("allowed_users")
-			.select("id, email, first_name")
+			.select("id, email, first_name, email_notifications_enabled")
 			.in("id", userIds);
 
 		if (usersError || !users || users.length === 0) {
@@ -593,7 +593,12 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 			return res.status(200).json({ message: "No valid recipients", sent: 0 });
 		}
 
-		const recipientEmails = users.map((u: any) => u.email).filter(Boolean);
+		// Filter out admins who opted out of email notifications (practice users always receive)
+		const eligibleUsers = notification.audience === "admins"
+			? users.filter((u: any) => u.email_notifications_enabled !== false)
+			: users;
+
+		const recipientEmails = eligibleUsers.map((u: any) => u.email).filter(Boolean);
 		if (recipientEmails.length === 0) {
 			return res.status(200).json({ message: "No valid emails", sent: 0 });
 		}
@@ -714,7 +719,7 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 		if (sendError) {
 			console.error("[Notification Email] Send error:", sendError);
 			// Log the failed attempt
-			for (const user of users) {
+			for (const user of eligibleUsers) {
 				await supabase.from("notification_emails_log").insert({
 					notification_id: notificationId,
 					email_type: emailType,
@@ -734,7 +739,7 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 		}
 
 		// 7. Log successful send
-		for (const user of users) {
+		for (const user of eligibleUsers) {
 			await supabase.from("notification_emails_log").insert({
 				notification_id: notificationId,
 				email_type: emailType,
@@ -1924,6 +1929,7 @@ app.all(["/activate-live-campaigns", "/api/activate-live-campaigns"], async (req
 	const results = {
 		processed: 0,
 		activated: 0,
+		completed: 0,
 		skipped: 0,
 		errors: [] as string[],
 	};
@@ -1979,11 +1985,10 @@ app.all(["/activate-live-campaigns", "/api/activate-live-campaigns"], async (req
 					.from("selection_status_history")
 					.insert({
 						selection_id: selection.id,
-						old_status: "confirmed",
-						new_status: "live",
-						changed_at: new Date().toISOString(),
-						changed_by: null, // System change
-						notes: "Campaign has gone live."
+						from_status: "confirmed",
+						to_status: "live",
+						actor_user_id: "00000000-0000-0000-0000-000000000000",
+						note: "Campaign has gone live.",
 					});
 
 				if (historyError) {
@@ -2000,14 +2005,68 @@ app.all(["/activate-live-campaigns", "/api/activate-live-campaigns"], async (req
 			}
 		}
 
+		// === Phase 2: Complete expired live campaigns (to_date < today) ===
+		const { data: expiredSelections, error: expiredError } = await supabase
+			.from("selections")
+			.select("id, practice_id, campaign_id, bespoke_campaign_id, to_date, status")
+			.eq("status", "live")
+			.lt("to_date", ukDate);
+
+		if (expiredError) {
+			console.error("[Activate Live] Expired query error:", expiredError);
+			results.errors.push(`Expired query: ${expiredError.message}`);
+		} else if (expiredSelections && expiredSelections.length > 0) {
+			console.log(`[Activate Live] Found ${expiredSelections.length} expired live selections to complete`);
+
+			for (const selection of expiredSelections) {
+				results.processed++;
+
+				try {
+					const { error: updateError } = await supabase
+						.from("selections")
+						.update({ status: "completed" })
+						.eq("id", selection.id);
+
+					if (updateError) {
+						console.error(`[Activate Live] Failed to complete selection ${selection.id}:`, updateError);
+						results.errors.push(`Selection ${selection.id}: ${updateError.message}`);
+						continue;
+					}
+
+					const { error: historyError } = await supabase
+						.from("selection_status_history")
+						.insert({
+							selection_id: selection.id,
+							from_status: "live",
+							to_status: "completed",
+							actor_user_id: "00000000-0000-0000-0000-000000000000",
+							note: "Campaign has completed (past end date).",
+						});
+
+					if (historyError) {
+						console.warn(`[Activate Live] Failed to log history for selection ${selection.id}:`, historyError);
+					}
+
+					results.completed++;
+					console.log(`[Activate Live] Completed selection ${selection.id}`);
+
+				} catch (selectionError: any) {
+					console.error(`[Activate Live] Error completing selection ${selection.id}:`, selectionError);
+					results.errors.push(`Selection ${selection.id}: ${selectionError.message}`);
+				}
+			}
+		} else {
+			console.log("[Activate Live] No expired live selections to complete");
+		}
+
 		const durationMs = Date.now() - startTime;
-		console.log(`[Activate Live] Completed - Activated ${results.activated}/${results.processed} selections in ${durationMs}ms`);
+		console.log(`[Activate Live] Done - Activated ${results.activated}, Completed ${results.completed} in ${durationMs}ms`);
 
 		return res.status(200).json({
 			...results,
 			ukDate,
 			durationMs,
-			message: `Activated ${results.activated} selections`
+			message: `Activated ${results.activated}, completed ${results.completed} selections`
 		});
 
 	} catch (error: any) {

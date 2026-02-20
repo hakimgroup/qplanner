@@ -21,6 +21,7 @@ type PlansMeta = {
   awaitingApproval: number;
   confirmed: number;
   live: number;
+  completed: number;
 };
 
 type Props = {
@@ -62,6 +63,11 @@ const STATUS_COPY: Record<
     hint: "Currently running.",
     color: statusColors[SelectionStatus.Live],
   },
+  completed: {
+    label: "Completed",
+    hint: "Campaign has ended and is no longer running.",
+    color: statusColors[SelectionStatus.Completed],
+  },
 };
 
 function StatCard({ k, value }: { k: keyof PlansMeta; value: number }) {
@@ -100,7 +106,7 @@ function NextAction({ meta }: { meta: PlansMeta }) {
   const T = useMantineTheme().colors;
 
   // simple priority messaging for admins
-  const { awaitingApproval, requested, inProgress, onPlan, confirmed, live } =
+  const { awaitingApproval, requested, inProgress, onPlan, confirmed, live, completed } =
     meta;
 
   let message = "All quiet for now.";
@@ -169,7 +175,8 @@ export default function PlansMetaSummary({ meta, title = "Overview" }: Props) {
     meta.inProgress +
     meta.awaitingApproval +
     meta.confirmed +
-    meta.live;
+    meta.live +
+    meta.completed;
 
   return (
     <Stack gap="md">
@@ -202,6 +209,9 @@ export default function PlansMetaSummary({ meta, title = "Overview" }: Props) {
         </Grid.Col>
         <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 4 }}>
           <StatCard k="live" value={meta.live} />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 4 }}>
+          <StatCard k="completed" value={meta.completed} />
         </Grid.Col>
       </Grid>
 

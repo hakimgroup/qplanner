@@ -69,6 +69,7 @@ export enum SelectionStatus {
   AwaitingApproval = "awaitingApproval",
   Confirmed = "confirmed",
   Live = "live",
+  Completed = "completed",
 }
 
 // Actor notification types (for in-app notifications when user performs CRUD actions)

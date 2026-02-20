@@ -112,6 +112,26 @@ export function useUpdateUser() {
   });
 }
 
+export function useToggleEmailNotifications() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ userId, enabled }: { userId: string; enabled: boolean }) => {
+      const { error } = await supabase
+        .from(DatabaseTables.Allowed_Users)
+        .update({ email_notifications_enabled: enabled })
+        .eq("id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [DatabaseTables.Allowed_Users] });
+    },
+    onError: (e: any) => {
+      toast.error(e?.message ?? "Failed to update email preference");
+    },
+  });
+}
+
 export function useDeleteAllowedUser() {
   const qc = useQueryClient();
 

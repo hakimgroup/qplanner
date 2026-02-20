@@ -17,6 +17,7 @@ export const statusColors = {
   [SelectionStatus.AwaitingApproval]: "#8e44ad",
   [SelectionStatus.Confirmed]: "#5352ed",
   [SelectionStatus.Live]: "#2ed573",
+  [SelectionStatus.Completed]: "#636e72",
 };
 
 export const activityColors = {
