@@ -22,6 +22,8 @@ interface AuthContextModel {
 	userError: boolean;
 	role: Role;
 	isAdmin: boolean;
+	firstName: string | null;
+	lastName: string | null;
 }
 const AuthContext = createContext<AuthContextModel>({
 	user: null,
@@ -29,20 +31,27 @@ const AuthContext = createContext<AuthContextModel>({
 	userError: false,
 	role: null,
 	isAdmin: false,
+	firstName: null,
+	lastName: null,
 });
 export const useAuth = () => useContext(AuthContext);
 
 async function fetchWhitelistAndRole(
 	email: string
-): Promise<{ allowed: boolean; role: Role }> {
+): Promise<{ allowed: boolean; role: Role; firstName: string | null; lastName: string | null }> {
 	const { data, error } = await supabase
 		.from(DatabaseTables.Allowed_Users)
-		.select("id, role")
+		.select("id, role, first_name, last_name")
 		.eq("email", email.toLowerCase())
 		.maybeSingle();
 
 	if (error) throw error;
-	return { allowed: !!data, role: (data?.role as Role) ?? null };
+	return {
+		allowed: !!data,
+		role: (data?.role as Role) ?? null,
+		firstName: data?.first_name ?? null,
+		lastName: data?.last_name ?? null,
+	};
 }
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -50,6 +59,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const { pathname } = useLocation();
 	const [user, setUser] = useState<User | null>(null);
 	const [role, setRole] = useState<Role>(null);
+	const [firstName, setFirstName] = useState<string | null>(null);
+	const [lastName, setLastName] = useState<string | null>(null);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [userError, setUserError] = useState<boolean>(false);
 
@@ -133,7 +144,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 			}
 
 			try {
-				const { allowed, role } = await fetchWhitelistAndRole(email);
+				const { allowed, role, firstName, lastName } = await fetchWhitelistAndRole(email);
 				if (cancelled) return;
 
 				if (!allowed) {
@@ -142,6 +153,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 					if (cancelled) return;
 					setUser(null);
 					setRole(null);
+					setFirstName(null);
+					setLastName(null);
 					lastCheckedUserIdRef.current = null;
 					linkedOnceRef.current = false;
 					navigate(AppRoutes.Login, { replace: true });
@@ -159,6 +172,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 				}
 
 				setRole(role);
+				setFirstName(firstName);
+				setLastName(lastName);
 
 				// ⭐ Redirect ONLY on fresh sign-in:
 				if (justSignedInRef.current) {
@@ -192,6 +207,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 					if (!cancelled) {
 						setUser(null);
 						setRole(null);
+						setFirstName(null);
+						setLastName(null);
 						lastCheckedUserIdRef.current = null;
 						linkedOnceRef.current = false;
 						navigate(AppRoutes.Login, { replace: true });
@@ -226,6 +243,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 				userError,
 				role,
 				isAdmin: role === "admin" || role === "super_admin",
+				firstName,
+				lastName,
 			}}
 		>
 			{children}

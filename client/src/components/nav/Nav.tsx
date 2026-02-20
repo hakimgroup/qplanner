@@ -39,10 +39,8 @@ const Nav = () => {
 	const T = useMantineTheme();
 	const navigate = useNavigate();
 	const { pathname } = useLocation();
-	const { user, isAdmin, role } = useAuth();
-	const name = `${user?.identities[0].identity_data.first_name ?? "John"} ${
-		user?.identities[0].identity_data.last_name ?? "Doe"
-	}`;
+	const { user, isAdmin, role, firstName, lastName } = useAuth();
+	const name = `${firstName ?? "User"} ${lastName ?? ""}`.trim();
 	const isUserView = [
 		AppRoutes.Dashboard,
 		AppRoutes.FAQs,
