@@ -605,7 +605,6 @@ export default function AdminRequestAssetsModal({
 	const handleSubmit = () => {
 		const cleanedCreatives = creatives
 			.filter((c) => c.url.trim())
-			.slice(0, 4)
 			.map((c, idx) => ({
 				url: c.url.trim(),
 				label: c.label?.trim() || `Creative ${idx + 1}`,
