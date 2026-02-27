@@ -84,7 +84,7 @@ function CreativeInputs({
 				<Tooltip
 					label={`Add ${
 						creatives && creatives.length > 0 ? "another" : "a"
-					} creative (max 4)`}
+					} creative`}
 					withArrow
 					style={{
 						border: `1px solid ${T.blue[1]}`,
@@ -98,7 +98,7 @@ function CreativeInputs({
 						onClick={() => {
 							addCreative();
 						}}
-						disabled={creatives.length >= 4}
+						disabled={false}
 					>
 						<IconPlus size={16} />
 					</ActionIcon>
@@ -511,7 +511,7 @@ export default function AdminRequestAssetsModal({
 		cloneAssets(selection.assets)
 	);
 
-	// creatives (up to 4 {url,label,assets_link})
+	// creatives ({url,label,assets_link})
 	const defaultCreatives = [{ url: "", label: "", assets_link: "" }];
 	const [creatives, setCreatives] = useState<Creatives[]>(
 		selection.creatives ?? defaultCreatives
@@ -531,7 +531,6 @@ export default function AdminRequestAssetsModal({
 
 	// Creatives handlers
 	const addCreative = () => {
-		if (creatives.length >= 4) return;
 		setCreatives((l) => [...l, { url: "", label: "", assets_link: "" }]);
 	};
 
