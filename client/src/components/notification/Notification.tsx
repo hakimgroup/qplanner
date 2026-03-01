@@ -29,7 +29,7 @@ import {
   IconClock,
   IconBuilding,
 } from "@tabler/icons-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ActorNotificationType, AppRoutes, SelectionStatus } from "@/shared/shared.models";
 
 import StyledButton from "../styledButton/StyledButton";
@@ -97,7 +97,18 @@ function getNotificationStyle(type: string): {
 const Notification = () => {
   const T = useMantineTheme();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { isAdmin } = useAuth();
+
+  // Derive user view from pathname (same logic as Nav.tsx)
+  const isUserView = [
+    AppRoutes.Dashboard,
+    AppRoutes.FAQs,
+    AppRoutes.NotificationsCenter,
+  ].includes(pathname as any);
+
+  // When admin is in user view, fetch practice-audience notifications
+  const asPractice = isAdmin && isUserView;
 
   // fetch notifications (same hook used in NotificationsList)
   const {
@@ -108,6 +119,7 @@ const Notification = () => {
     readStatus: null,
     limit: 10,
     offset: 0,
+    asPractice,
   });
 
   // modal / open flow hook
@@ -319,7 +331,7 @@ const Notification = () => {
               size="sm"
               fullWidth
               onClick={() => {
-                if (isAdmin) {
+                if (isAdmin && !isUserView) {
                   navigate(`${AppRoutes.Admin}/${AppRoutes.Notifications}`);
                 } else {
                   navigate(AppRoutes.NotificationsCenter);

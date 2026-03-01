@@ -14,7 +14,7 @@ export type AdminAssetsPayload = {
 
 export type RequestAssetsInput = {
 	selectionId: string;
-	creativeUrls: CreativeItem[]; // up to 4
+	creativeUrls: CreativeItem[];
 	note?: string | null;
 	recipientIds?: string[] | null; // optional explicit recipients
 };
@@ -64,6 +64,7 @@ export type UseNotificationsArgs = {
 	readStatus?: "read" | "unread" | null;
 	limit?: number;
 	offset?: number;
+	asPractice?: boolean;
 };
 
 export type SubmitAssetsArgs = {

@@ -56,8 +56,8 @@ const Nav = () => {
 	//Components
 	const AdminNavigate = () => (
 		<Button
-			color="violet"
-			variant="light"
+			variant="gradient"
+			gradient={{ from: "violet", to: "indigo", deg: 135 }}
 			size="xs"
 			fw={700}
 			leftSection={<IconUserShield size={14} stroke={3} />}
@@ -69,7 +69,7 @@ const Nav = () => {
 				}
 			}}
 		>
-			{isUserView ? "Admin" : "User"} View
+			{isUserView ? "Go To Admin View" : "Go To User View"}
 		</Button>
 	);
 

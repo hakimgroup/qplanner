@@ -93,6 +93,7 @@ async function fetchNotifications({
   startDate = null,
   endDate = null,
   readStatus = null,
+  asPractice = false,
 }: UseNotificationsArgs = {}): Promise<NotificationRow[]> {
   const { data, error } = await supabase.rpc(RPCFunctions.ListNotifications, {
     p_type: type,
@@ -103,6 +104,7 @@ async function fetchNotifications({
     p_start_date: toYMD(startDate), // 'YYYY-MM-DD' or null
     p_end_date: toYMD(endDate), // 'YYYY-MM-DD' or null
     p_read_status: readStatus, // 'read' | 'unread' | null
+    p_as_practice: asPractice, // admin sees practice notifications in user view
   });
 
   if (error) throw error;
@@ -119,6 +121,7 @@ export function useNotifications(args: UseNotificationsArgs = {}) {
     startDate = null,
     endDate = null,
     readStatus = null,
+    asPractice = false,
   } = args;
 
   return useQuery({
@@ -133,6 +136,7 @@ export function useNotifications(args: UseNotificationsArgs = {}) {
         startDate: toYMD(startDate),
         endDate: toYMD(endDate),
         readStatus,
+        asPractice,
       },
     ],
     queryFn: () =>
@@ -145,6 +149,7 @@ export function useNotifications(args: UseNotificationsArgs = {}) {
         startDate,
         endDate,
         readStatus,
+        asPractice,
       }),
   });
 }

@@ -1,7 +1,15 @@
 // components/notifications/NotificationsList.tsx
 import { useState, useMemo } from "react";
 import { useNotifications } from "@/hooks/notification.hooks";
-import { Stack, Text, Center, Box, Group, LoadingOverlay } from "@mantine/core";
+import {
+  Stack,
+  Text,
+  Center,
+  Box,
+  Group,
+  LoadingOverlay,
+  Pagination,
+} from "@mantine/core";
 
 import NotificationCard from "./NotificationCard";
 import { useNotificationOpen } from "./useNotificationOpen.hook";
@@ -9,8 +17,14 @@ import NotificationsFilters, {
   NotificationFilterValues,
 } from "./NotificationsFilters";
 import EmptyState from "@/components/emptyState/EmptyState";
+import { useAuth } from "@/shared/AuthProvider";
+
+const PAGE_SIZE = 25;
 
 export default function NotificationsList() {
+  const { isAdmin } = useAuth();
+  const [page, setPage] = useState(1);
+
   // 1) local filters from UI
   const [filters, setFilters] = useState<NotificationFilterValues>({
     practice: "all",
@@ -21,6 +35,12 @@ export default function NotificationsList() {
     endDate: null,
   });
 
+  // Reset to page 1 when filters change
+  const handleFilterChange = (newFilters: NotificationFilterValues) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
+
   // Map UI -> server params
   const practiceId =
     !filters.practice || filters.practice === "all" ? null : filters.practice;
@@ -28,11 +48,8 @@ export default function NotificationsList() {
   const notifType =
     !filters.type || filters.type === "all" ? null : filters.type;
 
-  // campaign filter is re-used as category for RPC:
-  // guided -> 'Campaign'; bespoke -> null (no category filter)
   const category = filters.campaign !== "all" ? filters.campaign : null;
 
-  // read status for server ('read' | 'unread' | null)
   const readStatus =
     filters.status === "read"
       ? "read"
@@ -40,20 +57,20 @@ export default function NotificationsList() {
       ? "unread"
       : null;
 
-  // dates to server (as Date | null; your hook will cast to YYYY-MM-DD)
   const startDate = filters.startDate;
   const endDate = filters.endDate;
 
-  // 2) server call
+  // 2) server call with pagination
   const { data, isLoading, isError } = useNotifications({
     practiceId,
     type: notifType,
-    category, // NEW
-    startDate, // NEW
-    endDate, // NEW
-    readStatus, // NEW (replaces onlyUnread)
-    limit: 50,
-    offset: 0,
+    category,
+    startDate,
+    endDate,
+    readStatus,
+    limit: PAGE_SIZE + 1, // fetch one extra to know if there's a next page
+    offset: (page - 1) * PAGE_SIZE,
+    asPractice: isAdmin,
   });
 
   const {
@@ -63,11 +80,11 @@ export default function NotificationsList() {
     isOpening,
   } = useNotificationOpen();
 
-  // no more client-side date/status filtering; keep only defensive checks if you want
-  const list = useMemo(() => data ?? [], [data]);
-
-  const total = data?.length ?? 0;
-  const shown = list.length;
+  const hasMore = (data?.length ?? 0) > PAGE_SIZE;
+  const list = useMemo(
+    () => (data ?? []).slice(0, PAGE_SIZE),
+    [data]
+  );
 
   if (isError) {
     return (
@@ -82,7 +99,7 @@ export default function NotificationsList() {
   if ((!list || list.length === 0) && !isLoading) {
     return (
       <Stack gap="sm">
-        <NotificationsFilters onChange={setFilters} />
+        <NotificationsFilters onChange={handleFilterChange} />
         <EmptyState title="No notifications" message="You're all caught up." />
       </Stack>
     );
@@ -90,7 +107,7 @@ export default function NotificationsList() {
 
   return (
     <Stack gap="sm">
-      <NotificationsFilters onChange={setFilters} />
+      <NotificationsFilters onChange={handleFilterChange} />
 
       <Stack pos="relative">
         <LoadingOverlay
@@ -103,7 +120,7 @@ export default function NotificationsList() {
 
         <Group align="center" justify="space-between">
           <Text size="sm" c="blue.3">
-            {shown} of {total} notifications
+            Page {page} — {list.length} notification{list.length !== 1 ? "s" : ""}
           </Text>
           <Text size="sm" fw={700}>
             Newest first
@@ -122,6 +139,18 @@ export default function NotificationsList() {
             </Box>
           );
         })}
+
+        {(page > 1 || hasMore) && (
+          <Group justify="center" mt="md">
+            <Pagination
+              total={hasMore ? page + 1 : page}
+              value={page}
+              onChange={setPage}
+              size="sm"
+              radius="md"
+            />
+          </Group>
+        )}
       </Stack>
 
       <NotificationModalRenderer />

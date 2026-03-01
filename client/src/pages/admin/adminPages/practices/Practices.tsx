@@ -18,6 +18,7 @@ import { supabase } from "@/api/supabase";
 import { DatabaseTables } from "@/shared/shared.models";
 import PracticesTable from "./PracticesTable";
 import PracticesCsvUploader from "./PracticesCsvUploader";
+import AddPracticeModal from "./AddPracticeModal";
 
 const Practices = () => {
 	const T = useMantineTheme().colors;
@@ -238,6 +239,7 @@ const Practices = () => {
 								Export CSV
 							</Button>
 							<PracticesCsvUploader />
+							<AddPracticeModal />
 						</Group>
 					</Group>
 					<PracticesTable

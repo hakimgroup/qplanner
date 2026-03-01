@@ -49,8 +49,8 @@ BEGIN
     RAISE EXCEPTION 'Selection not found';
   END IF;
 
-  -- 4. Verify user has access to this practice
-  IF NOT EXISTS (
+  -- 4. Verify user has access to this practice (admins can act on behalf of any practice)
+  IF NOT public.is_admin() AND NOT EXISTS (
     SELECT 1 FROM practice_members pm
     WHERE pm.practice_id = v_selection.practice_id
       AND pm.user_id = v_user_id
