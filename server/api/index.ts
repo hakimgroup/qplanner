@@ -1200,7 +1200,7 @@ app.post("/send-actor-email", async (req: Request, res: Response) => {
 			.insert({
 				type: notificationType,
 				practice_id: practiceId,
-				selection_id: selectionId || null,
+				selection_id: type === "deleted" ? null : (selectionId || null),
 				actor_user_id: userId,
 				audience: "practice",
 				title: notificationTitle,
@@ -1239,8 +1239,91 @@ app.post("/send-actor-email", async (req: Request, res: Response) => {
 			}
 		}
 
+		// 7. For deletions, also notify admins (practice admins + super admins)
+		let adminNotificationId: string | null = null;
+		if (type === "deleted" && notification) {
+			try {
+				// Get actor name for the admin notification message
+				const { data: actorUser } = await supabase
+					.from("allowed_users")
+					.select("first_name, last_name")
+					.eq("id", userId)
+					.single();
+
+				const actorName = actorUser
+					? `${actorUser.first_name || ""} ${actorUser.last_name || ""}`.trim() || "A practice member"
+					: "A practice member";
+
+				const { data: adminNotif, error: adminNotifError } = await supabase
+					.from("notifications")
+					.insert({
+						type: notificationType, // "campaignDeleted"
+						practice_id: practiceId,
+						selection_id: null, // selection is already deleted
+						actor_user_id: userId,
+						audience: "admins",
+						title: `${practice.name} removed a campaign`,
+						message: `${actorName} removed "${campaignName || "a campaign"}" from ${practice.name}'s plan.`,
+						payload: {
+							name: campaignName || "Campaign",
+							category: campaignCategory || "Campaign",
+							from_date: fromDate,
+							to_date: toDate,
+							is_bespoke: isBespoke || false,
+							actor_action: notificationType,
+							actor_name: actorName,
+							practice_name: practice.name,
+						},
+					})
+					.select("id")
+					.single();
+
+				if (adminNotifError) {
+					console.error("[Admin Delete Notification] Failed to create:", adminNotifError.message);
+				} else if (adminNotif) {
+					adminNotificationId = adminNotif.id;
+
+					// Get practice admins + all super admins (deduplicated)
+					const { data: practiceAdmins } = await supabase
+						.from("practice_members")
+						.select("user_id")
+						.eq("practice_id", practiceId)
+						.eq("role", "admin");
+
+					const { data: superAdmins } = await supabase
+						.from("allowed_users")
+						.select("id")
+						.eq("role", "super_admin");
+
+					const adminUserIds = new Set<string>();
+					(practiceAdmins || []).forEach((pa: any) => pa.user_id && adminUserIds.add(pa.user_id));
+					(superAdmins || []).forEach((sa: any) => sa.id && adminUserIds.add(sa.id));
+
+					if (adminUserIds.size > 0) {
+						const targets = Array.from(adminUserIds).map((uid) => ({
+							notification_id: adminNotif.id,
+							user_id: uid,
+							practice_id: practiceId,
+						}));
+
+						const { error: targetsError } = await supabase
+							.from("notification_targets")
+							.insert(targets);
+
+						if (targetsError) {
+							console.error("[Admin Delete Notification] Failed to create targets:", targetsError.message);
+						} else {
+							console.log(`[Admin Delete Notification] Created notification ${adminNotif.id} for ${adminUserIds.size} admins`);
+						}
+					}
+				}
+			} catch (adminErr: any) {
+				console.error("[Admin Delete Notification] Error:", adminErr.message);
+			}
+		}
+
 		console.log(`[Actor Email] Sent ${emailType} to ${recipientEmail}`);
-		return res.status(200).json({ sent: 1, emailType, recipient: recipientEmail, notificationId: notification?.id });
+		return res.status(200).json({ sent: 1, emailType, recipient: recipientEmail, notificationId: notification?.id, adminNotificationId });
 	} catch (error: any) {
 		console.error("[Actor Email] Unexpected error:", error);
 		return res.status(500).json({ error: error.message });

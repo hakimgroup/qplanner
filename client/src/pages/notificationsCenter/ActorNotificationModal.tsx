@@ -31,7 +31,10 @@ type ActorNotificationModalProps = {
 	notification: NotificationRow;
 };
 
-function getActionDetails(type: string) {
+function getActionDetails(type: string, payload?: any) {
+	// For admin-audience deletion notifications, show who removed the campaign
+	const isAdminDeleteView = type === ActorNotificationType.CampaignDeleted && payload?.actor_name;
+
 	switch (type) {
 		case ActorNotificationType.CampaignAdded:
 			return {
@@ -52,7 +55,9 @@ function getActionDetails(type: string) {
 				icon: IconTrash,
 				color: "red",
 				label: "Campaign Removed",
-				description: "You removed this campaign from your plan.",
+				description: isAdminDeleteView
+					? `${payload.actor_name} removed this campaign from ${payload.practice_name || "the practice"}'s plan.`
+					: "You removed this campaign from your plan.",
 			};
 		case ActorNotificationType.BespokeAdded:
 			return {
@@ -105,7 +110,7 @@ export default function ActorNotificationModal({
 	const toDate = p?.to_date ?? null;
 	const isBespoke = p?.is_bespoke ?? false;
 
-	const actionDetails = getActionDetails(notification.type);
+	const actionDetails = getActionDetails(notification.type, p);
 	const ActionIcon = actionDetails.icon;
 
 	return (
@@ -163,7 +168,9 @@ export default function ActorNotificationModal({
 								{actionDetails.description}
 							</Text>
 							<Text size="xs" c="gray.6">
-								This is a confirmation of your action.
+								{p?.actor_name
+									? "This action was performed by a practice member."
+									: "This is a confirmation of your action."}
 							</Text>
 						</Stack>
 					</Group>

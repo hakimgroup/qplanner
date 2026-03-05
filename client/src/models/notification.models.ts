@@ -39,6 +39,8 @@ export interface NotificationPayload {
 	chosen_creative?: string;
 	markup_link?: string;
 	assets_link?: string;
+	actor_name?: string;
+	practice_name?: string;
 }
 
 export type NotificationRow = {
