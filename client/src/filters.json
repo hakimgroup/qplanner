@@ -72,6 +72,10 @@
     {
       "label": "Completed",
       "value": "completed"
+    },
+    {
+      "label": "Deleted",
+      "value": "deleted"
     }
   ],
   "sources": [
