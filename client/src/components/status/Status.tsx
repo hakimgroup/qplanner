@@ -28,6 +28,7 @@ const toStatusValue = (raw?: string | null): StatusValue | undefined => {
     onplan: "onPlan",
     inprogress: "inProgress",
     requested: "requested",
+    awaitingapproval: "awaitingApproval",
     confirmed: "confirmed",
     live: "live",
   };

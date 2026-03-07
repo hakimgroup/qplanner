@@ -12,6 +12,7 @@ import {
 	Button,
 	useMantineTheme,
 	ThemeIcon,
+	Textarea,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconArrowsDiagonal, IconPhoto } from "@tabler/icons-react";
@@ -20,6 +21,7 @@ import { useMemo, useState } from "react";
 export type CreativeItem = {
 	url?: string;
 	label?: string; // e.g. "Modern Professional"
+	question?: string | null;
 };
 
 type Props = {
@@ -27,6 +29,8 @@ type Props = {
 	creatives: CreativeItem[]; // list of images
 	value: string | null; // currently selected url
 	onChange: (url: string) => void; // fire when a creative is chosen
+	creativeAnswer?: string;
+	onAnswerChange?: (answer: string) => void;
 };
 
 export default function CreativePicker({
@@ -34,6 +38,8 @@ export default function CreativePicker({
 	creatives,
 	value,
 	onChange,
+	creativeAnswer,
+	onAnswerChange,
 }: Props) {
 	const T = useMantineTheme();
 	const [opened, { open, close }] = useDisclosure(false);
@@ -129,6 +135,30 @@ export default function CreativePicker({
 					))}
 				</SimpleGrid>
 			</Radio.Group>
+
+			{/* Custom question for the selected creative */}
+			{selected?.question && onAnswerChange && (
+				<Textarea
+					label={
+						<Text size="sm" fw={600} c="orange.9">
+							{selected.question}
+						</Text>
+					}
+					placeholder="Please provide your answer..."
+					value={creativeAnswer ?? ""}
+					onChange={(e) => onAnswerChange(e.currentTarget.value)}
+					minRows={2}
+					autosize
+					radius="md"
+					required
+					styles={{
+						input: {
+							backgroundColor: T.colors.orange[0],
+							borderColor: T.colors.orange[2],
+						},
+					}}
+				/>
+			)}
 
 			{/* Preview modal */}
 			<Modal

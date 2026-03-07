@@ -43,6 +43,7 @@ export interface Creatives {
   url?: string;
   label?: string;
   assets_link?: string | null;
+  question?: string | null;
 }
 
 export interface Campaign {
@@ -71,6 +72,9 @@ export interface Campaign {
   is_event?: boolean;
   event_type?: string;
   requirements?: string;
+  markup_link?: string | null;
+  assets_link?: string | null;
+  self_print?: boolean;
   focus?: string;
   duration?: string;
   bespoke_campaign_id?: string;

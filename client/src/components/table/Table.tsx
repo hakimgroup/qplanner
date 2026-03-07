@@ -1,7 +1,7 @@
-import { useMantineTheme, rgba, Box, Loader } from "@mantine/core";
-import { useMemo, useRef, forwardRef, useImperativeHandle } from "react";
+import { useMantineTheme, rgba, Box } from "@mantine/core";
+import { useMemo, useRef, forwardRef, useImperativeHandle, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ColDef, CsvExportParams, themeQuartz } from "ag-grid-community";
+import { ColDef, CsvExportParams, GetRowIdParams, themeQuartz } from "ag-grid-community";
 
 interface Props {
   cols: ColDef[];
@@ -17,6 +17,7 @@ interface Props {
   pagination?: boolean;
   csvDefaults?: Partial<CsvExportParams>;
   onSelect?: (row: any[]) => void;
+  rowIdField?: string;
 }
 
 export type TableHandle = {
@@ -40,6 +41,7 @@ const Table = forwardRef<TableHandle, Props>(function Table(
     onSelect,
     loading,
     csvDefaults,
+    rowIdField = "id",
   },
   ref
 ) {
@@ -47,10 +49,13 @@ const Table = forwardRef<TableHandle, Props>(function Table(
   const C = useMantineTheme().colors;
   const rowBuffer = 0;
 
-  const rowSelection = {
-    mode: "multiRow",
-    headerCheckbox: true,
-  };
+  const rowSelection = useMemo(
+    () =>
+      enableSelection
+        ? { mode: "multiRow" as const, headerCheckbox: true }
+        : undefined,
+    [enableSelection]
+  );
 
   const myTheme = themeQuartz.withParams({
     backgroundColor: "#fdfdfd",
@@ -77,6 +82,11 @@ const Table = forwardRef<TableHandle, Props>(function Table(
   });
 
   const theme = useMemo(() => myTheme, []); // themeQuartz.withParams returns stable config
+
+  const getRowId = useCallback(
+    (params: GetRowIdParams) => params.data?.[rowIdField] ?? params.data?.id,
+    [rowIdField]
+  );
 
   const defaultColDef = useMemo(() => {
     return {
@@ -127,35 +137,36 @@ const Table = forwardRef<TableHandle, Props>(function Table(
     },
   }));
 
+  const columnTypes = useMemo(
+    () => ({ text: { filter: "agTextColumnFilter" } }),
+    []
+  );
+
+  const onSelectionChanged = useCallback(
+    (event: any) => {
+      onSelect?.(event.selectedNodes.map((d: any) => d.data));
+    },
+    [onSelect]
+  );
+
   return (
     <Box h={height} w={"100%"}>
       <AgGridReact
         ref={gridRef}
         domLayout={autoHeight ? "autoHeight" : "normal"}
         animateRows={false}
-        loading={loading}
         theme={theme}
         defaultColDef={defaultColDef as any}
         rowData={rows}
         rowBuffer={rowBuffer}
         rowModelType="clientSide"
+        getRowId={getRowId}
         headerHeight={headerHeight}
-        // rowHeight can be provided if you want fixed height; autoHeight is already on.
-        // rowHeight={rowHeight}
-        columnTypes={{
-          text: { filter: "agTextColumnFilter" },
-        }}
-        // rowSelection={rowSelection as any}
-        {...((enableSelection ? { rowSelection } : {}) as any)}
+        columnTypes={columnTypes}
+        rowSelection={rowSelection as any}
         columnDefs={cols}
-        onSelectionChanged={(event) => {
-          onSelect?.(event.selectedNodes.map((d) => d.data));
-        }}
-        onCellValueChanged={(event) =>
-          console.log(`New Cell Value: ${event.value}`)
-        }
+        onSelectionChanged={onSelectionChanged}
         pagination={pagination}
-        // loadingOverlayComponent={<Loader color="blue.3" />}
       />
     </Box>
   );

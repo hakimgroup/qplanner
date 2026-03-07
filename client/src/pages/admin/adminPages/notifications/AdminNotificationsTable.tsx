@@ -1,9 +1,10 @@
 import {
   forwardRef,
+  useCallback,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
-  useMemo,
 } from "react";
 import { ColDef } from "ag-grid-community";
 import Table, { TableHandle } from "@/components/table/Table";
@@ -76,7 +77,7 @@ const AdminNotificationsTable = forwardRef<
     getSelectedIds: () => selectedIdsRef.current,
   }));
 
-  const openRecipientsModal = (row: NotificationRow) => {
+  const openRecipientsModal = useCallback((row: NotificationRow) => {
     const list = Array.isArray(row.recipients) ? row.recipients : [];
     setRecipientsModalData({
       title: row.practice_name
@@ -85,7 +86,7 @@ const AdminNotificationsTable = forwardRef<
       recipients: list,
     });
     setRecipientsModalOpen(true);
-  };
+  }, []);
 
   const getInitials = (name?: string | null, email?: string | null) => {
     const source = (name ?? email ?? "").trim();
@@ -95,7 +96,7 @@ const AdminNotificationsTable = forwardRef<
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
-  const cols: ColDef[] = [
+  const cols: ColDef[] = useMemo(() => [
     // When
     {
       field: "created_at",
@@ -261,7 +262,7 @@ const AdminNotificationsTable = forwardRef<
         </Group>
       ),
     },
-  ];
+  ], [T.blue, onOpen, openRecipientsModal]);
 
   const modalContent = useMemo(() => {
     const list = recipientsModalData.recipients ?? [];

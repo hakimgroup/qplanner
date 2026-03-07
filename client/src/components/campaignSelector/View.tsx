@@ -14,6 +14,9 @@ import {
 	SimpleGrid,
 	useMantineTheme,
 	Collapse,
+	ThemeIcon,
+	Anchor,
+	Paper,
 } from "@mantine/core";
 import {
 	IconShare3,
@@ -26,8 +29,15 @@ import {
 	IconCalendarCheck,
 	IconPhoto,
 	IconArrowsMaximize,
+	IconBrush,
+	IconPackage,
+	IconNote,
+	IconExternalLink,
+	IconPrinter,
+	IconCheck,
+	IconLink,
 } from "@tabler/icons-react";
-import { useContext, useRef, useState } from "react";
+import { useContext, useMemo, useRef, useState } from "react";
 import CampaignDates from "../campaignDates/CampaignDates";
 import StyledButton from "../styledButton/StyledButton";
 import { Campaign } from "@/models/campaign.models";
@@ -49,6 +59,7 @@ import {
 	isBefore,
 } from "date-fns";
 import { useAddSelection, useDeleteSelection } from "@/hooks/selection.hooks";
+import { useSelectionNotifications } from "@/hooks/notification.hooks";
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
 import Status from "../status/Status";
 import Edit from "./Edit";
@@ -66,6 +77,415 @@ interface Props {
 }
 
 type DateRange = { from: Date | null; to: Date | null };
+
+/** Standout section showing all details added during the selection lifecycle,
+ *  sourced from notification payloads (the richest data source). */
+function LifecycleDetails({ campaign: c }: { campaign: Campaign }) {
+	const T = useMantineTheme();
+	const { data: notifications = [] } = useSelectionNotifications(c.selection_id);
+
+	// Merge all payloads — later notifications override earlier ones for shared keys
+	const merged = useMemo(() => {
+		const m: Record<string, any> = {};
+		for (const n of notifications) {
+			if (!n.payload) continue;
+			Object.entries(n.payload).forEach(([k, v]) => {
+				if (v !== null && v !== undefined && v !== "") m[k] = v;
+			});
+		}
+		return m;
+	}, [notifications]);
+
+	// Get specific notification types for stage-specific data
+	const feedbackNtfs = useMemo(
+		() => notifications.filter((n) => n.type === "feedbackRequested"),
+		[notifications],
+	);
+	const submissionNtf = useMemo(
+		() => notifications.find((n) => n.type === "inProgress"),
+		[notifications],
+	);
+
+	// === Data from notification payloads ===
+	const chosenCreativeUrl =
+		(submissionNtf?.payload?.chosen_creative as string) ||
+		(merged.chosen_creative as string) ||
+		undefined;
+	const creativeAnswer = (c.assets as any)?.creative_answer as string | undefined;
+	const allCreatives = (merged.creatives ?? []) as { url?: string; label?: string }[];
+	const tier = merged.tier as string | undefined;
+	const eventType = merged.event_type as string | undefined;
+
+	// Submission note (from inProgress — what the practice wrote when submitting)
+	const submissionNote = submissionNtf?.payload?.note as string | undefined;
+	// Original notes (from when campaign was added to plan)
+	const originalNotes = merged.original_notes as string | undefined;
+	// Requirements (bespoke only)
+	const requirements = merged.requirements as string | undefined;
+	// Reference links from payloads
+	const referenceLinks = (merged.reference_links ?? []) as string[];
+	// Links
+	const markupLink = merged.markup_link as string | undefined;
+	const assetsLink = merged.assets_link as string | undefined;
+
+	// Find label for the chosen creative from the creatives array
+	const chosenCreativeLabel = useMemo(() => {
+		if (!chosenCreativeUrl) return null;
+		const match = allCreatives.find((cr) => cr.url === chosenCreativeUrl);
+		return match?.label ?? null;
+	}, [chosenCreativeUrl, allCreatives]);
+
+	// Non-chosen creatives (the other options that were offered)
+	const otherCreatives = useMemo(() => {
+		if (!chosenCreativeUrl || allCreatives.length <= 1) return [];
+		return allCreatives.filter((cr) => cr.url !== chosenCreativeUrl);
+	}, [chosenCreativeUrl, allCreatives]);
+
+	// Assets: use the inProgress payload (practice's actual choices with quantities)
+	const submittedAssets = submissionNtf?.payload?.assets ?? merged.assets;
+	const selectedPrinted = (submittedAssets?.printedAssets ?? []).filter(
+		(a: any) => a.userSelected && (a.quantity > 0 || a.type === "free"),
+	);
+	const selectedDigital = (submittedAssets?.digitalAssets ?? []).filter(
+		(a: any) => a.userSelected && (a.quantity > 0 || a.type === "free"),
+	);
+	const selectedExternal = (submittedAssets?.externalPlacements ?? []).filter(
+		(a: any) => a.userSelected && (a.quantity > 0 || a.type === "free"),
+	);
+	const hasSelectedAssets =
+		selectedPrinted.length > 0 || selectedDigital.length > 0 || selectedExternal.length > 0;
+
+	if (notifications.length === 0) return null;
+
+	const hasAnyContent =
+		chosenCreativeUrl ||
+		creativeAnswer ||
+		hasSelectedAssets ||
+		submissionNote ||
+		originalNotes ||
+		requirements ||
+		feedbackNtfs.length > 0 ||
+		markupLink ||
+		assetsLink ||
+		tier ||
+		referenceLinks.length > 0 ||
+		c.self_print;
+
+	if (!hasAnyContent) return null;
+
+	const AssetList = ({ items, label }: { items: any[]; label: string }) => {
+		if (!items.length) return null;
+		return (
+			<Stack gap={4}>
+				<Text size="xs" fw={600} c="gray.6">
+					{label}
+				</Text>
+				{items.map((a: any, i: number) => {
+					const price =
+						a.chosenOptionValue != null
+							? a.chosenOptionValue
+							: a.price != null
+								? a.price
+								: null;
+					return (
+						<Group key={i} gap={6} align="center" wrap="nowrap">
+							<IconCheck size={12} color={T.colors.teal[5]} style={{ flexShrink: 0 }} />
+							<Text size="xs" c="gray.8">
+								{a.name}
+								{a.quantity > 0
+									? ` (x${a.quantity}${a.suffix ? ` ${a.suffix}` : ""})`
+									: ""}
+								{a.chosenOptionLabel ? ` — ${a.chosenOptionLabel}` : ""}
+								{price != null && price > 0 ? ` • £${Number(price).toFixed(2)}` : ""}
+								{a.note ? ` • "${a.note}"` : ""}
+							</Text>
+						</Group>
+					);
+				})}
+			</Stack>
+		);
+	};
+
+	return (
+		<>
+			<Divider size="xs" color="gray.1" />
+			<Paper
+				radius="md"
+				p="md"
+				style={{
+					background: `linear-gradient(135deg, ${T.colors.indigo[0]} 0%, ${T.colors.violet[0]} 100%)`,
+					border: `1px solid ${T.colors.indigo[1]}`,
+				}}
+			>
+				<Stack gap="md">
+					{/* Header */}
+					<Group gap={8} justify="space-between">
+						<Group gap={8}>
+							<ThemeIcon variant="light" color="indigo" radius="xl" size="sm">
+								<IconPackage size={14} />
+							</ThemeIcon>
+							<Text fw={600} size="sm" c="indigo.9">
+								Campaign Progress
+							</Text>
+						</Group>
+						<Group gap={6}>
+							{tier && (
+								<Badge size="xs" variant="light" color="grape">
+									{tier}
+								</Badge>
+							)}
+							{eventType && (
+								<Badge size="xs" variant="light" color="violet">
+									{eventType}
+								</Badge>
+							)}
+						</Group>
+					</Group>
+
+					{/* Chosen Creative — highlighted */}
+					{chosenCreativeUrl && (
+						<Stack gap={6}>
+							<Group gap={6}>
+								<IconBrush size={14} color={T.colors.blue[5]} />
+								<Text size="xs" fw={600} c="gray.7">
+									Chosen Creative
+								</Text>
+							</Group>
+							<Card p={6} radius="sm" withBorder style={{ borderColor: T.colors.blue[2] }}>
+								<Group gap="sm" align="center">
+									<Image
+										src={chosenCreativeUrl}
+										alt={chosenCreativeLabel ?? "Chosen creative"}
+										radius="xs"
+										h={55}
+										w={75}
+										fit="cover"
+									/>
+									<Stack gap={2}>
+										{chosenCreativeLabel && (
+											<Text size="xs" fw={600} c="gray.8">
+												{chosenCreativeLabel}
+											</Text>
+										)}
+										<Badge size="xs" color="blue" variant="light">
+											Selected
+										</Badge>
+									</Stack>
+								</Group>
+							</Card>
+							{/* Other creative options that were available */}
+							{otherCreatives.length > 0 && (
+								<Stack gap={4}>
+									<Text size="10px" fw={500} c="gray.5">
+										Other options offered
+									</Text>
+									<Group gap={6}>
+										{otherCreatives.map((cr, idx) => (
+											<Image
+												key={idx}
+												src={cr.url}
+												alt={cr.label ?? `Option ${idx + 1}`}
+												radius="xs"
+												h={35}
+												w={50}
+												fit="cover"
+												style={{ opacity: 0.5, border: `1px solid ${T.colors.gray[2]}`, borderRadius: 4 }}
+											/>
+										))}
+									</Group>
+								</Stack>
+							)}
+						</Stack>
+					)}
+
+					{/* Creative Answer (response to custom question) */}
+					{creativeAnswer && (
+						<Stack gap={4}>
+							<Group gap={6}>
+								<IconNote size={14} color={T.colors.orange[5]} />
+								<Text size="xs" fw={600} c="gray.7">
+									Creative Response
+								</Text>
+							</Group>
+							<Card p="xs" radius="sm" bg="orange.0" style={{ border: `1px solid ${T.colors.orange[1]}` }}>
+								<Text size="xs" c="orange.9" style={{ whiteSpace: "pre-wrap" }}>
+									{creativeAnswer}
+								</Text>
+							</Card>
+						</Stack>
+					)}
+
+					{/* Selected Assets with quantities and prices */}
+					{hasSelectedAssets && (
+						<Stack gap={6}>
+							<Group gap={6}>
+								<IconPackage size={14} color={T.colors.teal[5]} />
+								<Text size="xs" fw={600} c="gray.7">
+									Selected Assets
+								</Text>
+							</Group>
+							<AssetList items={selectedPrinted} label="Printed" />
+							<AssetList items={selectedDigital} label="Digital" />
+							<AssetList items={selectedExternal} label="External Placements" />
+						</Stack>
+					)}
+
+					{/* Submission Note (from when practice submitted their choices) */}
+					{submissionNote && (
+						<Stack gap={4}>
+							<Group gap={6}>
+								<IconNote size={14} color={T.colors.blue[5]} />
+								<Text size="xs" fw={600} c="gray.7">
+									Submission Note
+								</Text>
+							</Group>
+							<Text size="xs" c="gray.8" style={{ whiteSpace: "pre-wrap" }}>
+								{submissionNote}
+							</Text>
+						</Stack>
+					)}
+
+					{/* Original Notes (from when campaign was first added to plan) */}
+					{originalNotes && originalNotes !== submissionNote && (
+						<Stack gap={4}>
+							<Group gap={6}>
+								<IconNote size={14} color={T.colors.gray[5]} />
+								<Text size="xs" fw={600} c="gray.7">
+									Original Notes
+								</Text>
+							</Group>
+							<Text size="xs" c="gray.8" style={{ whiteSpace: "pre-wrap" }}>
+								{originalNotes}
+							</Text>
+						</Stack>
+					)}
+
+					{/* All Revision Feedback entries */}
+					{feedbackNtfs.length > 0 && (
+						<Stack gap={6}>
+							<Group gap={6}>
+								<IconNote size={14} color={T.colors.red[5]} />
+								<Text size="xs" fw={600} c="red.7">
+									Revision Feedback
+								</Text>
+							</Group>
+							{feedbackNtfs.map((fn, idx) => {
+								const fb = fn.payload?.feedback as string | undefined;
+								if (!fb) return null;
+								return (
+									<Card
+										key={idx}
+										p="xs"
+										radius="sm"
+										bg="red.0"
+										style={{ border: `1px solid ${T.colors.red[1]}` }}
+									>
+										<Text size="xs" c="red.9" style={{ whiteSpace: "pre-wrap" }}>
+											{fb}
+										</Text>
+									</Card>
+								);
+							})}
+						</Stack>
+					)}
+
+					{/* Requirements (bespoke campaigns/events) */}
+					{requirements && (
+						<Stack gap={4}>
+							<Group gap={6}>
+								<IconNote size={14} color={T.colors.violet[5]} />
+								<Text size="xs" fw={600} c="gray.7">
+									Requirements
+								</Text>
+							</Group>
+							<Text size="xs" c="gray.8" style={{ whiteSpace: "pre-wrap" }}>
+								{requirements}
+							</Text>
+						</Stack>
+					)}
+
+					{/* Reference Links from payloads */}
+					{referenceLinks.length > 0 && (
+						<Stack gap={6}>
+							<Group gap={6}>
+								<IconShare3 size={14} color={T.colors.violet[5]} />
+								<Text size="xs" fw={600} c="gray.7">
+									Reference Links
+								</Text>
+							</Group>
+							{referenceLinks.map((rl, i) => (
+								<Anchor key={i} href={rl} target="_blank" underline="never">
+									<Button
+										variant="light"
+										color="grape"
+										size="xs"
+										radius="md"
+										fullWidth
+										leftSection={<IconExternalLink size={14} />}
+									>
+										{getReferenceLinkLabel(rl, i)}
+									</Button>
+								</Anchor>
+							))}
+						</Stack>
+					)}
+
+					{/* Markup & Assets Links */}
+					{(markupLink || assetsLink) && (
+						<Stack gap={6}>
+							<Group gap={6}>
+								<IconLink size={14} color={T.colors.violet[5]} />
+								<Text size="xs" fw={600} c="gray.7">
+									Artwork & Files
+								</Text>
+							</Group>
+							{markupLink && (
+								<Anchor href={markupLink} target="_blank" underline="never">
+									<Button
+										variant="light"
+										color="violet"
+										size="xs"
+										radius="md"
+										fullWidth
+										leftSection={<IconExternalLink size={14} />}
+									>
+										View Markup
+									</Button>
+								</Anchor>
+							)}
+							{assetsLink && (
+								<Anchor href={assetsLink} target="_blank" underline="never">
+									<Button
+										variant="light"
+										color="teal"
+										size="xs"
+										radius="md"
+										fullWidth
+										leftSection={<IconExternalLink size={14} />}
+									>
+										View Assets
+									</Button>
+								</Anchor>
+							)}
+						</Stack>
+					)}
+
+					{/* Self Print */}
+					{c.self_print && (
+						<Group gap={6}>
+							<ThemeIcon variant="light" color="violet" radius="xl" size="xs">
+								<IconPrinter size={12} />
+							</ThemeIcon>
+							<Text size="xs" fw={500} c="violet.8">
+								Practice will print their own assets
+							</Text>
+						</Group>
+					)}
+				</Stack>
+			</Paper>
+		</>
+	);
+}
 
 const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 	const navigate = useNavigate();
@@ -456,6 +876,11 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 					<Text c="gray.7" size="sm">
 						{c.description}
 					</Text>
+
+					{/* Lifecycle Details — only for selected campaigns beyond onPlan */}
+					{c.selected && c.status && c.status !== SelectionStatus.OnPlan && (
+						<LifecycleDetails campaign={c} />
+					)}
 
 					{validCreatives.length === 0 && (
 						<>

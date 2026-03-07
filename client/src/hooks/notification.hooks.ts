@@ -207,16 +207,18 @@ export function useMarkNotificationRead() {
 export type ConfirmAssetsArgs = {
   selectionId: string;
   note?: string | null;
+  selfPrint?: boolean;
 };
 
 export function useConfirmAssets() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ selectionId, note }: ConfirmAssetsArgs) => {
+    mutationFn: async ({ selectionId, note, selfPrint }: ConfirmAssetsArgs) => {
       const { data, error } = await supabase.rpc(RPCFunctions.ConfirmAssets, {
         p_selection_id: selectionId,
         p_note: note ?? null,
+        p_self_print: selfPrint ?? false,
       });
       if (error) throw error;
       // RPC returns {success, error, id, ...} - check success flag
@@ -308,5 +310,29 @@ export function useRequestAssetsBulk() {
     onError: (e: any) => {
       toast.error(e?.message ?? "Failed to request assets in bulk");
     },
+  });
+}
+
+/** Fetch all notification payloads for a selection, ordered by lifecycle stage */
+export type SelectionNotification = {
+  type: string;
+  payload: any;
+  created_at: string;
+};
+
+export function useSelectionNotifications(selectionId?: string | null) {
+  return useQuery<SelectionNotification[]>({
+    queryKey: ["selection_notifications", selectionId],
+    queryFn: async () => {
+      if (!selectionId) return [];
+      const { data, error } = await supabase
+        .from(DatabaseTables.Notifications)
+        .select("type, payload, created_at")
+        .eq("selection_id", selectionId)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as SelectionNotification[];
+    },
+    enabled: !!selectionId,
   });
 }

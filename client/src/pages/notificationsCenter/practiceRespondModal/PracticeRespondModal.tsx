@@ -109,6 +109,7 @@ export default function PracticeRespondModal({
 	const [selectedCreative, setSelectedCreative] = useState<string | null>(
 		null
 	);
+	const [creativeAnswer, setCreativeAnswer] = useState<string>("");
 	const [practiceNote, setPracticeNote] = useState<string>("");
 
 	useEffect(() => {
@@ -147,6 +148,7 @@ export default function PracticeRespondModal({
 		});
 
 		setSelectedCreative(null);
+		setCreativeAnswer("");
 		setPracticeNote("");
 	}, [opened, notification, baseAssets]);
 
@@ -410,8 +412,13 @@ export default function PracticeRespondModal({
 	const creativeRequired = creatives.length > 0;
 	const creativeIsChosen = !creativeRequired || !!selectedCreative;
 
+	// Check if the selected creative has a custom question that requires an answer
+	const selectedCreativeObj = creatives.find((c) => c.url === selectedCreative);
+	const questionAnswered = !selectedCreativeObj?.question || !!creativeAnswer.trim();
+
 	const canSubmit =
 		creativeIsChosen &&
+		questionAnswered &&
 		hasAnySelectedAsset &&
 		!!selectionId &&
 		!submitting &&
@@ -456,6 +463,7 @@ export default function PracticeRespondModal({
 			printedAssets: mapBucket(assetsState.printedAssets),
 			digitalAssets: mapBucket(assetsState.digitalAssets),
 			externalPlacements: mapBucket(assetsState.externalPlacements),
+			creative_answer: creativeAnswer.trim() || null,
 		};
 	}
 
@@ -805,7 +813,12 @@ export default function PracticeRespondModal({
 				<CreativePicker
 					creatives={creatives}
 					value={selectedCreative}
-					onChange={(url) => setSelectedCreative(url)}
+					onChange={(url) => {
+						setSelectedCreative(url);
+						setCreativeAnswer(""); // reset answer when switching creative
+					}}
+					creativeAnswer={creativeAnswer}
+					onAnswerChange={setCreativeAnswer}
 				/>
 
 				{/* Assets */}

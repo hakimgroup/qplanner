@@ -20,6 +20,7 @@ import {
 	Divider,
 	ThemeIcon,
 	Textarea,
+	Checkbox,
 } from "@mantine/core";
 import {
 	IconExternalLink,
@@ -50,6 +51,7 @@ export default function PracticeApprovalModal({
 	// State for feedback view
 	const [showFeedbackForm, setShowFeedbackForm] = useState(false);
 	const [feedback, setFeedback] = useState("");
+	const [selfPrint, setSelfPrint] = useState(false);
 
 	const { mutate: confirmAssets, isPending: isConfirming } =
 		useConfirmAssets();
@@ -59,7 +61,7 @@ export default function PracticeApprovalModal({
 	const handleConfirmAssets = () => {
 		if (!ntf?.selection_id) return;
 		confirmAssets(
-			{ selectionId: ntf.selection_id },
+			{ selectionId: ntf.selection_id, selfPrint },
 			{
 				onSuccess: () => {
 					onClose();
@@ -85,6 +87,7 @@ export default function PracticeApprovalModal({
 	const handleClose = () => {
 		setFeedback("");
 		setShowFeedbackForm(false);
+		setSelfPrint(false);
 		onClose();
 	};
 
@@ -386,7 +389,8 @@ export default function PracticeApprovalModal({
 									final approval.
 								</Text>
 
-								{/* Artwork Preview */}
+								{/* Artwork Preview — hidden for now */}
+								{false && (
 								<Stack gap={6}>
 									<Text fw={700} size="sm" c="blue.3">
 										Artwork Preview
@@ -426,6 +430,7 @@ export default function PracticeApprovalModal({
 										)}
 									</Paper>
 								</Stack>
+								)}
 
 								{/* Instruction text */}
 								<Text size="sm" c="gray.6">
@@ -475,6 +480,17 @@ export default function PracticeApprovalModal({
 								No link available
 							</StyledButton>
 						)}
+
+						{/* Self-print checkbox */}
+						<Checkbox
+							label="We will print our own assets"
+							description="Check this box if your practice will handle printing independently"
+							checked={selfPrint}
+							onChange={(e) => setSelfPrint(e.currentTarget.checked)}
+							disabled={isLoading}
+							color="violet"
+							radius="sm"
+						/>
 
 						{/* Actions */}
 						<Flex align={"center"} justify={"space-between"}>

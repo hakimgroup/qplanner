@@ -17,6 +17,10 @@ import {
   Textarea,
   TextInput,
   useMantineTheme,
+  ThemeIcon,
+  Collapse,
+  Progress,
+  Paper,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
@@ -25,6 +29,20 @@ import {
   IconCalendar,
   IconPlus,
   IconTrash,
+  IconChevronDown,
+  IconChevronRight,
+  IconCircleCheck,
+  IconCircle,
+  IconBulb,
+  IconTarget,
+  IconUsers,
+  IconMessage,
+  IconHeart,
+  IconStar,
+  IconBox,
+  IconChartBar,
+  IconAlertTriangle,
+  IconRocket,
 } from "@tabler/icons-react";
 import { useCallback, useContext, useMemo, useState } from "react";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
@@ -40,6 +58,152 @@ import { startCase } from "lodash";
 
 type DateRange = { from: Date | null; to: Date | null };
 
+const BRIEF_QUESTIONS = [
+  { key: "background", label: "Background", sub: "What triggered the brief?", icon: IconBulb, color: "blue" },
+  { key: "opportunity", label: "The Opportunity", sub: "Insight or reason for acting now? What's not currently working?", icon: IconTarget, color: "orange" },
+  { key: "audience", label: "Audience", sub: "Who are we talking to?", icon: IconUsers, color: "teal" },
+  { key: "keyMessage", label: "Key Message", sub: "What is the most important thing we need to communicate?", icon: IconMessage, color: "violet" },
+  { key: "emotionalResponse", label: "Emotional Response", sub: "How should this make people feel?", icon: IconHeart, color: "pink" },
+  { key: "usp", label: "Unique Selling Point", sub: "What is the offer or benefit?", icon: IconStar, color: "yellow" },
+  { key: "deliverables", label: "Deliverables", sub: "Assets needed", icon: IconBox, color: "indigo" },
+  { key: "measurement", label: "Measurement", sub: "How will we measure if this is successful? (if possible)", icon: IconChartBar, color: "cyan" },
+  { key: "avoid", label: "What Should Be Avoided?", sub: "Things to steer clear of", icon: IconAlertTriangle, color: "red" },
+  { key: "leanInto", label: "What Should We Lean Into?", sub: "Strengths or themes to embrace", icon: IconRocket, color: "green" },
+] as const;
+
+type BriefAnswers = Record<string, string>;
+
+function formatBriefToDescription(answers: BriefAnswers): string {
+  return BRIEF_QUESTIONS
+    .filter((q) => answers[q.key]?.trim())
+    .map((q) => `${q.label}\n${answers[q.key].trim()}`)
+    .join("\n\n");
+}
+
+function BriefGuide({
+  answers,
+  onChange,
+}: {
+  answers: BriefAnswers;
+  onChange: (answers: BriefAnswers) => void;
+}) {
+  const T = useMantineTheme();
+  const [expandedKey, setExpandedKey] = useState<string | null>(BRIEF_QUESTIONS[0].key);
+
+  const answeredCount = BRIEF_QUESTIONS.filter((q) => answers[q.key]?.trim()).length;
+  const progress = (answeredCount / BRIEF_QUESTIONS.length) * 100;
+
+  const toggle = (key: string) => {
+    setExpandedKey((prev) => (prev === key ? null : key));
+  };
+
+  return (
+    <Stack gap={12}>
+      <Group justify="space-between" align="center">
+        <Group gap={6}>
+          <Text size="md" fw={500} c="gray.9">Campaign Brief</Text>
+          <IconAsterisk size={9} color="red" />
+        </Group>
+        <Text size="xs" fw={600} c="blue.5">
+          {answeredCount}/{BRIEF_QUESTIONS.length} answered
+        </Text>
+      </Group>
+
+      <Progress value={progress} size="xs" radius="xl" color="blue.3" />
+
+      <Stack gap={6}>
+        {BRIEF_QUESTIONS.map((q, idx) => {
+          const isOpen = expandedKey === q.key;
+          const hasAnswer = !!answers[q.key]?.trim();
+          const Icon = q.icon;
+
+          return (
+            <Paper
+              key={q.key}
+              radius="md"
+              bg={hasAnswer ? `${q.color}.0` : "#fafafa"}
+              style={{
+                borderLeft: `3px solid ${T.colors[q.color][hasAnswer ? 5 : 1]}`,
+                transition: "all 0.2s",
+              }}
+            >
+              <Group
+                gap="sm"
+                px="md"
+                py="sm"
+                style={{ cursor: "pointer" }}
+                onClick={() => toggle(q.key)}
+                wrap="nowrap"
+              >
+                <ThemeIcon
+                  size="sm"
+                  radius="xl"
+                  variant="light"
+                  color={hasAnswer ? q.color : "gray"}
+                >
+                  <Icon size={14} />
+                </ThemeIcon>
+
+                <Stack gap={0} style={{ flex: 1 }}>
+                  <Text size="sm" fw={600} c={hasAnswer ? "gray.9" : "gray.7"}>
+                    {q.label}
+                  </Text>
+                  {!isOpen && hasAnswer && (
+                    <Text size="xs" c="gray.5" lineClamp={1}>
+                      {answers[q.key]}
+                    </Text>
+                  )}
+                </Stack>
+
+                <Group gap={6}>
+                  {hasAnswer ? (
+                    <IconCircleCheck size={16} color={T.colors[q.color][5]} />
+                  ) : (
+                    <IconCircle size={16} color={T.colors.gray[3]} />
+                  )}
+                  {isOpen ? (
+                    <IconChevronDown size={14} color={T.colors.gray[5]} />
+                  ) : (
+                    <IconChevronRight size={14} color={T.colors.gray[4]} />
+                  )}
+                </Group>
+              </Group>
+
+              <Collapse in={isOpen}>
+                <Box px="md" pb="sm">
+                  <Text size="xs" c="gray.5" mb={6}>
+                    {q.sub}
+                  </Text>
+                  <Textarea
+                    placeholder={`${q.sub}...`}
+                    value={answers[q.key] || ""}
+                    onChange={(e) =>
+                      onChange({ ...answers, [q.key]: e.currentTarget.value })
+                    }
+                    minRows={2}
+                    autosize
+                    radius="md"
+                    size="sm"
+                    styles={{
+                      input: {
+                        backgroundColor: T.colors.gray[0],
+                        borderColor: T.colors[q.color][1],
+                        "&:focus": {
+                          borderColor: T.colors[q.color][4],
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+              </Collapse>
+            </Paper>
+          );
+        })}
+      </Stack>
+    </Stack>
+  );
+}
+
 const Bespoke = ({
   buttonText = "Bespoke Campaign",
 }: {
@@ -53,6 +217,7 @@ const Bespoke = ({
   } = useContext(AppContext);
 
   const [links, setLinks] = useState<string[]>([""]);
+  const [briefAnswers, setBriefAnswers] = useState<BriefAnswers>({});
   const {
     data: assetsData,
     isLoading: loadingAssets,
@@ -63,7 +228,6 @@ const Bespoke = ({
 
   const form = useForm<{
     title: string;
-    description: string;
     notes: string;
     dateRange: DateRange;
     objectives: string[];
@@ -72,7 +236,6 @@ const Bespoke = ({
   }>({
     initialValues: {
       title: "",
-      description: "",
       notes: "",
       dateRange: { from: null, to: null },
       objectives: [],
@@ -81,7 +244,6 @@ const Bespoke = ({
     },
     validate: {
       title: (v) => (!v.trim() ? "Title is required" : null),
-      description: (v) => (!v.trim() ? "Description is required" : null),
       dateRange: ({ from, to }) => {
         if (!from || !to) return "Start and end dates are required";
         if (!isValidDate(from) || !isValidDate(to)) return "Invalid dates";
@@ -108,9 +270,14 @@ const Bespoke = ({
   const resetForm = useCallback(() => {
     form.reset();
     setLinks([""]);
+    setBriefAnswers({});
   }, [form]);
 
-  const canSubmit = useMemo(() => form.isValid(), [form]);
+  const hasBriefAnswer = useMemo(
+    () => BRIEF_QUESTIONS.some((q) => briefAnswers[q.key]?.trim()),
+    [briefAnswers]
+  );
+  const canSubmit = useMemo(() => form.isValid() && hasBriefAnswer, [form, hasBriefAnswer]);
 
   const handleCancel = () => {
     resetForm();
@@ -120,13 +287,13 @@ const Bespoke = ({
   const onSubmit = form.onSubmit((values) => {
     const {
       title,
-      description,
       notes,
       dateRange,
       objectives,
       topics,
       selectedAssets,
     } = values;
+    const description = formatBriefToDescription(briefAnswers);
     const { from, to } = dateRange;
     if (!from || !to) {
       toast.error("Please choose a valid start and end date.");
@@ -221,16 +388,9 @@ const Bespoke = ({
               placeholder="Enter campaign title"
               {...form.getInputProps("title")}
             />
-            <Textarea
-              withAsterisk
-              resize="vertical"
-              size="md"
-              radius={10}
-              label="Description"
-              placeholder="Describe your campaign goals and requirements"
-              minRows={3}
-              autosize
-              {...form.getInputProps("description")}
+            <BriefGuide
+              answers={briefAnswers}
+              onChange={setBriefAnswers}
             />
             <CampaignDates
               required

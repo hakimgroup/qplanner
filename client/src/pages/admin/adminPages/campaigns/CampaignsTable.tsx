@@ -55,7 +55,7 @@ const CampaignsTable = forwardRef<
     getSelectedIds: () => selectedIdsRef.current,
   }));
 
-  const cols: ColDef[] = [
+  const cols: ColDef[] = useMemo(() => [
     {
       field: "name",
       headerName: "Campaign",
@@ -201,7 +201,7 @@ const CampaignsTable = forwardRef<
         </Flex>
       ),
     },
-  ];
+  ], [T.blue, onEdit]);
 
   return (
     <Table

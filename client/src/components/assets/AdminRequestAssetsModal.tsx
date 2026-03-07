@@ -63,6 +63,7 @@ function CreativeInputs({
 	updateCreativeUrl,
 	updateCreativeLabel,
 	updateCreativeAssetsLink,
+	updateCreativeQuestion,
 }: {
 	creatives: Creatives[];
 	addCreative: () => void;
@@ -70,6 +71,7 @@ function CreativeInputs({
 	updateCreativeUrl: (idx: number, val: string) => void;
 	updateCreativeLabel: (idx: number, val: string) => void;
 	updateCreativeAssetsLink: (idx: number, val: string) => void;
+	updateCreativeQuestion: (idx: number, val: string) => void;
 }) {
 	const hasAnyUrl = creatives.some((c) => c.url?.trim());
 	const T = useMantineTheme().colors;
@@ -116,7 +118,7 @@ function CreativeInputs({
 							px="md"
 							py="sm"
 							shadow="xs"
-							mah={420}
+						
 							style={{ borderColor: T.blue[1] }}
 						>
 							<Stack gap={8}>
@@ -199,6 +201,23 @@ function CreativeInputs({
 									}
 									radius="md"
 								/>
+
+								<TextInput
+									label={
+										<Text size="xs" fw={500} c="gray.7">
+											Custom Question
+										</Text>
+									}
+									placeholder="e.g. What colour frame would you prefer? (optional)"
+									value={item.question || ""}
+									onChange={(e) =>
+										updateCreativeQuestion(
+											idx,
+											e.currentTarget.value
+										)
+									}
+									radius="md"
+								/>
 							</Stack>
 						</Card>
 					))}
@@ -267,6 +286,24 @@ function CreativeInputs({
 								}
 							/>
 
+							<TextInput
+								placeholder="Custom question (optional)"
+								value={item.question || ""}
+								onChange={(e) =>
+									updateCreativeQuestion(
+										idx,
+										e.currentTarget.value
+									)
+								}
+								radius="md"
+								style={{ flex: 2 }}
+								label={
+									<Text size="xs" fw={500} c="gray.7">
+										Custom Question
+									</Text>
+								}
+							/>
+
 							{creatives.length > 1 && (
 								<ActionIcon
 									color="red"
@@ -291,16 +328,26 @@ function CreativeInputs({
 
 function AssetCard({
 	item,
+	idx,
 	section,
 	toggleRequestAsset,
+	updateAssetName,
+	updateAssetPrice,
+	updateAssetSuffix,
+	removeAsset,
 }: {
-	item: AssetItem;
+	item: AssetItem & { isCustom?: boolean };
+	idx: number;
 	section: keyof Assets;
 	toggleRequestAsset: (
 		section: keyof Assets,
 		name: string,
 		checked: boolean
 	) => void;
+	updateAssetName?: (section: keyof Assets, idx: number, name: string) => void;
+	updateAssetPrice?: (section: keyof Assets, idx: number, raw: string) => void;
+	updateAssetSuffix?: (section: keyof Assets, idx: number, suffix: string) => void;
+	removeAsset?: (section: keyof Assets, idx: number) => void;
 }) {
 	const T = useMantineTheme().colors;
 	const selected = item.userSelected;
@@ -377,50 +424,105 @@ function AssetCard({
 			}}
 		>
 			<Stack gap={8}>
-				<Group justify="space-between" align="flex-start">
-					<Stack gap={2} style={{ flex: 1 }}>
-						<Text fw={600} size="sm">
-							{item.name}
-						</Text>
-
-						<Text
-							size="xs"
-							fw={600}
-							c={item.type === "free" ? "gray.7" : "indigo"}
-						>
-							{getDescriptor(item)}
-						</Text>
-
-						{item.suffix &&
-							item.type !== "default" &&
-							item.type !== "external" && (
-								<Text size="xs" c="gray.6">
-									{item.suffix}
-								</Text>
+				{(item as any).isCustom ? (
+					<>
+						<Group justify="space-between" align="center">
+							<Badge variant="light" color="teal" size="xs">
+								Custom Asset
+							</Badge>
+							{removeAsset && (
+								<ActionIcon
+									color="red"
+									variant="subtle"
+									size="sm"
+									aria-label="remove asset"
+									onClick={() => removeAsset(section, idx)}
+								>
+									<IconTrash size={14} />
+								</ActionIcon>
 							)}
-					</Stack>
+						</Group>
+						<TextInput
+							placeholder="Asset name"
+							value={item.name}
+							onChange={(e) =>
+								updateAssetName?.(section, idx, e.currentTarget.value)
+							}
+							radius="md"
+							size="xs"
+							label={<Text size="xs" fw={500} c="gray.7">Name</Text>}
+						/>
+						<Group gap={6} grow>
+							<TextInput
+								placeholder="e.g. 150"
+								value={item.price ?? ""}
+								onChange={(e) =>
+									updateAssetPrice?.(section, idx, e.currentTarget.value)
+								}
+								radius="md"
+								size="xs"
+								label={<Text size="xs" fw={500} c="gray.7">Price (£)</Text>}
+							/>
+							<TextInput
+								placeholder="e.g. per unit"
+								value={item.suffix ?? ""}
+								onChange={(e) =>
+									updateAssetSuffix?.(section, idx, e.currentTarget.value)
+								}
+								radius="md"
+								size="xs"
+								label={<Text size="xs" fw={500} c="gray.7">Unit</Text>}
+							/>
+						</Group>
+					</>
+				) : (
+					<>
+						<Group justify="space-between" align="flex-start">
+							<Stack gap={2} style={{ flex: 1 }}>
+								<Text fw={600} size="sm">
+									{item.name}
+								</Text>
 
-					{selected && (
-						<Badge variant="light" color="indigo">
-							Requested
-						</Badge>
-					)}
-				</Group>
+								<Text
+									size="xs"
+									fw={600}
+									c={item.type === "free" ? "gray.7" : "indigo"}
+								>
+									{getDescriptor(item)}
+								</Text>
 
-				<Checkbox
-					size="xs"
-					radius="xl"
-					color="blue.3"
-					checked={item.userSelected}
-					label={<Text size="xs">Request this asset</Text>}
-					onChange={(e) =>
-						toggleRequestAsset(
-							section,
-							item.name,
-							e.currentTarget.checked
-						)
-					}
-				/>
+								{item.suffix &&
+									item.type !== "default" &&
+									item.type !== "external" && (
+										<Text size="xs" c="gray.6">
+											{item.suffix}
+										</Text>
+									)}
+							</Stack>
+
+							{selected && (
+								<Badge variant="light" color="indigo">
+									Requested
+								</Badge>
+							)}
+						</Group>
+
+						<Checkbox
+							size="xs"
+							radius="xl"
+							color="blue.3"
+							checked={item.userSelected}
+							label={<Text size="xs">Request this asset</Text>}
+							onChange={(e) =>
+								toggleRequestAsset(
+									section,
+									item.name,
+									e.currentTarget.checked
+								)
+							}
+						/>
+					</>
+				)}
 			</Stack>
 		</Card>
 	);
@@ -512,7 +614,7 @@ export default function AdminRequestAssetsModal({
 	);
 
 	// creatives ({url,label,assets_link})
-	const defaultCreatives = [{ url: "", label: "", assets_link: "" }];
+	const defaultCreatives = [{ url: "", label: "", assets_link: "", question: "" }];
 	const [creatives, setCreatives] = useState<Creatives[]>(
 		selection.creatives ?? defaultCreatives
 	);
@@ -531,7 +633,7 @@ export default function AdminRequestAssetsModal({
 
 	// Creatives handlers
 	const addCreative = () => {
-		setCreatives((l) => [...l, { url: "", label: "", assets_link: "" }]);
+		setCreatives((l) => [...l, { url: "", label: "", assets_link: "", question: "" }]);
 	};
 
 	const removeCreative = (idx: number) => {
@@ -562,6 +664,14 @@ export default function AdminRequestAssetsModal({
 		});
 	};
 
+	const updateCreativeQuestion = (idx: number, val: string) => {
+		setCreatives((l) => {
+			const c = [...l];
+			c[idx] = { ...c[idx], question: val };
+			return c;
+		});
+	};
+
 	// Toggle for Printed / Digital assets
 	const toggleRequestAsset = (
 		section: keyof Assets,
@@ -573,6 +683,63 @@ export default function AdminRequestAssetsModal({
 			[section]: prev[section].map((it) =>
 				it.name === name ? { ...it, userSelected: checked } : it
 			),
+		}));
+	};
+
+	// Add a custom asset to a section
+	const addCustomAsset = (section: keyof Assets) => {
+		setAssetsState((prev) => ({
+			...prev,
+			[section]: [
+				{
+					name: "",
+					price: null,
+					quantity: null,
+					suffix: null,
+					type: "default",
+					userSelected: true,
+					isCustom: true,
+				},
+				...prev[section],
+			],
+		}));
+	};
+
+	// Update custom asset name
+	const updateAssetName = (section: keyof Assets, idx: number, name: string) => {
+		setAssetsState((prev) => ({
+			...prev,
+			[section]: prev[section].map((it, i) =>
+				i === idx ? { ...it, name } : it
+			),
+		}));
+	};
+
+	// Update custom asset price
+	const updateAssetPrice = (section: keyof Assets, idx: number, raw: string) => {
+		setAssetsState((prev) => ({
+			...prev,
+			[section]: prev[section].map((it, i) =>
+				i === idx ? { ...it, price: raw } : it
+			),
+		}));
+	};
+
+	// Update custom asset suffix
+	const updateAssetSuffix = (section: keyof Assets, idx: number, suffix: string) => {
+		setAssetsState((prev) => ({
+			...prev,
+			[section]: prev[section].map((it, i) =>
+				i === idx ? { ...it, suffix } : it
+			),
+		}));
+	};
+
+	// Remove a custom asset
+	const removeAsset = (section: keyof Assets, idx: number) => {
+		setAssetsState((prev) => ({
+			...prev,
+			[section]: prev[section].filter((_, i) => i !== idx),
 		}));
 	};
 
@@ -609,6 +776,7 @@ export default function AdminRequestAssetsModal({
 				url: c.url.trim(),
 				label: c.label?.trim() || `Creative ${idx + 1}`,
 				assets_link: c.assets_link?.trim() || null,
+				question: c.question?.trim() || null,
 			}));
 
 		if (applyToCatalog) {
@@ -731,13 +899,25 @@ export default function AdminRequestAssetsModal({
 					updateCreativeUrl={updateCreativeUrl}
 					updateCreativeLabel={updateCreativeLabel}
 					updateCreativeAssetsLink={updateCreativeAssetsLink}
+					updateCreativeQuestion={updateCreativeQuestion}
 				/>
 
 				{/* Printed Assets */}
 				<Stack gap={8}>
-					<Text fw={700} size="sm">
-						Printed Assets
-					</Text>
+					<Group justify="space-between" align="center">
+						<Text fw={700} size="sm">
+							Printed Assets
+						</Text>
+						<Tooltip label="Add a custom printed asset" withArrow>
+							<ActionIcon
+								variant="light"
+								aria-label="add printed asset"
+								onClick={() => addCustomAsset("printedAssets")}
+							>
+								<IconPlus size={16} />
+							</ActionIcon>
+						</Tooltip>
+					</Group>
 
 					<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
 						{printedAssets.length === 0 && (
@@ -750,8 +930,13 @@ export default function AdminRequestAssetsModal({
 							<AssetCard
 								key={`printed-${idx}`}
 								item={it}
+								idx={idx}
 								section="printedAssets"
 								toggleRequestAsset={toggleRequestAsset}
+								updateAssetName={updateAssetName}
+								updateAssetPrice={updateAssetPrice}
+								updateAssetSuffix={updateAssetSuffix}
+								removeAsset={removeAsset}
 							/>
 						))}
 					</SimpleGrid>
@@ -759,9 +944,20 @@ export default function AdminRequestAssetsModal({
 
 				{/* Digital Assets */}
 				<Stack gap={8}>
-					<Text fw={700} size="sm">
-						Digital Assets
-					</Text>
+					<Group justify="space-between" align="center">
+						<Text fw={700} size="sm">
+							Digital Assets
+						</Text>
+						<Tooltip label="Add a custom digital asset" withArrow>
+							<ActionIcon
+								variant="light"
+								aria-label="add digital asset"
+								onClick={() => addCustomAsset("digitalAssets")}
+							>
+								<IconPlus size={16} />
+							</ActionIcon>
+						</Tooltip>
+					</Group>
 
 					<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
 						{digitalAssets.length === 0 && (
@@ -774,8 +970,13 @@ export default function AdminRequestAssetsModal({
 							<AssetCard
 								key={`digital-${idx}`}
 								item={it}
+								idx={idx}
 								section="digitalAssets"
 								toggleRequestAsset={toggleRequestAsset}
+								updateAssetName={updateAssetName}
+								updateAssetPrice={updateAssetPrice}
+								updateAssetSuffix={updateAssetSuffix}
+								removeAsset={removeAsset}
 							/>
 						))}
 					</SimpleGrid>
