@@ -522,13 +522,13 @@ export function useDeleteSelection(onSuccess?: (campaignName?: string) => void) 
         exact: false,
       });
 
-      // Create in-app notification and send email for actor only if practice is onboarded
+      // In-app notifications for deletions are now created inside the
+      // delete_selection RPC (before the row is removed), so we only
+      // need to send the actor email here.
       if (user?.id && practiceId) {
-        // Check if practice has been onboarded (received onboarding summary email)
         const isOnboarded = await isPracticeOnboarded(practiceId);
 
         if (isOnboarded) {
-          // Send actor email and create in-app notification (handled by server)
           sendActorEmail({
             type: "deleted",
             userId: user.id,
