@@ -27,6 +27,11 @@ export function useBreakpoints() {
 	return breakpoints;
 }
 
+export function useIsMobile() {
+	const { isXs, isSm } = useBreakpoints();
+	return isXs || isSm;
+}
+
 export function useNavPreset() {
 	const { pathname } = useLocation();
 

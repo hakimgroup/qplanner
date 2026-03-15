@@ -34,6 +34,7 @@ import { useContext } from "react";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { useBulkAddCampaigns } from "@/hooks/campaign.hooks";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 interface BulkAddProps {
 	opened?: boolean;
@@ -60,6 +61,7 @@ const quickDateOptions = [
 
 const BulkAdd = ({ opened = false, closeModal, selections }: BulkAddProps) => {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 	const qc = useQueryClient();
 	const { activePracticeId } = usePractice();
 	const {
@@ -238,6 +240,7 @@ const BulkAdd = ({ opened = false, closeModal, selections }: BulkAddProps) => {
 
 	return (
 		<Modal
+			fullScreen={isMobile}
 			opened={opened}
 			onClose={closeModal}
 			title={

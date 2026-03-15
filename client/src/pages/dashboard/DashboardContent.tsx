@@ -9,7 +9,7 @@ import {
 	Center,
 	Button,
 } from "@mantine/core";
-import { IconCircleFilled, IconMail } from "@tabler/icons-react";
+import { IconCircleFilled, IconFilter, IconMail } from "@tabler/icons-react";
 import Quick from "@/components/campaignsSetup/quick/Quick";
 import Guided from "@/components/campaignsSetup/guided/Guided";
 import { useContext, useState, useEffect } from "react";
@@ -28,7 +28,12 @@ import StyledTabs from "@/components/styledTabs/StyledTabs";
 import { sendPlannerOverviewEmails } from "@/api/emails";
 import { toast } from "sonner";
 
-export function DashboardContent() {
+interface DashboardContentProps {
+	isMobile?: boolean;
+	onOpenFilters?: () => void;
+}
+
+export function DashboardContent({ isMobile, onOpenFilters }: DashboardContentProps) {
 	const {
 		state: {
 			filters,
@@ -123,11 +128,13 @@ export function DashboardContent() {
 								<Center pt={10} pb={10}>
 									<Stack gap={4}>
 										<Text fw={700} size="sm" c="gray.9">
-											🎯 Select Marketing Campaigns
+											{isMobile ? "Browse" : "🎯 Select Marketing Campaigns"}
 										</Text>
-										<Text size="xs">
-											Browse and add campaigns
-										</Text>
+										{!isMobile && (
+											<Text size="xs">
+												Browse and add campaigns
+											</Text>
+										)}
 									</Stack>
 								</Center>
 							),
@@ -138,11 +145,13 @@ export function DashboardContent() {
 								<Center pt={10} pb={10}>
 									<Stack gap={4}>
 										<Text fw={700} size="sm" c="gray.9">
-											✓ Practice Selections
+											{isMobile ? "Selections" : "✓ Practice Selections"}
 										</Text>
-										<Text size="xs">
-											View your chosen campaigns
-										</Text>
+										{!isMobile && (
+											<Text size="xs">
+												View your chosen campaigns
+											</Text>
+										)}
 									</Stack>
 								</Center>
 							),
@@ -150,39 +159,79 @@ export function DashboardContent() {
 					]}
 				/>
 
-				<Group align="center" justify="space-between">
-					<Stack gap={5}>
-						<Title order={3}>
+				{isMobile ? (
+					<Stack gap={10}>
+						<Title order={5}>
 							{unitedView ? "All" : activePracticeName}
 							{isSelections
 								? " Selections"
 								: " - Select Campaigns"}
 						</Title>
-						<Flex align="center" gap={20}>
-							<Text size="sm" c="gray.8">
-								{isSelections
-									? "Manage your chosen campaigns"
-									: "Browse and add campaigns to your plan"}
-							</Text>
-							<IconCircleFilled size={4} />
-							<Text size="sm" c="gray.8">
-								{upperFirst(filters.viewMode)} View
-							</Text>
-						</Flex>
+
+						<Group gap={8} wrap="wrap">
+							{onOpenFilters && (
+								<Button
+									variant="filled"
+									color="violet"
+									size="sm"
+									radius="xl"
+									leftSection={<IconFilter size={16} />}
+									onClick={onOpenFilters}
+								>
+									Filters
+								</Button>
+							)}
+
+							{!isSelections && (
+								<>
+									<Quick />
+									<Guided />
+								</>
+							)}
+
+							{isSelections &&
+								filters.viewMode === ViewModes.Calendar && (
+									<CopyPracticeCampaigns />
+								)}
+						</Group>
 					</Stack>
+				) : (
+					<Group align="center" justify="space-between" wrap="wrap">
+						<Stack gap={5}>
+							<Title order={3}>
+								{unitedView ? "All" : activePracticeName}
+								{isSelections
+									? " Selections"
+									: " - Select Campaigns"}
+							</Title>
+							<Flex align="center" gap={20}>
+								<Text size="sm" c="gray.8">
+									{isSelections
+										? "Manage your chosen campaigns"
+										: "Browse and add campaigns to your plan"}
+								</Text>
+								<IconCircleFilled size={4} />
+								<Text size="sm" c="gray.8">
+									{upperFirst(filters.viewMode)} View
+								</Text>
+							</Flex>
+						</Stack>
 
-					{!isSelections && (
-						<Flex gap={12}>
-							<Quick />
-							<Guided />
+						<Flex gap={12} wrap="wrap">
+							{!isSelections && (
+								<>
+									<Quick />
+									<Guided />
+								</>
+							)}
+
+							{isSelections &&
+								filters.viewMode === ViewModes.Calendar && (
+									<CopyPracticeCampaigns />
+								)}
 						</Flex>
-					)}
-
-					{isSelections &&
-						filters.viewMode === ViewModes.Calendar && (
-							<CopyPracticeCampaigns />
-						)}
-				</Group>
+					</Group>
+				)}
 
 				<Divider size="xs" color="gray.1" />
 			</Stack>

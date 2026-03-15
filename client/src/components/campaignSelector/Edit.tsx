@@ -38,6 +38,7 @@ import { startCase } from "lodash";
 import AppContext from "@/shared/AppContext";
 import { UserTabModes } from "@/models/general.models";
 import { updateState } from "@/shared/shared.utilities";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type DateRange = { from: Date | null; to: Date | null };
 
@@ -53,6 +54,7 @@ interface EditProps {
 
 const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
   const T = useMantineTheme();
+	const isMobile = useIsMobile();
   const { setState } = useContext(AppContext);
 
   // Combined callback for modal close + tab switch

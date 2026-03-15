@@ -27,6 +27,7 @@ import { upperFirst } from "lodash";
 import { useState } from "react";
 import GuidedResult from "./GuidedResult";
 import { useGuidedCampaigns } from "@/hooks/campaign.hooks";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 const StyledSlider = ({
 	i = 0,
@@ -76,6 +77,7 @@ const StyledSlider = ({
 
 const Guided = () => {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 	const { activePracticeName } = usePractice();
 	const [opened, { open, close }] = useDisclosure(false);
 	const [resultsOpened, { open: openResults, close: closeResults }] =
@@ -180,7 +182,8 @@ const Guided = () => {
 			</StyledButton>
 
 			<Modal
-				opened={opened}
+			fullScreen={isMobile}
+			opened={opened}
 				onClose={() => {
 					close();
 					closeResults();

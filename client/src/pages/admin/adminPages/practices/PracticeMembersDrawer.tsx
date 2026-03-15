@@ -22,6 +22,7 @@ import { useDebouncedValue } from "@mantine/hooks";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/api/supabase";
 import { DatabaseTables, RPCFunctions } from "@/shared/shared.models";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 interface Props {
 	practice: any;
@@ -31,6 +32,7 @@ interface Props {
 
 const PracticeMembersDrawer = ({ practice, opened, onClose }: Props) => {
 	const T = useMantineTheme().colors;
+	const isMobile = useIsMobile();
 	const queryClient = useQueryClient();
 	const [query, setQuery] = useState("");
 	const [debounced] = useDebouncedValue(query, 150);

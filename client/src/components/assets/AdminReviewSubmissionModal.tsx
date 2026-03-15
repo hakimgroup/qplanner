@@ -31,6 +31,7 @@ import {
 	NotificationPayload,
 	NotificationRow,
 } from "@/models/notification.models";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 /**
  * Types the shape of each asset line in payload.assets as submitted by the practice
@@ -69,6 +70,7 @@ export default function AdminReviewSubmissionModal({
 	selection,
 }: Props) {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 
 	// pull what we need from the notification payload
 	const payload = notification?.payload ?? null;
@@ -384,6 +386,7 @@ export default function AdminReviewSubmissionModal({
 
 	return (
 		<Modal
+			fullScreen={isMobile}
 			opened={opened}
 			onClose={onClose}
 			radius="lg"

@@ -23,6 +23,7 @@ import { useDebouncedValue } from "@mantine/hooks";
 import { useUpdateUser } from "@/pages/auth/auth.hooks";
 import { useAuth } from "@/shared/AuthProvider";
 import { UserRoles } from "@/shared/shared.models";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 interface Props {
   row: AllowedUser;
@@ -34,6 +35,7 @@ interface Props {
 const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
   const isView = mode === "view";
   const T = useMantineTheme().colors;
+	const isMobile = useIsMobile();
   const { practices } = usePractice();
   const { role: currentUserRole } = useAuth();
   const name = `${upperFirst(row?.first_name)} ${upperFirst(row?.last_name)}`;

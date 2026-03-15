@@ -3,6 +3,7 @@ import { IconAlertTriangle } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/api/supabase";
 import { DatabaseTables } from "@/shared/shared.models";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type Props = {
 	opened: boolean;
@@ -16,6 +17,7 @@ export default function DeletePracticeModal({
 	practice,
 }: Props) {
 	const queryClient = useQueryClient();
+	const isMobile = useIsMobile();
 
 	const { mutate: deletePractice, isPending } = useMutation({
 		mutationFn: async () => {
@@ -33,6 +35,7 @@ export default function DeletePracticeModal({
 
 	return (
 		<Modal
+			fullScreen={isMobile}
 			opened={opened}
 			onClose={onClose}
 			title={

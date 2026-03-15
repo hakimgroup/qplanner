@@ -203,3 +203,45 @@ html {
 		// }
 	}
 }
+
+// AG Grid pagination — mobile responsive
+@include mixins.mQ(768px) {
+	.ag-paging-panel {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 8px 12px;
+		font-size: 12px;
+		gap: 8px;
+
+		// Hide the page size selector on mobile
+		.ag-paging-page-size {
+			display: none;
+		}
+
+		// Row count summary (left side)
+		.ag-paging-row-summary-panel {
+			margin: 0;
+			font-size: 12px;
+		}
+
+		// Page navigation (right side)
+		.ag-paging-page-summary-panel {
+			display: flex;
+			align-items: center;
+			margin: 0;
+			gap: 4px;
+			font-size: 12px;
+		}
+
+		// Navigation buttons — consistent size and alignment
+		.ag-paging-button {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 28px;
+			min-height: 28px;
+			padding: 0;
+		}
+	}
+}

@@ -137,7 +137,7 @@ export default function NotificationsFilters({
                 Practice
               </Text>
             }
-            comboboxProps={{ width: 300, position: "bottom-start" }}
+            comboboxProps={{ position: "bottom-start" }}
           />
         </Grid.Col>
 
@@ -186,7 +186,7 @@ export default function NotificationsFilters({
                 Campaign
               </Text>
             }
-            comboboxProps={{ width: 400, position: "bottom-start" }}
+            comboboxProps={{ position: "bottom-start" }}
           />
         </Grid.Col>
 

@@ -66,7 +66,7 @@ export default function AdminCampaigns() {
 			>
 				<Stack gap={15}>
 					<Grid align="end">
-						<Grid.Col span={8}>
+						<Grid.Col span={{ base: 12, md: 8 }}>
 							<TextInput
 								radius={10}
 								size="sm"
@@ -78,7 +78,7 @@ export default function AdminCampaigns() {
 								}
 							/>
 						</Grid.Col>
-						<Grid.Col span={2}>
+						<Grid.Col span={{ base: 6, md: 2 }}>
 							<Select
 								radius={10}
 								size="sm"
@@ -96,7 +96,7 @@ export default function AdminCampaigns() {
 								onChange={setCategory}
 							/>
 						</Grid.Col>
-						<Grid.Col span={2}>
+						<Grid.Col span={{ base: 6, md: 2 }}>
 							<Select
 								radius={10}
 								size="sm"
@@ -122,7 +122,7 @@ export default function AdminCampaigns() {
 				style={{ border: `1px solid ${T.blue[0]}` }}
 				shadow="xs"
 			>
-				<Group justify="space-between" mb={15}>
+				<Group justify="space-between" mb={15} wrap="wrap" gap="sm">
 					<Text size="sm" c="blue.4" fw={600}>
 						Showing {rows.length} campaign
 						{rows.length === 1 ? "" : "s"}

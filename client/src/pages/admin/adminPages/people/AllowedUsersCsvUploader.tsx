@@ -33,6 +33,7 @@ import Table from "@/components/table/Table";
 import { ColDef } from "ag-grid-community";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 // -------------------------------
 // Types / helpers
@@ -130,6 +131,7 @@ function normalizeRow(r: any, idx: number): Row {
 export default function AllowedUsersCsvUploader() {
 	const qc = useQueryClient();
 	const T = useMantineTheme().colors;
+	const isMobile = useIsMobile();
 	const [opened, setOpened] = useState(false);
 	const [file, setFile] = useState<File | null>(null);
 	const [rows, setRows] = useState<Row[]>([]);
@@ -332,7 +334,8 @@ export default function AllowedUsersCsvUploader() {
 			</Group>
 
 			<Modal
-				opened={opened}
+			fullScreen={isMobile}
+			opened={opened}
 				onClose={() => setOpened(false)}
 				title={
 					<Text fz={"h4"} fw={700}>

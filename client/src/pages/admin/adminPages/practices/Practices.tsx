@@ -166,7 +166,7 @@ const Practices = () => {
 					</Group>
 
 					<Grid>
-						<Grid.Col span={6}>
+						<Grid.Col span={{ base: 12, md: 6 }}>
 							<TextInput
 								radius={10}
 								size="sm"
@@ -179,7 +179,7 @@ const Practices = () => {
 								}
 							/>
 						</Grid.Col>
-						<Grid.Col span={3}>
+						<Grid.Col span={{ base: 6, md: 3 }}>
 							<Select
 								radius={10}
 								size="sm"
@@ -189,12 +189,11 @@ const Practices = () => {
 								value={buddy}
 								onChange={(v) => setBuddy(v ?? "all")}
 								comboboxProps={{
-									width: 250,
 									position: "bottom-end",
 								}}
 							/>
 						</Grid.Col>
-						<Grid.Col span={3}>
+						<Grid.Col span={{ base: 6, md: 3 }}>
 							<Select
 								radius={10}
 								size="sm"
@@ -204,7 +203,6 @@ const Practices = () => {
 								value={country}
 								onChange={(v) => setCountry(v ?? "all")}
 								comboboxProps={{
-									width: 200,
 									position: "bottom-end",
 								}}
 							/>
@@ -221,14 +219,14 @@ const Practices = () => {
 				shadow="xs"
 			>
 				<Stack gap={30}>
-					<Group justify="space-between">
+					<Group justify="space-between" wrap="wrap" gap="sm">
 						<Title order={3}>
 							Practices{" "}
 							<Text span fz={"h3"} fw={700} c={"blue.3"}>
 								({filteredPractices.length})
 							</Text>
 						</Title>
-						<Group>
+						<Group wrap="wrap" gap="xs">
 							<Button
 								variant="light"
 								color="teal"

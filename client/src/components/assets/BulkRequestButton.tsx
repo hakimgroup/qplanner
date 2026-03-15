@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { useRequestAssetsBulk } from "@/hooks/notification.hooks";
 import StyledButton from "../styledButton/StyledButton";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type BulkRequestButtonProps = {
   selectionIds: string[];
@@ -30,6 +31,7 @@ export default function BulkRequestButton({
   onCompleted,
 }: BulkRequestButtonProps) {
   const T = useMantineTheme().colors;
+	const isMobile = useIsMobile();
   const [opened, setOpened] = useState(false);
 
   // holds the server response after submit; when set, we render the results UI
@@ -154,7 +156,8 @@ export default function BulkRequestButton({
       </StyledButton>
 
       <Modal
-        opened={opened}
+			fullScreen={isMobile}
+			opened={opened}
         onClose={() => setOpened(false)}
         centered
         size="lg"

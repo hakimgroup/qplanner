@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { IconShare3, IconMinus } from "@tabler/icons-react";
 import { SelectionStatus } from "@/shared/shared.models";
 import BulkRequestButton from "@/components/assets/BulkRequestButton";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 interface Props {
   row: PlanRow;
@@ -32,6 +33,7 @@ interface Props {
 
 const PlansActions = ({ row, opened, closePanel }: Props) => {
   const T = useMantineTheme().colors;
+	const isMobile = useIsMobile();
   const { mutate: updateSelection, isPending: saving } = useUpdateSelection(closePanel);
 
   return (

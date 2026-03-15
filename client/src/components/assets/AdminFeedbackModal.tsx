@@ -23,6 +23,7 @@ import StyledButton from "@/components/styledButton/StyledButton";
 import { useMarkNotificationRead } from "@/hooks/notification.hooks";
 import { toLower } from "lodash";
 import { NotificationRow } from "@/models/notification.models";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type Props = {
 	opened: boolean;
@@ -38,6 +39,7 @@ export default function AdminFeedbackModal({
 	selection,
 }: Props) {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 
 	const payload = notification?.payload ?? null;
 	const campaignName = payload?.name ?? "";
@@ -99,6 +101,7 @@ export default function AdminFeedbackModal({
 
 	return (
 		<Modal
+			fullScreen={isMobile}
 			opened={opened}
 			onClose={onClose}
 			radius="lg"

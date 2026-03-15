@@ -24,6 +24,7 @@ import StyledButton from "@/components/styledButton/StyledButton";
 import { usePractice } from "@/shared/PracticeProvider";
 import Event from "@/components/campaignsSetup/event/Event";
 import { filterCampaignsByQuery } from "@/shared/shared.utilities";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 const CampaignSelectorCards = () => {
 	const {
@@ -33,6 +34,7 @@ const CampaignSelectorCards = () => {
 		},
 	} = useContext(AppContext);
 	const { unitedView } = usePractice();
+	const isMobile = useIsMobile();
 	const spanCol = useMatches({
 		base: 12,
 		md: 6,
@@ -57,26 +59,36 @@ const CampaignSelectorCards = () => {
 
 	return (
 		<Stack gap={20} className={cl["campaign-selector"]}>
-			<Flex justify={"space-between"} align={"center"}>
-				<Stack gap={5}>
-					<Title order={3}>
-						{isSelections
-							? "Your Practice Campaigns"
-							: "Select Marketing Campaigns"}
-					</Title>
-					<Text size="sm" c={"gray.8"}>
-						{isSelections
-							? "Manage your selected campaigns and track their progress"
-							: "Browse and add campaigns to this practice plan"}
-					</Text>
-				</Stack>
-				{!unitedView && (
-					<Group gap={10}>
+			<Stack gap={10}>
+				<Flex justify={"space-between"} align={"center"} wrap="wrap" gap={10}>
+					<Stack gap={5}>
+						<Title order={isMobile ? 5 : 3}>
+							{isSelections
+								? "Your Practice Campaigns"
+								: "Select Marketing Campaigns"}
+						</Title>
+						{!isMobile && (
+							<Text size="sm" c={"gray.8"}>
+								{isSelections
+									? "Manage your selected campaigns and track their progress"
+									: "Browse and add campaigns to this practice plan"}
+							</Text>
+						)}
+					</Stack>
+					{!unitedView && !isMobile && (
+						<Group gap={10}>
+							<Bespoke />
+							<Event />
+						</Group>
+					)}
+				</Flex>
+				{!unitedView && isMobile && (
+					<Group gap={8} wrap="wrap">
 						<Bespoke />
 						<Event />
 					</Group>
 				)}
-			</Flex>
+			</Stack>
 
 			<TextInput
 				radius={10}
@@ -102,7 +114,7 @@ const CampaignSelectorCards = () => {
 				</Text>
 			</Group>
 
-			<Grid gutter={22} mih={200} pos={"relative"}>
+			<Grid gutter={22} mih={isMobile ? 100 : 200} pos={"relative"}>
 				<LoadingOverlay
 					visible={loading}
 					zIndex={1000}
@@ -114,9 +126,9 @@ const CampaignSelectorCards = () => {
 				{!loading && viewCampaigns.length === 0 && (
 					<Grid.Col span={12}>
 						<Center
-							mih={220}
+							mih={isMobile ? 120 : 220}
 							style={{ textAlign: "center" }}
-							mb={50}
+							mb={isMobile ? 20 : 50}
 						>
 							<Stack gap={18} align="center">
 								<ThemeIcon
@@ -156,12 +168,12 @@ const CampaignSelectorCards = () => {
 				<Grid.Col span={12}>
 					<Card>
 						<Stack align="center">
-							<Text c={"gray.6"}>
+							<Text c={"gray.6"} ta="center" size={isMobile ? "sm" : undefined}>
 								Can't find what you need? Create a custom
 								campaign or event.
 							</Text>
 
-							<Group gap={10}>
+							<Group gap={10} wrap="wrap" justify="center">
 								<Bespoke buttonText="Add bespoke campaign" />
 								<Event buttonText="Create bespoke event" />
 							</Group>

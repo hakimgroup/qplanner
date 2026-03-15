@@ -41,25 +41,32 @@ export default function AdminSidebar({
 	onToggle,
 	widthOpen,
 	widthCollapsed,
+	isMobile,
+	onNavigate,
 }: {
 	collapsed: boolean;
 	onToggle: () => void;
 	widthOpen: number;
 	widthCollapsed: number;
+	isMobile?: boolean;
+	onNavigate?: () => void;
 }) {
 	const T = useMantineTheme();
 
-	const base = (theme: MantineTheme) => ({
-		background: theme.colors.gray[0],
-		borderRight: `1px solid ${theme.colors.gray[1]}`,
-		position: "fixed" as const,
-		top: 0,
-		left: 0,
-		bottom: 0,
-		width: collapsed ? widthCollapsed : widthOpen,
-		transition: "width 150ms ease",
-		zIndex: 5,
-	});
+	const base = (theme: MantineTheme) =>
+		isMobile
+			? {}
+			: {
+					background: theme.colors.gray[0],
+					borderRight: `1px solid ${theme.colors.gray[1]}`,
+					position: "fixed" as const,
+					top: 0,
+					left: 0,
+					bottom: 0,
+					width: collapsed ? widthCollapsed : widthOpen,
+					transition: "width 150ms ease",
+					zIndex: 5,
+				};
 
 	const LINKS: SidebarLink[] = [
 		{
@@ -122,18 +129,20 @@ export default function AdminSidebar({
 		},
 	];
 
+	const showExpanded = isMobile || !collapsed;
+
 	return (
-		<Box style={base(T)} pt={100} className={cl["admin-sidebar"]}>
-			<Flex direction="column" h="100%" p={collapsed ? 6 : "sm"} gap="sm">
+		<Box style={base(T)} pt={isMobile ? 0 : 100} className={cl["admin-sidebar"]}>
+			<Flex direction="column" h="100%" p={showExpanded ? "sm" : 6} gap="sm">
 				<Stack gap={30}>
 					{LINKS.map((lk) => (
 						<Stack gap={6} key={lk.title}>
 							<Flex
 								align="center"
-								justify={collapsed ? "center" : "space-between"}
+								justify={collapsed && !isMobile ? "center" : "space-between"}
 								mb={5}
 							>
-								{!collapsed && (
+								{showExpanded && (
 									<Text fw={500} size="xs" c="gray.8">
 										{lk.title}
 									</Text>
@@ -141,7 +150,7 @@ export default function AdminSidebar({
 							</Flex>
 
 							{lk.links.map((link) =>
-								collapsed ? (
+								!showExpanded ? (
 									<Tooltip
 										key={link.to}
 										label={
@@ -176,6 +185,7 @@ export default function AdminSidebar({
 												[cl.active]: isActive,
 											})
 										}
+										onClick={onNavigate}
 									>
 										{link.icon}
 										<Text size="sm" fw={500}>
@@ -188,20 +198,22 @@ export default function AdminSidebar({
 					))}
 				</Stack>
 
-				<Flex mt="auto" justify="center" c="gray.5" pb="sm">
-					<ActionIcon
-						variant="subtle"
-						radius="md"
-						onClick={onToggle}
-						aria-label="Toggle sidebar"
-					>
-						{collapsed ? (
-							<IconLayoutSidebarRightExpand size={20} />
-						) : (
-							<IconLayoutSidebarLeftExpand size={20} />
-						)}
-					</ActionIcon>
-				</Flex>
+				{!isMobile && (
+					<Flex mt="auto" justify="center" c="gray.5" pb="sm">
+						<ActionIcon
+							variant="subtle"
+							radius="md"
+							onClick={onToggle}
+							aria-label="Toggle sidebar"
+						>
+							{collapsed ? (
+								<IconLayoutSidebarRightExpand size={20} />
+							) : (
+								<IconLayoutSidebarLeftExpand size={20} />
+							)}
+						</ActionIcon>
+					</Flex>
+				)}
 			</Flex>
 		</Box>
 	);

@@ -24,6 +24,7 @@ import { NotificationRow } from "@/models/notification.models";
 import { ActorNotificationType } from "@/shared/shared.models";
 import { toLower } from "lodash";
 import StyledButton from "@/components/styledButton/StyledButton";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type ActorNotificationModalProps = {
 	opened: boolean;
@@ -103,6 +104,7 @@ export default function ActorNotificationModal({
 	notification,
 }: ActorNotificationModalProps) {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 	const p = notification?.payload ?? null;
 	const campaignName = p?.name ?? "Campaign";
 	const category = p?.category ?? null;
@@ -115,6 +117,7 @@ export default function ActorNotificationModal({
 
 	return (
 		<Modal
+			fullScreen={isMobile}
 			opened={opened}
 			onClose={onClose}
 			radius="lg"

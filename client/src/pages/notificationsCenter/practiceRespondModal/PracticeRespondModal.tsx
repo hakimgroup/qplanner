@@ -39,6 +39,7 @@ import { activityColors } from "@/shared/shared.const";
 import { toLower } from "lodash";
 import { NotificationRow } from "@/models/notification.models";
 import { Assets } from "@/models/campaign.models";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type AssetOption = { label: string; value: number };
 type AssetItem = {
@@ -75,6 +76,7 @@ export default function PracticeRespondModal({
 	notification,
 }: Props) {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 
 	// ─────────────────────────────────
 	// Pull structured payload from the notification
@@ -723,6 +725,7 @@ export default function PracticeRespondModal({
 
 	return (
 		<Modal
+			fullScreen={isMobile}
 			opened={opened}
 			onClose={onClose}
 			radius="lg"

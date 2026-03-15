@@ -34,6 +34,7 @@ import { useTiers } from "@/shared/TierProvider";
 import AppContext from "@/shared/AppContext";
 import { updateState } from "@/shared/shared.utilities";
 import { UserTabModes } from "@/models/general.models";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 enum Tiers {
 	Good = "good",
@@ -43,6 +44,7 @@ enum Tiers {
 
 const Quick = () => {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 	const { setState } = useContext(AppContext);
 	const { activePracticeName } = usePractice();
 	const { goodIds, betterIds, bestIds, loading, refresh } = useTiers();
@@ -159,7 +161,8 @@ const Quick = () => {
 			</StyledButton>
 
 			<Modal
-				opened={opened}
+			fullScreen={isMobile}
+			opened={opened}
 				onClose={close}
 				title={
 					<Stack gap={0}>

@@ -27,6 +27,7 @@ import {
 } from "@tabler/icons-react";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { toast } from "sonner";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type FormValues = {
 	name: string;
@@ -54,6 +55,7 @@ const initialValues: FormValues = {
 
 export default function AddPracticeModal() {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 	const [opened, { open, close }] = useDisclosure(false);
 	const qc = useQueryClient();
 
@@ -172,7 +174,8 @@ export default function AddPracticeModal() {
 			</StyledButton>
 
 			<Modal
-				opened={opened}
+			fullScreen={isMobile}
+			opened={opened}
 				onClose={() => {
 					form.reset();
 					close();

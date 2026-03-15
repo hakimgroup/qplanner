@@ -22,6 +22,7 @@ import StyledButton from "@/components/styledButton/StyledButton";
 import { useState } from "react";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
 import { isEmpty } from "lodash";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type Props = {
 	opened: boolean;
@@ -31,6 +32,7 @@ type Props = {
 
 export default function CampaignModal({ opened, onClose, row }: Props) {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 
 	// Reference links (array of strings)
 	const [links, setLinks] = useState<string[]>(
@@ -92,6 +94,7 @@ export default function CampaignModal({ opened, onClose, row }: Props) {
 
 	return (
 		<Modal
+			fullScreen={isMobile}
 			opened={opened}
 			onClose={onClose}
 			title={

@@ -2,6 +2,7 @@ import { useMantineTheme, rgba, Box } from "@mantine/core";
 import { useMemo, useRef, forwardRef, useImperativeHandle, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { ColDef, CsvExportParams, GetRowIdParams, themeQuartz } from "ag-grid-community";
+import { useBreakpoints } from "@/shared/shared.hooks";
 
 interface Props {
   cols: ColDef[];
@@ -47,7 +48,21 @@ const Table = forwardRef<TableHandle, Props>(function Table(
 ) {
   const gridRef = useRef<AgGridReact<any>>(null);
   const C = useMantineTheme().colors;
+  const { isXs, isSm } = useBreakpoints();
+  const isMobile = isXs || isSm;
   const rowBuffer = 0;
+
+  // On mobile: unpin all columns and reduce minWidth values
+  const mobileCols = useMemo(() => {
+    if (!isMobile) return cols;
+    return cols.map(({ pinned, lockPinned, ...rest }) => ({
+      ...rest,
+      pinned: null,
+      lockPinned: false,
+      minWidth: rest.minWidth ? Math.min(rest.minWidth, 120) : undefined,
+      width: rest.width ? Math.min(rest.width, 150) : undefined,
+    }));
+  }, [cols, isMobile]);
 
   const rowSelection = useMemo(
     () =>
@@ -77,11 +92,13 @@ const Table = forwardRef<TableHandle, Props>(function Table(
     menuBackgroundColor: "#fdfdfd",
     menuBorder: { color: rgba(C.blue[3], 0.2) },
     menuShadow: { radius: 0, spread: 1, color: "transparent" },
-    spacing,
+    spacing: isMobile ? 8 : spacing,
+    fontSize: isMobile ? 12 : undefined,
     accentColor: C.blue[3],
   });
 
-  const theme = useMemo(() => myTheme, []); // themeQuartz.withParams returns stable config
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const theme = useMemo(() => myTheme, [isMobile]); // rebuild when mobile state changes
 
   const getRowId = useCallback(
     (params: GetRowIdParams) => params.data?.[rowIdField] ?? params.data?.id,
@@ -161,10 +178,11 @@ const Table = forwardRef<TableHandle, Props>(function Table(
         rowBuffer={rowBuffer}
         rowModelType="clientSide"
         getRowId={getRowId}
-        headerHeight={headerHeight}
+        headerHeight={isMobile ? 36 : headerHeight}
+        rowHeight={isMobile ? 60 : rowHeight}
         columnTypes={columnTypes}
         rowSelection={rowSelection as any}
-        columnDefs={cols}
+        columnDefs={mobileCols}
         onSelectionChanged={onSelectionChanged}
         pagination={pagination}
       />

@@ -25,9 +25,11 @@ import StyledButton from "../styledButton/StyledButton";
 import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "@/shared/shared.models";
 import { VideoThumbnailModal } from "../videoPlayer/VideoThumbnailModal";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 const Help = () => {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 	const navigate = useNavigate();
 	const [opened, { open, close }] = useDisclosure(false);
 

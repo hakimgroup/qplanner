@@ -23,11 +23,13 @@ import Edit from "../Edit";
 import { isEmpty } from "lodash";
 import { status } from "@/filters.json";
 import Event from "@/components/campaignsSetup/event/Event";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 /** =========================
  *  CONFIG & TYPES
  *  ========================= */
-const LABEL_COL_WIDTH = 210; // Keep in sync across headers & rows
+const LABEL_COL_WIDTH = 210;
+const LABEL_COL_WIDTH_MOBILE = 100;
 
 type Mode = "equal" | "proportional";
 
@@ -187,11 +189,13 @@ function QuarterRow({
 	color,
 	year,
 	startMonth0, // 0 for H1, 6 for H2
+	labelWidth,
 }: {
 	mode: Mode;
 	color: string;
 	year: number;
 	startMonth0: number;
+	labelWidth: number;
 }) {
 	const isH1 = startMonth0 === 0;
 	const monthFractions =
@@ -202,7 +206,7 @@ function QuarterRow({
 
 	return (
 		<Flex mt={30}>
-			<Box w={LABEL_COL_WIDTH} />
+			<Box w={labelWidth} />
 			{quarterFractions.map((q, i) => (
 				<Box key={i} style={{ width: `${q * 100}%` }}>
 					<Text ta="center" mb={7} size="sm" fw={600} c={color}>
@@ -226,11 +230,13 @@ function MonthRow({
 	labels,
 	year,
 	startMonth0,
+	labelWidth,
 }: {
 	mode: Mode;
 	labels: string[];
 	year: number;
 	startMonth0: number;
+	labelWidth: number;
 }) {
 	const monthFractions =
 		mode === "proportional"
@@ -240,7 +246,7 @@ function MonthRow({
 	return (
 		<>
 			<Flex mt="lg">
-				<Box w={LABEL_COL_WIDTH} />
+				<Box w={labelWidth} />
 				{labels.map((m, i) => (
 					<Box
 						key={m}
@@ -254,7 +260,7 @@ function MonthRow({
 				))}
 			</Flex>
 			<Flex mt="sm">
-				<Box w={LABEL_COL_WIDTH} />
+				<Box w={labelWidth} />
 				<Divider size="xs" flex={1} color="gray.1" />
 			</Flex>
 		</>
@@ -272,6 +278,7 @@ function CampaignRow({
 	laneHeight = 34,
 	laneGap = 6,
 	minBlockWidth = 10,
+	labelWidth = LABEL_COL_WIDTH,
 }: {
 	mode: Mode;
 	group: GroupRowData;
@@ -280,6 +287,7 @@ function CampaignRow({
 	laneHeight?: number;
 	laneGap?: number;
 	minBlockWidth?: number;
+	labelWidth?: number;
 }) {
 	const [cp, setCp] = useState<Campaign>(null);
 	const { laneIndexById, lanes } = layoutLanes(group.campaigns);
@@ -314,7 +322,7 @@ function CampaignRow({
 					<Group
 						align="center"
 						gap={5}
-						w={LABEL_COL_WIDTH}
+						w={labelWidth}
 						h={containerHeight}
 					>
 						<IconCircleFilled color={group.dotColor} size={12} />
@@ -398,7 +406,13 @@ function CampaignRow({
 /** =========================
  *  MAIN COMPONENT
  *  ========================= */
-export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
+export default function CampaignTimeline({
+	mode = "equal",
+}: {
+	mode?: Mode;
+}) {
+	const isMobile = useIsMobile();
+	const labelWidth = isMobile ? LABEL_COL_WIDTH_MOBILE : LABEL_COL_WIDTH;
 	const calendarYear = 2026;
 
 	const {
@@ -500,20 +514,24 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 		h2Groups.reduce((n, g) => n + g.campaigns.length, 0);
 
 	return (
-		<Box>
+		<Box style={{ overflowX: "auto" }}>
 			{/* Year Header And Selector */}
-			<Flex align="center" justify="space-between">
+			<Flex
+				align="center"
+				justify="space-between"
+				wrap="wrap"
+				gap={10}
+			>
 				<Text
-					fz={"h1"}
+					fz={isMobile ? "h3" : "h1"}
 					fw={700}
 					variant="gradient"
 					gradient={{ from: "blue.3", to: "red.4", deg: 180 }}
 				>
-					{/* {Number(format(new Date(), "yyyy"))} Planner Calendar */}
 					{calendarYear} Planner Calendar
 				</Text>
 
-				<Flex align="center" gap={10}>
+				<Flex align="center" gap={10} wrap="wrap">
 					<Badge variant="outline" color="gray.1">
 						<Text size="xs" fw={500} c={"gray.9"}>
 							{plannedCount} campaigns planned
@@ -557,12 +575,14 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 							color="blue.3"
 							year={calendarYear}
 							startMonth0={0}
+							labelWidth={labelWidth}
 						/>
 						<MonthRow
 							mode={mode}
 							labels={monthsH1}
 							year={calendarYear}
 							startMonth0={0}
+							labelWidth={labelWidth}
 						/>
 
 						{h1Groups.map((g) => (
@@ -572,6 +592,7 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 								group={g}
 								rangeStartISO={`${calendarYear}-01-01`}
 								rangeEndISO={`${calendarYear}-06-30`}
+								labelWidth={labelWidth}
 							/>
 						))}
 					</Box>
@@ -604,12 +625,14 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 							color="red.5"
 							year={calendarYear}
 							startMonth0={6}
+							labelWidth={labelWidth}
 						/>
 						<MonthRow
 							mode={mode}
 							labels={monthsH2}
 							year={calendarYear}
 							startMonth0={6}
+							labelWidth={labelWidth}
 						/>
 
 						{h2Groups.map((g) => (
@@ -619,6 +642,7 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 								group={g}
 								rangeStartISO={`${calendarYear}-07-01`}
 								rangeEndISO={`${calendarYear}-12-31`}
+								labelWidth={labelWidth}
 							/>
 						))}
 					</Box>
@@ -634,7 +658,7 @@ export default function CampaignTimeline({ mode = "equal" }: { mode?: Mode }) {
 						Campaign Status Legend
 					</Text>
 
-					<Flex mt={20} gap={20}>
+					<Flex mt={20} gap={isMobile ? 10 : 20} wrap="wrap">
 						{status.map((st) => (
 							<Group key={st.value} align="center" gap={8}>
 								<IconCircleFilled

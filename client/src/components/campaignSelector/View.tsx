@@ -68,6 +68,7 @@ import { useNavigate } from "react-router-dom";
 import { startCase } from "lodash";
 import { UserTabModes } from "@/models/general.models";
 import AppContext from "@/shared/AppContext";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 interface Props {
 	mode: "add" | "view";
@@ -82,6 +83,7 @@ type DateRange = { from: Date | null; to: Date | null };
  *  sourced from notification payloads (the richest data source). */
 function LifecycleDetails({ campaign: c }: { campaign: Campaign }) {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 	const { data: notifications = [] } = useSelectionNotifications(c.selection_id);
 
 	// Merge all payloads — later notifications override earlier ones for shared keys
@@ -491,6 +493,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 	const navigate = useNavigate();
 	const isAdd = mode === "add";
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 	const { setState } = useContext(AppContext);
 	const [editOpened, { open: openEdit, close: closeEdit }] =
 		useDisclosure(false);
@@ -699,7 +702,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 	return (
 		<>
 			<Drawer
-				size={"32rem"}
+				size={isMobile ? "100%" : "32rem"}
 				opened={opened}
 				onClose={closeDrawer}
 				title={
@@ -1140,7 +1143,8 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 			</Drawer>
 
 			<Modal
-				opened={!!previewImage}
+			fullScreen={isMobile}
+			opened={!!previewImage}
 				onClose={() => setPreviewImage(null)}
 				title={previewImage?.label}
 				size="lg"

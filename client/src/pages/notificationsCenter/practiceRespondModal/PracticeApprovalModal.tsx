@@ -34,6 +34,7 @@ import {
 } from "@tabler/icons-react";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 export type PracticeApprovalModalProps = {
 	opened: boolean;
@@ -47,6 +48,7 @@ export default function PracticeApprovalModal({
 	notification: ntf,
 }: PracticeApprovalModalProps) {
 	const T = useMantineTheme().colors;
+	const isMobile = useIsMobile();
 
 	// State for feedback view
 	const [showFeedbackForm, setShowFeedbackForm] = useState(false);
@@ -118,6 +120,7 @@ export default function PracticeApprovalModal({
 
 	return (
 		<Modal
+			fullScreen={isMobile}
 			opened={opened}
 			onClose={handleClose}
 			centered

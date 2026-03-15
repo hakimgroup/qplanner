@@ -25,6 +25,7 @@ import { IconEye } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { startCase } from "lodash";
 import { statusColors } from "@/shared/shared.const";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 export type NotificationRow = {
   id: string;
@@ -64,6 +65,7 @@ const AdminNotificationsTable = forwardRef<
   ref
 ) {
   const T = useMantineTheme().colors;
+	const isMobile = useIsMobile();
   const tableRef = useRef<TableHandle>(null);
   const selectedIdsRef = useRef<string[]>([]);
   const [recipientsModalOpen, setRecipientsModalOpen] = useState(false);
@@ -330,7 +332,8 @@ const AdminNotificationsTable = forwardRef<
       />
 
       <Modal
-        opened={recipientsModalOpen}
+			fullScreen={isMobile}
+			opened={recipientsModalOpen}
         onClose={() => setRecipientsModalOpen(false)}
         title={<Text fw={700}>{recipientsModalData.title}</Text>}
         radius="lg"

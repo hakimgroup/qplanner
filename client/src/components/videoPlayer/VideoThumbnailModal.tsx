@@ -10,9 +10,11 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { IconPlayerPlay, IconPlayerPlayFilled } from "@tabler/icons-react";
 import cl from "./videoThumbnailModal.module.scss";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 export function VideoThumbnailModal({ useButton = false, fullWidth = false }) {
 	const T = useMantineTheme().colors;
+	const isMobile = useIsMobile();
 
 	// Your link (kept here for reference)
 	// https://vimeo.com/1124869260/c60ca35a1e?share=copy
@@ -70,7 +72,8 @@ export function VideoThumbnailModal({ useButton = false, fullWidth = false }) {
 			)}
 
 			<Modal
-				opened={opened}
+			fullScreen={isMobile}
+			opened={opened}
 				onClose={handleClose}
 				size="90rem"
 				radius={10}

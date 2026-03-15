@@ -336,9 +336,10 @@ const CampaignSelectorTable = () => {
 				</Stack>
 			)}
 
-			<Group align="center" justify={"space-between"}>
+			<Group align="center" justify={"space-between"} wrap="wrap">
 				<TextInput
-					miw={400}
+					miw={200}
+					style={{ flex: 1, maxWidth: 400 }}
 					radius={10}
 					size="sm"
 					fz={"sm"}

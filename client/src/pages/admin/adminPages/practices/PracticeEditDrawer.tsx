@@ -21,6 +21,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/api/supabase";
 import { DatabaseTables } from "@/shared/shared.models";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 interface Props {
 	practice: any;
@@ -30,6 +31,7 @@ interface Props {
 
 const PracticeEditDrawer = ({ practice, opened, onClose }: Props) => {
 	const T = useMantineTheme().colors;
+	const isMobile = useIsMobile();
 	const queryClient = useQueryClient();
 
 	const [form, setForm] = useState({

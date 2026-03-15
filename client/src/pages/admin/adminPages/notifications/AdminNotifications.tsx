@@ -158,7 +158,7 @@ const AdminNotifications = () => {
           </Group>
 
           <Grid>
-            <Grid.Col span={6}>
+            <Grid.Col span={{ base: 12, md: 6 }}>
               <TextInput
                 radius={10}
                 size="sm"
@@ -171,7 +171,7 @@ const AdminNotifications = () => {
             </Grid.Col>
 
             {/* Practice */}
-            <Grid.Col span={2}>
+            <Grid.Col span={{ base: 12, sm: 4, md: 2 }}>
               <Select
                 radius={10}
                 data={practiceOptions}
@@ -179,12 +179,12 @@ const AdminNotifications = () => {
                 nothingFoundMessage="No practices found"
                 value={filters.practice ?? "all"}
                 onChange={(v) => handleChange("practice", v)}
-                comboboxProps={{ width: 300, position: "bottom-end" }}
+                comboboxProps={{ position: "bottom-end" }}
               />
             </Grid.Col>
 
             {/* Status (maps to to_status) */}
-            <Grid.Col span={2}>
+            <Grid.Col span={{ base: 6, sm: 4, md: 2 }}>
               <Select
                 radius={10}
                 data={[{ label: "All Status", value: "all" }].concat(
@@ -192,12 +192,12 @@ const AdminNotifications = () => {
                 )}
                 value={filters.type ?? "all"}
                 onChange={(v) => handleChange("type", v)}
-                comboboxProps={{ width: 150, position: "bottom-end" }}
+                comboboxProps={{ position: "bottom-end" }}
               />
             </Grid.Col>
 
             {/* Category (UI only – no category in history; kept for parity) */}
-            <Grid.Col span={2}>
+            <Grid.Col span={{ base: 6, sm: 4, md: 2 }}>
               <Select
                 radius={10}
                 data={[
@@ -206,7 +206,7 @@ const AdminNotifications = () => {
                 ]}
                 value={filters.category ?? "all"}
                 onChange={(v) => handleChange("category", v)}
-                comboboxProps={{ width: 150, position: "bottom-end" }}
+                comboboxProps={{ position: "bottom-end" }}
               />
             </Grid.Col>
           </Grid>

@@ -27,6 +27,7 @@ import StyledButton from "../styledButton/StyledButton";
 import { useUpsertCatalogCampaign } from "@/hooks/campaign.hooks";
 import { AssetItem, Assets } from "@/models/general.models";
 import { AdminModalSelection, Creatives } from "@/models/campaign.models";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type Props = {
 	opened: boolean;
@@ -75,6 +76,7 @@ function CreativeInputs({
 }) {
 	const hasAnyUrl = creatives.some((c) => c.url?.trim());
 	const T = useMantineTheme().colors;
+	const isMobile = useIsMobile();
 
 	return (
 		<Stack gap={8}>
@@ -608,6 +610,8 @@ export default function AdminRequestAssetsModal({
 	onClose,
 	selection,
 }: Props) {
+	const isMobile = useIsMobile();
+
 	// editable asset state
 	const [assetsState, setAssetsState] = useState<Assets>(() =>
 		cloneAssets(selection.assets)
@@ -845,6 +849,7 @@ export default function AdminRequestAssetsModal({
 
 	return (
 		<Modal
+			fullScreen={isMobile}
 			opened={opened}
 			onClose={onClose}
 			title={

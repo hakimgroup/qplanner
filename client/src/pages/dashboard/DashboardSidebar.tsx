@@ -19,10 +19,19 @@ import cl from "./dashboardSidebar.module.scss";
 interface SidebarProps {
   collapsed: boolean;
   setCollapsed: (c: boolean) => void;
+  isMobile?: boolean;
 }
 
-export function DashboardSidebar({ collapsed, setCollapsed }: SidebarProps) {
+export function DashboardSidebar({ collapsed, setCollapsed, isMobile }: SidebarProps) {
   const T = useMantineTheme();
+
+  if (isMobile) {
+    return (
+      <Stack gap={25} px="xs">
+        <DashboardFilters />
+      </Stack>
+    );
+  }
 
   return (
     <Stack

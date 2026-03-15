@@ -55,6 +55,7 @@ import AppContext from "@/shared/AppContext";
 import { updateState } from "@/shared/shared.utilities";
 import { useAssets } from "@/hooks/general.hooks";
 import { startCase } from "lodash";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type DateRange = { from: Date | null; to: Date | null };
 
@@ -88,6 +89,7 @@ function BriefGuide({
   onChange: (answers: BriefAnswers) => void;
 }) {
   const T = useMantineTheme();
+	const isMobile = useIsMobile();
   const [expandedKey, setExpandedKey] = useState<string | null>(BRIEF_QUESTIONS[0].key);
 
   const answeredCount = BRIEF_QUESTIONS.filter((q) => answers[q.key]?.trim()).length;
@@ -211,6 +213,7 @@ const Bespoke = ({
 }) => {
   const [opened, { open, close }] = useDisclosure(false);
   const T = useMantineTheme();
+  const isMobile = useIsMobile();
   const {
     state: { filtersOptions },
     setState,
@@ -358,7 +361,8 @@ const Bespoke = ({
       </StyledButton>
 
       <Modal
-        opened={opened}
+			fullScreen={isMobile}
+			opened={opened}
         onClose={close}
         title={
           <Stack gap={0}>

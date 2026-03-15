@@ -2,6 +2,7 @@ import { Modal, Stack, Text, Button, Group, Alert } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { useDeleteAllowedUser } from "@/pages/auth/auth.hooks";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type Props = {
 	opened: boolean;
@@ -17,6 +18,7 @@ export default function DeleteUserModal({
 	userName,
 }: Props) {
 	const { mutate: deleteUser, isPending } = useDeleteAllowedUser();
+	const isMobile = useIsMobile();
 
 	const handleDelete = () => {
 		if (!userId) return;
@@ -27,6 +29,7 @@ export default function DeleteUserModal({
 
 	return (
 		<Modal
+			fullScreen={isMobile}
 			opened={opened}
 			onClose={onClose}
 			title={

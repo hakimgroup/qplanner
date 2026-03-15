@@ -22,8 +22,8 @@ export default function CampaignsFilters({
 	const hasSelection = selectedIds.length > 0;
 
 	return (
-		<Group justify="space-between" mb="sm">
-			<Group gap="xs">
+		<Group justify="space-between" mb="sm" wrap="wrap" gap="sm">
+			<Group gap="xs" wrap="wrap">
 				<Select
 					radius={10}
 					placeholder="Bulk set tier…"

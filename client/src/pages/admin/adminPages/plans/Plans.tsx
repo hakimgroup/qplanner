@@ -125,7 +125,7 @@ const Plans = () => {
         <Stack gap={10}>
           <Title order={4}>Filters & Search</Title>
           <Grid>
-            <Grid.Col span={8}>
+            <Grid.Col span={{ base: 12, md: 8 }}>
               <TextInput
                 radius={10}
                 size="sm"
@@ -136,7 +136,7 @@ const Plans = () => {
                 onChange={(e) => setQuery(e.currentTarget.value)}
               />
             </Grid.Col>
-            <Grid.Col span={2}>
+            <Grid.Col span={{ base: 6, md: 2 }}>
               <MultiSelect
                 size="sm"
                 searchable
@@ -155,7 +155,7 @@ const Plans = () => {
                 }
               />
             </Grid.Col>
-            <Grid.Col span={2}>
+            <Grid.Col span={{ base: 6, md: 2 }}>
               <Select
                 size="sm"
                 radius={10}
@@ -173,7 +173,7 @@ const Plans = () => {
             </Grid.Col>
             {!isBespokeRoute && (
               <>
-                <Grid.Col span={1.5}>
+                <Grid.Col span={{ base: 6, sm: 4, md: 1.5 }}>
                   <Select
                     size="sm"
                     radius={10}
@@ -197,7 +197,7 @@ const Plans = () => {
                     }
                   />
                 </Grid.Col>
-                <Grid.Col span={1.5}>
+                <Grid.Col span={{ base: 6, sm: 4, md: 1.5 }}>
                   <Select
                     size="sm"
                     radius={10}
@@ -220,7 +220,7 @@ const Plans = () => {
                     }
                   />
                 </Grid.Col>
-                <Grid.Col span={1.5}>
+                <Grid.Col span={{ base: 12, sm: 4, md: 1.5 }}>
                   <StyledButton
                     leftSection={<IconDownload size={16} />}
                     onClick={() =>
@@ -257,12 +257,12 @@ const Plans = () => {
           style={{ border: `1px solid ${T.violet[1]}` }}
           shadow="xs"
         >
-          <Group align="center" justify="space-between">
+          <Group align="center" justify="space-between" wrap="wrap" gap="sm">
             <Text size="sm" fw={500}>
               {selectedRowIds.length} plans selected
             </Text>
 
-            <Group align="center" gap={8}>
+            <Group align="center" gap={8} wrap="wrap">
               <Select
                 size="sm"
                 radius={10}
@@ -314,14 +314,14 @@ const Plans = () => {
             />
 
             {/* Pagination Controls */}
-            <Group justify="space-between" align="center">
+            <Group justify="space-between" align="center" wrap="wrap" gap="sm">
               <Text size="sm" c="blue.8" fw={500}>
               {total > 0
                 ? `Showing ${showingFrom}–${showingTo} of ${total}`
                 : "No results"}
             </Text>
 
-            <Group gap={8} align="center">
+            <Group gap={8} align="center" wrap="wrap">
               <Select
                 size="xs"
                 radius={10}

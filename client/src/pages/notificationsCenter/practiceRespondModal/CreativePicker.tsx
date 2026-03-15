@@ -17,6 +17,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { IconArrowsDiagonal, IconPhoto } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 export type CreativeItem = {
 	url?: string;
@@ -42,6 +43,7 @@ export default function CreativePicker({
 	onAnswerChange,
 }: Props) {
 	const T = useMantineTheme();
+	const isMobile = useIsMobile();
 	const [opened, { open, close }] = useDisclosure(false);
 	const [preview, setPreview] = useState<CreativeItem | null>(null);
 
@@ -162,7 +164,8 @@ export default function CreativePicker({
 
 			{/* Preview modal */}
 			<Modal
-				opened={opened}
+			fullScreen={isMobile}
+			opened={opened}
 				onClose={close}
 				centered
 				radius={10}

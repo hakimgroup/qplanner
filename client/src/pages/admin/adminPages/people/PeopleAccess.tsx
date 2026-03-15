@@ -100,7 +100,7 @@ const PeopleAccess = () => {
 				<Stack gap={10}>
 					<Title order={4}>Filters & Search</Title>
 					<Grid>
-						<Grid.Col span={10}>
+						<Grid.Col span={{ base: 12, md: 10 }}>
 							<TextInput
 								radius={10}
 								size="sm"
@@ -113,7 +113,7 @@ const PeopleAccess = () => {
 								}
 							/>
 						</Grid.Col>
-						<Grid.Col span={2}>
+						<Grid.Col span={{ base: 12, md: 2 }}>
 							<Select
 								size="sm"
 								radius={10}
@@ -136,7 +136,7 @@ const PeopleAccess = () => {
 				shadow="xs"
 			>
 				<Stack gap={30}>
-					<Group justify="space-between">
+					<Group justify="space-between" wrap="wrap" gap="sm">
 						<Title order={3}>
 							Users{" "}
 							<Text span fz={"h3"} fw={700} c={"blue.3"}>
@@ -145,7 +145,7 @@ const PeopleAccess = () => {
 						</Title>
 
 						{signedInUserRole === UserRoles.SuperAdmin && (
-							<Group>
+							<Group wrap="wrap" gap="xs">
 								<Button
 									variant="light"
 									color="teal"

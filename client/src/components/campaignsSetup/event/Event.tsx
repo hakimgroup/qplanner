@@ -37,6 +37,7 @@ import { updateState } from "@/shared/shared.utilities";
 import { startCase } from "lodash";
 import { useAssets } from "@/hooks/general.hooks";
 import { eventTypes } from "@/filters.json";
+import { useIsMobile } from "@/shared/shared.hooks";
 
 type FormValues = {
   eventType: string;
@@ -74,6 +75,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
   } = useContext(AppContext);
   const [opened, { open, close }] = useDisclosure(false);
   const T = useMantineTheme();
+	const isMobile = useIsMobile();
   const [links, setLinks] = useState<string[]>([""]);
 
   const {
@@ -227,7 +229,8 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
       </StyledButton>
 
       <Modal
-        opened={opened}
+			fullScreen={isMobile}
+			opened={opened}
         onClose={close}
         title={
           <Stack gap={0}>

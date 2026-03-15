@@ -11,4 +11,15 @@
 	top: 0px;
 	z-index: 10;
 	@include mixins.enter-animation;
+
+	@include mixins.mQ(768px) {
+		padding: 10px 12px;
+	}
+}
+
+.mobileSelector {
+	position: sticky;
+	top: 52px;
+	z-index: 9;
+	border-bottom: 1px solid rgba(variables.$sea, 0.1);
 }
