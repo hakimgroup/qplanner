@@ -8,6 +8,7 @@ type StatusValue =
   | "awaitingApproval"
   | "requested"
   | "confirmed"
+  | "completed"
   | "live";
 
 const STATUS_LABELS: Record<StatusValue, string> = {
@@ -16,6 +17,7 @@ const STATUS_LABELS: Record<StatusValue, string> = {
   inProgress: "In Progress",
   awaitingApproval: "Awaiting Approval",
   confirmed: "Confirmed",
+  completed: "Completed",
   live: "Live",
 };
 
@@ -30,6 +32,8 @@ const toStatusValue = (raw?: string | null): StatusValue | undefined => {
     requested: "requested",
     awaitingapproval: "awaitingApproval",
     confirmed: "confirmed",
+    completed: "completed",
+    complete: "completed",
     live: "live",
   };
   return map[key];

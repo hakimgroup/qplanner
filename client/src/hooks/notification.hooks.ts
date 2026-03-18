@@ -230,12 +230,20 @@ export function useConfirmAssets() {
     onSuccess: (data) => {
       toast.success("Assets confirmed successfully");
 
-      // Refresh notifications and plans
+      // Refresh notifications, plans, campaigns, and selections
       qc.invalidateQueries({
         queryKey: [DatabaseTables.Notifications],
         exact: false,
       });
       qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.CampaignsCatalog],
+        exact: false,
+      });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Selections],
+        exact: false,
+      });
 
       // Send notification email to admins (fire-and-forget)
       if (data?.id) {
@@ -269,12 +277,20 @@ export function useRequestRevision() {
     onSuccess: (data) => {
       toast.success("Feedback submitted successfully");
 
-      // Refresh notifications and plans
+      // Refresh notifications, plans, campaigns, and selections
       qc.invalidateQueries({
         queryKey: [DatabaseTables.Notifications],
         exact: false,
       });
       qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.CampaignsCatalog],
+        exact: false,
+      });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Selections],
+        exact: false,
+      });
 
       // Send notification email to admins (fire-and-forget)
       if (data?.id) {
