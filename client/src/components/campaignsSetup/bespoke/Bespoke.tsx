@@ -398,7 +398,7 @@ const Bespoke = ({
             />
             <CampaignDates
               required
-              minDate={new Date(2026, 0, 1)}
+              minDate={(() => { const d = new Date(); d.setDate(d.getDate() + 30); return d; })()}
               maxDate={new Date(2026, 11, 31)}
               title="Preferred Dates"
               icon={<IconCalendar size={16} />}

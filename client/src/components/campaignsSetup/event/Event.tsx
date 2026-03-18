@@ -316,7 +316,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
               </Text>
 
               <CampaignDates
-                minDate={new Date(2026, 0, 1)}
+                minDate={(() => { const d = new Date(); d.setDate(d.getDate() + 30); return d; })()}
                 maxDate={new Date(2026, 11, 31)}
                 icon={<IconCalendar size={16} />}
                 dateRange={form.values.dateRange}
