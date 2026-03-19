@@ -1,0 +1,17 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev --port 5200",
+    "build": "vitepress build",
+    "preview": "vitepress preview --port 5200"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}
