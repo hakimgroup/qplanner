@@ -53,7 +53,7 @@ export const AssetsSubmittedEmail = ({
 	appUrl,
 	selectionId,
 }: AssetsSubmittedEmailProps) => {
-	const reviewUrl = `${appUrl}/admin/plans?selection=${selectionId}`;
+	const reviewUrl = `${appUrl}/notifications-center`;
 
 	// Count assets with quantities
 	const digitalWithQty = assets?.digitalAssets?.filter(a => a.quantity && a.quantity > 0) || [];

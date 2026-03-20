@@ -1,4 +1,4 @@
-import { AppRoutes } from "@/shared/shared.models";
+import { AppRoutes, UserRoles } from "@/shared/shared.models";
 import {
 	Avatar,
 	Badge,
@@ -18,6 +18,7 @@ import { useDisclosure } from "@mantine/hooks";
 import {
 	IconArrowLeft,
 	IconBell,
+	IconBook,
 	IconHelp,
 	IconLogout,
 	IconSettings,
@@ -155,6 +156,22 @@ const Nav = () => {
 				Help & Support
 			</Button>
 
+			{/* {role === UserRoles.SuperAdmin && (
+				<Button
+					component="a"
+					href="https://qplanner-docs.vercel.app/"
+					target="_blank"
+					rel="noopener noreferrer"
+					variant="subtle"
+					color="gray"
+					justify="start"
+					leftSection={<IconBook size={16} />}
+					onClick={closeDrawer}
+				>
+					Documentation
+				</Button>
+			)} */}
+
 			<Divider />
 
 			<Button
@@ -265,6 +282,22 @@ const Nav = () => {
 								</>
 							)}
 
+							{/* {role === UserRoles.SuperAdmin && (
+								<Button
+									component="a"
+									href="https://qplanner-docs.vercel.app/"
+									target="_blank"
+									rel="noopener noreferrer"
+									radius={10}
+									variant="subtle"
+									color="gray"
+									c="gray.8"
+									leftSection={<IconBook size={18} />}
+								>
+									Docs
+								</Button>
+							)} */}
+
 							<Button
 								radius={10}
 								variant="subtle"
@@ -346,6 +379,20 @@ const Nav = () => {
 									>
 										Help & Support
 									</Menu.Item>
+
+									{/* {role === UserRoles.SuperAdmin && (
+										<Menu.Item
+											component="a"
+											href="https://qplanner-docs.vercel.app/"
+											target="_blank"
+											rel="noopener noreferrer"
+											leftSection={
+												<IconBook size={14} />
+											}
+										>
+											Documentation
+										</Menu.Item>
+									)} */}
 
 									<Menu.Item
 										color="red"

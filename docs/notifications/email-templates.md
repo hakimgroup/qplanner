@@ -61,6 +61,21 @@ All emails are sent from: `Team@planner.hakimgroup.io`
 
 For testing, set `TEST_EMAIL_OVERRIDE` in `server/.env` to redirect **all** emails to a single address. Remove or comment out this variable for production.
 
+## Email CTA Links
+
+All workflow email templates include a call-to-action button. Every CTA links to `/notifications-center` so users land directly on their notifications:
+
+| Email Template           | CTA Destination              |
+| ------------------------ | ---------------------------- |
+| `AssetsRequestedEmail`   | `/notifications-center`      |
+| `AssetsRequestedBulkEmail` | `/notifications-center`    |
+| `AssetsSubmittedEmail`   | `/notifications-center`      |
+| `AwaitingApprovalEmail`  | `/notifications-center`      |
+| `AssetsConfirmedEmail`   | `/notifications-center`      |
+| `FeedbackRequestedEmail` | `/notifications-center`      |
+
+Actor/CRUD emails (campaign added/updated/deleted) link to `/dashboard?practice={id}&tab=selected`.
+
 ## Troubleshooting Email Delivery
 
 1. **Check Resend dashboard** — [resend.com/emails](https://resend.com/emails) shows all sent emails with delivery status

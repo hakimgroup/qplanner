@@ -39,7 +39,7 @@ export const FeedbackRequestedEmail = ({
 	appUrl,
 	selectionId,
 }: FeedbackRequestedEmailProps) => {
-	const reviewUrl = `${appUrl}/admin/plans?selection=${selectionId}`;
+	const reviewUrl = `${appUrl}/notifications-center`;
 
 	return (
 		<Html>

@@ -43,7 +43,7 @@ export const AwaitingApprovalEmail = ({
 	appUrl,
 	selectionId,
 }: AwaitingApprovalEmailProps) => {
-	const reviewUrl = `${appUrl}`;
+	const reviewUrl = `${appUrl}/notifications-center`;
 
 	return (
 		<Html>

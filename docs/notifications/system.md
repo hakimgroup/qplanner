@@ -11,7 +11,15 @@ Notifications are the core communication mechanism between admins and practices.
 3. **Displayed** — The client fetches notifications via `list_notifications` RPC and shows them in the notification bell and Notifications Center
 4. **Actioned** — Clicking a notification opens the appropriate modal (determined by `useNotificationOpen.hook.tsx`)
 5. **Emailed** — The Express server sends an email using the appropriate React Email template
-6. **Read** — When a user opens a notification, `mark_notification_read` sets `read_at` on their `notification_targets` row
+6. **Read** — When a user opens a notification, `mark_notification_read` sets `read_at` on their `notification_targets` row (creates the row if it doesn't exist via upsert)
+
+### Visibility for New Practice Members
+
+Notifications are visible to **all current members** of a practice, not just the users who existed when the notification was sent. The `list_notifications` RPC for practice users queries by `practice_members` membership rather than `notification_targets` rows. This means:
+
+- A user added to a practice **after** notifications were sent will still see all existing notifications for that practice
+- Those notifications will appear as **unread** (since the new user has no `notification_targets` row yet)
+- When the user opens a notification, `mark_notification_read` creates the `notification_targets` row automatically
 
 ### Audience
 

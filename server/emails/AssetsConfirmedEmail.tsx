@@ -41,7 +41,7 @@ export const AssetsConfirmedEmail = ({
 	appUrl,
 	selectionId,
 }: AssetsConfirmedEmailProps) => {
-	const reviewUrl = `${appUrl}/admin/plans?selection=${selectionId}`;
+	const reviewUrl = `${appUrl}/notifications-center`;
 
 	return (
 		<Html>
