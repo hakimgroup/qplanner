@@ -156,7 +156,7 @@ const Nav = () => {
 				Help & Support
 			</Button>
 
-			{/* {role === UserRoles.SuperAdmin && (
+			{role === UserRoles.SuperAdmin && (
 				<Button
 					component="a"
 					href="https://qplanner-docs.vercel.app/"
@@ -170,7 +170,7 @@ const Nav = () => {
 				>
 					Documentation
 				</Button>
-			)} */}
+			)}
 
 			<Divider />
 
@@ -282,7 +282,7 @@ const Nav = () => {
 								</>
 							)}
 
-							{/* {role === UserRoles.SuperAdmin && (
+							{role === UserRoles.SuperAdmin && (
 								<Button
 									component="a"
 									href="https://qplanner-docs.vercel.app/"
@@ -296,7 +296,7 @@ const Nav = () => {
 								>
 									Docs
 								</Button>
-							)} */}
+							)}
 
 							<Button
 								radius={10}
@@ -380,7 +380,7 @@ const Nav = () => {
 										Help & Support
 									</Menu.Item>
 
-									{/* {role === UserRoles.SuperAdmin && (
+									{role === UserRoles.SuperAdmin && (
 										<Menu.Item
 											component="a"
 											href="https://qplanner-docs.vercel.app/"
@@ -392,7 +392,7 @@ const Nav = () => {
 										>
 											Documentation
 										</Menu.Item>
-									)} */}
+									)}
 
 									<Menu.Item
 										color="red"
