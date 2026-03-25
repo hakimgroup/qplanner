@@ -24,14 +24,16 @@ import { usePractice } from "@/shared/PracticeProvider";
 import StyledButton from "@/components/styledButton/StyledButton";
 import PlansTable, { PlansTableHandle } from "./PlansTable";
 import { usePlans } from "@/hooks/selection.hooks";
-import { PlansFilter } from "@/models/selection.models";
+import { PlansFilter, PlanRow } from "@/models/selection.models";
 import { normalizeAllToNull } from "@/shared/shared.utilities";
+import { fetchPlans } from "@/api/selections";
 import { useLocation } from "react-router-dom";
 import { AppRoutes } from "@/shared/shared.models";
 import AppContext from "@/shared/AppContext";
 import { startCase } from "lodash";
 import PlansMetaSummary from "./PlansMetaSummary";
 import BulkRequestButton from "@/components/assets/BulkRequestButton";
+import { toast } from "sonner";
 
 const PAGE_SIZES = [
   { label: "25 / page", value: "25" },
@@ -99,6 +101,51 @@ const Plans = () => {
   // Pagination info text
   const showingFrom = total === 0 ? 0 : offset + 1;
   const showingTo = Math.min(offset + pageSize, total);
+
+  // Export all plans (fetches all rows server-side, not just current page)
+  const [exporting, setExporting] = useState(false);
+  const handleExportAll = async () => {
+    setExporting(true);
+    try {
+      const allData = await fetchPlans(
+        normalizeAllToNull({
+          ...plansFilters,
+          limit: null,
+          offset: 0,
+          search: debounced || null,
+        })
+      );
+      const rows = allData?.data ?? [];
+      if (rows.length === 0) {
+        toast.info("No data to export");
+        return;
+      }
+      const cols = ["practice", "campaign", "category", "source", "status", "from", "end", "updated_at"];
+      const header = cols.join(",");
+      const csvRows = rows.map((r: PlanRow) =>
+        cols.map((c) => {
+          const val = (r as any)[c];
+          if (val == null) return "";
+          const str = String(val);
+          return str.includes(",") || str.includes('"') || str.includes("\n")
+            ? `"${str.replace(/"/g, '""')}"`
+            : str;
+        }).join(",")
+      );
+      const csv = [header, ...csvRows].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "all-plans.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to export");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <Stack gap={25}>
@@ -220,12 +267,14 @@ const Plans = () => {
                     }
                   />
                 </Grid.Col>
-                <Grid.Col span={{ base: 12, sm: 4, md: 1.5 }}>
+                <Grid.Col span={{ base: 6, sm: 4, md: 1.5 }}>
                   <StyledButton
                     leftSection={<IconDownload size={16} />}
+                    disabled={selectedRowIds.length === 0}
                     onClick={() =>
                       plansRef.current?.exportCsv({
-                        fileName: "plans.csv",
+                        fileName: "plans-selected.csv",
+                        onlySelected: true,
                         columnKeys: [
                           "practice",
                           "campaign",
@@ -239,8 +288,19 @@ const Plans = () => {
                       })
                     }
                   >
-                    Export CSV
+                    Export Selected ({selectedRowIds.length})
                   </StyledButton>
+                </Grid.Col>
+                <Grid.Col span={{ base: 6, sm: 4, md: 1.5 }}>
+                  <Button
+                    variant="light"
+                    color="teal"
+                    leftSection={<IconDownload size={16} />}
+                    onClick={handleExportAll}
+                    loading={exporting}
+                  >
+                    Export All ({total})
+                  </Button>
                 </Grid.Col>
               </>
             )}
