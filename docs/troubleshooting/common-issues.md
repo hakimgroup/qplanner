@@ -62,39 +62,6 @@ SELECT id, status FROM selections WHERE id = '<selection-id>';
 - **Catalog campaigns:** Edit the campaign in Admin → Campaigns and add creatives
 - **Bespoke campaigns:** Should have a default creative automatically. If missing, check `bespoke_campaigns.creatives` in the database
 
-## User Can't See Notifications or Campaigns
-
-### Symptoms
-- User logs in but sees no notifications, no campaigns, or an empty planner
-- User is assigned to practices but nothing shows up
-
-### Cause
-The user's `allowed_users.id` doesn't match their `auth.users.id` (Supabase Auth). This happens when users are bulk-imported with auto-generated UUIDs before they ever log in. The `link_current_user` RPC should sync these on login, but if it fails silently the mismatch persists.
-
-All queries use `auth.uid()` to identify the current user, so if `practice_members.user_id` points to the old UUID, the user effectively has no practice memberships from the app's perspective.
-
-### Diagnosis
-```sql
--- Check for ID mismatch
-SELECT au.id AS allowed_id, a.id AS auth_id, au.email
-FROM allowed_users au
-JOIN auth.users a ON LOWER(a.email) = LOWER(au.email)
-WHERE au.id <> a.id;
-```
-
-### Fix
-Sync the IDs. The `ON UPDATE CASCADE` FK constraints on `practice_members`, `notification_targets`, `notification_emails_log`, and `practice_onboarding_emails` will propagate the change automatically:
-
-```sql
-UPDATE allowed_users au
-SET id = a.id
-FROM auth.users a
-WHERE LOWER(a.email) = LOWER(au.email)
-  AND au.id <> a.id;
-```
-
-Ask the user to refresh the page after the fix.
-
 ## Practice Can't Log In
 
 ### Symptoms

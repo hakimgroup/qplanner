@@ -804,10 +804,12 @@ app.post("/send-bulk-notification-email", async (req: Request, res: Response) =>
 			byPractice[pid].push(notif);
 		}
 
+		// 3. Process practices in batches of 4 to stay under Resend's 5 req/sec limit
+		const practiceEntries = Object.entries(byPractice);
+		const BATCH_SIZE = 4;
 		const results: any[] = [];
 
-		// 3. Process each practice
-		for (const [practiceId, practiceNotifs] of Object.entries(byPractice)) {
+		const processPractice = async ([practiceId, practiceNotifs]: [string, any[]]) => {
 			// Get practice details
 			const { data: practice } = await supabase
 				.from("practices")
@@ -816,20 +818,18 @@ app.post("/send-bulk-notification-email", async (req: Request, res: Response) =>
 				.single();
 
 			if (!practice) {
-				results.push({ practiceId, error: "Practice not found" });
-				continue;
+				return { practiceId, error: "Practice not found" };
 			}
 
 			// Get unique recipients from all notification targets
-			const allNotifIds = practiceNotifs.map((n) => n.id);
+			const allNotifIds = practiceNotifs.map((n: any) => n.id);
 			const { data: targets } = await supabase
 				.from("notification_targets")
 				.select("user_id")
 				.in("notification_id", allNotifIds);
 
 			if (!targets || targets.length === 0) {
-				results.push({ practiceId, message: "No recipients" });
-				continue;
+				return { practiceId, message: "No recipients" };
 			}
 
 			const uniqueUserIds = [...new Set(targets.map((t: any) => t.user_id))];
@@ -839,18 +839,16 @@ app.post("/send-bulk-notification-email", async (req: Request, res: Response) =>
 				.in("id", uniqueUserIds);
 
 			if (!users || users.length === 0) {
-				results.push({ practiceId, message: "No valid users" });
-				continue;
+				return { practiceId, message: "No valid users" };
 			}
 
 			const recipientEmails = users.map((u: any) => u.email).filter(Boolean);
 			if (recipientEmails.length === 0) {
-				results.push({ practiceId, message: "No valid emails" });
-				continue;
+				return { practiceId, message: "No valid emails" };
 			}
 
 			// Build campaigns list from notifications
-			const campaigns = practiceNotifs.map((n) => ({
+			const campaigns = practiceNotifs.map((n: any) => ({
 				selectionId: n.selection_id,
 				campaignName: n.payload?.name || "Campaign",
 				campaignCategory: n.payload?.category || "Campaign",
@@ -881,31 +879,43 @@ app.post("/send-bulk-notification-email", async (req: Request, res: Response) =>
 
 			if (sendError) {
 				console.error(`[Bulk Notification Email] Send error for practice ${practice.name}:`, sendError);
-				results.push({ practiceId, error: sendError.message });
-				continue;
+				return { practiceId, error: sendError.message };
 			}
 
-			// Log for each recipient and each notification
-			for (const user of users) {
-				for (const notif of practiceNotifs) {
-					await supabase.from("notification_emails_log").insert({
-						notification_id: notif.id,
-						email_type: "assets_requested_bulk",
-						recipient_email: user.email,
-						recipient_user_id: user.id,
-						selection_id: notif.selection_id,
-						practice_id: practice.id,
-						practice_name: practice.name,
-						campaign_name: notif.payload?.name,
-						actor_user_id: notif.actor_user_id,
-						status: "sent",
-						payload: { campaigns_count: campaigns.length, all_campaigns: campaigns },
-					});
-				}
-			}
+			// Batch insert all log entries at once
+			const logEntries = users.flatMap((user: any) =>
+				practiceNotifs.map((notif: any) => ({
+					notification_id: notif.id,
+					email_type: "assets_requested_bulk",
+					recipient_email: user.email,
+					recipient_user_id: user.id,
+					selection_id: notif.selection_id,
+					practice_id: practice.id,
+					practice_name: practice.name,
+					campaign_name: notif.payload?.name,
+					actor_user_id: notif.actor_user_id,
+					status: "sent",
+					payload: { campaigns_count: campaigns.length, all_campaigns: campaigns },
+				}))
+			);
+			await supabase.from("notification_emails_log").insert(logEntries);
 
 			console.log(`[Bulk Notification Email] Sent consolidated email for ${practice.name} (${campaigns.length} campaigns) to ${recipientEmails.length} recipients`);
-			results.push({ practiceId, practiceName: practice.name, sent: recipientEmails.length, campaignsCount: campaigns.length });
+			return { practiceId, practiceName: practice.name, sent: recipientEmails.length, campaignsCount: campaigns.length };
+		};
+
+		for (let i = 0; i < practiceEntries.length; i += BATCH_SIZE) {
+			const batch = practiceEntries.slice(i, i + BATCH_SIZE);
+			const settled = await Promise.allSettled(batch.map(processPractice));
+			results.push(
+				...settled.map((s) =>
+					s.status === "fulfilled" ? s.value : { error: (s as PromiseRejectedResult).reason?.message ?? "Unknown error" }
+				)
+			);
+			// Wait 300ms between batches to stay under Resend's 5 req/sec rate limit
+			if (i + BATCH_SIZE < practiceEntries.length) {
+				await new Promise((resolve) => setTimeout(resolve, 300));
+			}
 		}
 
 		return res.status(200).json({ results });

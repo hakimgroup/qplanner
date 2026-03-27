@@ -107,10 +107,5 @@ The database is hosted on **Supabase** (PostgreSQL). Access it via the [Supabase
 - Foreign key to `campaigns_catalog(id)`
 - Must be `NULL` for bespoke campaigns (bespoke IDs are in a different table)
 
-### `allowed_users.id`
-- Must match `auth.users.id` for the same email — the `link_current_user` RPC syncs this on login
-- Referenced by `practice_members`, `notification_targets`, `notification_emails_log`, `practice_onboarding_emails` — all with `ON UPDATE CASCADE`
-- If bulk-importing users, the ID will be a placeholder until the user first logs in
-
 ### `allowed_users.role`
 - Valid values: `'user'`, `'admin'`, `'super_admin'`
