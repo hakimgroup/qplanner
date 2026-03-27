@@ -179,18 +179,6 @@ export default function BulkRequestButton({
 
             <List spacing={6} size="sm" withPadding>
               <List.Item>
-                <Text size="sm">
-                  <Badge variant="light" color="violet">
-                    Bespoke
-                  </Badge>{" "}
-                  selections will be{" "}
-                  <Text span fw={700}>
-                    ignored
-                  </Text>{" "}
-                  — request those individually.
-                </Text>
-              </List.Item>
-              <List.Item>
                 Only selections currently{" "}
                 <Badge variant="light" color="green">
                   onPlan
