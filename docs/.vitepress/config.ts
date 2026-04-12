@@ -39,6 +39,7 @@ export default defineConfig({
           { text: 'User Management', link: '/admin/user-management' },
           { text: 'Campaign Management', link: '/admin/campaign-management' },
           { text: 'Bulk Operations', link: '/admin/bulk-operations' },
+          { text: 'God Mode', link: '/admin/god-mode' },
         ],
       },
       {

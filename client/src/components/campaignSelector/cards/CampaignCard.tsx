@@ -1,4 +1,5 @@
 import {
+	ActionIcon,
 	Badge,
 	Box,
 	Button,
@@ -8,10 +9,17 @@ import {
 	Stack,
 	Text,
 	Title,
+	Tooltip,
 	useMatches,
 } from "@mantine/core";
 import cl from "./campaignCard.module.scss";
-import { IconCalendarCheck, IconPencil, IconPlus } from "@tabler/icons-react";
+import {
+	IconCalendarCheck,
+	IconCheck,
+	IconPencil,
+	IconPlus,
+	IconShare3,
+} from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import StyledButton from "@/components/styledButton/StyledButton";
 import View from "../View";
@@ -20,13 +28,15 @@ import { Campaign } from "@/models/campaign.models";
 import { startCase, truncate } from "lodash";
 import { formatAvailabilityForUI } from "@/shared/shared.utilities";
 import { BadgeList } from "@/components/badgeList/BadgeList";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Status from "@/components/status/Status";
-import { SelectionStatus } from "@/shared/shared.models";
+import { AppRoutes, SelectionStatus } from "@/shared/shared.models";
 import AppContext from "@/shared/AppContext";
 import { UserTabModes } from "@/models/general.models";
 import clsx from "clsx";
 import { format } from "date-fns";
+import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 const CampaignCard = (c: Campaign) => {
 	const [viewMode, setViewMode] = useState("view");
@@ -42,6 +52,42 @@ const CampaignCard = (c: Campaign) => {
 		md: 480,
 		lg: 470,
 	});
+
+	const [searchParams, setSearchParams] = useSearchParams();
+	const [copied, setCopied] = useState(false);
+
+	// Auto-open this card's drawer if the URL contains ?campaign=<this id>
+	// (catalog campaigns only — bespoke campaigns/events are not shareable)
+	useEffect(() => {
+		if (c.is_bespoke || c.is_event) return;
+		const target = searchParams.get("campaign");
+		if (target && target === c.id) {
+			setViewMode("view");
+			open();
+			// Strip the query param so refresh / nav doesn't reopen
+			const next = new URLSearchParams(searchParams);
+			next.delete("campaign");
+			setSearchParams(next, { replace: true });
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [c.id]);
+
+	const handleShare = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (!c.id) return;
+		const base =
+			(import.meta as any).env?.VITE_APP_BASE_URL ||
+			window.location.origin;
+		const url = `${base.replace(/\/$/, "")}${AppRoutes.Dashboard}?campaign=${c.id}`;
+		try {
+			await navigator.clipboard.writeText(url);
+			setCopied(true);
+			toast.success("Share link copied to clipboard");
+			setTimeout(() => setCopied(false), 1500);
+		} catch {
+			toast.error("Failed to copy link");
+		}
+	};
 
 	const Objectives = ({ noTitle = false }) => (
 		<Stack gap={5}>
@@ -90,35 +136,61 @@ const CampaignCard = (c: Campaign) => {
 				onClick={open}
 			>
 				<Stack gap={15}>
-					{c.selected && (
-						<Flex justify={"space-between"} w={"100%"}>
-							{c.is_event ? (
-								<Group gap={10}>
-									<Badge
-										color="violet"
-										size="lg"
-										leftSection={
-											<IconCalendarCheck size={15} />
-										}
-									>
-										Event
-									</Badge>
-									<Text c="violet" size="sm" fw={700}>
-										{c?.event_type}
-									</Text>
-								</Group>
-							) : (
-								<Box></Box>
+					<Flex
+						justify={"space-between"}
+						align={"center"}
+						w={"100%"}
+					>
+						{c.selected && c.is_event ? (
+							<Group gap={10}>
+								<Badge
+									color="violet"
+									size="lg"
+									leftSection={<IconCalendarCheck size={15} />}
+								>
+									Event
+								</Badge>
+								<Text c="violet" size="sm" fw={700}>
+									{c?.event_type}
+								</Text>
+							</Group>
+						) : (
+							<Box />
+						)}
+						<Group gap={6} align="center">
+							{c.selected && (
+								<Status
+									status={
+										!isSelections
+											? SelectionStatus.OnPlan
+											: c.status
+									}
+								/>
 							)}
-							<Status
-								status={
-									!isSelections
-										? SelectionStatus.OnPlan
-										: c.status
-								}
-							/>
-						</Flex>
-					)}
+							{!c.is_bespoke && !c.is_event && (
+								<Tooltip
+									label={copied ? "Copied!" : "Share campaign"}
+									withArrow
+									position="left"
+								>
+									<ActionIcon
+										variant="light"
+										color="violet"
+										radius="xl"
+										size="md"
+										aria-label="Share campaign"
+										onClick={handleShare}
+									>
+										{copied ? (
+											<IconCheck size={14} />
+										) : (
+											<IconShare3 size={14} />
+										)}
+									</ActionIcon>
+								</Tooltip>
+							)}
+						</Group>
+					</Flex>
 
 					<Stack gap={3} mt={c.selected ? -10 : "auto"}>
 						<Title order={5} fw={600}>

@@ -16,16 +16,14 @@ import {
   Grid,
   Button,
   Radio,
-  Loader,
-  Divider,
-} from "@mantine/core";
+  Loader} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useDisclosure } from "@mantine/hooks";
 import {
   IconCalendar,
   IconPlus,
   IconTrash,
-  IconAsterisk,
-} from "@tabler/icons-react";
+  IconAsterisk} from "@tabler/icons-react";
 import { useState, useMemo, useContext } from "react";
 import { useForm } from "@mantine/form";
 import { toast } from "sonner";
@@ -60,8 +58,7 @@ const initialValues: FormValues = {
   topics: [],
   selectedAssets: [],
   requirements: "",
-  notes: "",
-};
+  notes: ""};
 
 const urlish = (s: string) =>
   /^https?:\/\/[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,10}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$/.test(
@@ -71,8 +68,7 @@ const urlish = (s: string) =>
 const Event = ({ buttonText = "Bespoke Event" }) => {
   const {
     state: { filtersOptions },
-    setState,
-  } = useContext(AppContext);
+    setState} = useContext(AppContext);
   const [opened, { open, close }] = useDisclosure(false);
   const T = useMantineTheme();
 	const isMobile = useIsMobile();
@@ -81,8 +77,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
   const {
     data: assetsData,
     isLoading: loadingAssets,
-    error: assetsError,
-  } = useAssets();
+    error: assetsError} = useAssets();
 
   const form = useForm<FormValues>({
     initialValues,
@@ -111,9 +106,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
       selectedAssets: (arr) =>
         Array.isArray(arr) && arr.length > 0
           ? null
-          : "Select at least one asset",
-    },
-  });
+          : "Select at least one asset"}});
 
   const { mutate: createEvent, isPending: creating } = useCreateBespokeEvent();
 
@@ -157,15 +150,13 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
       const section = assetsData?.[key]?.content ?? [];
       return section.map((a) => ({
         ...a,
-        userSelected: values.selectedAssets.includes(a.name),
-      }));
+        userSelected: values.selectedAssets.includes(a.name)}));
     };
 
     const assets = {
       printedAssets: buildAssets("printedAssets"),
       digitalAssets: buildAssets("digitalAssets"),
-      externalPlacements: buildAssets("externalPlacements"),
-    };
+      externalPlacements: buildAssets("externalPlacements")};
 
     const extra: string[] = [];
     if (cleanedLinks.length) extra.push(`Links:\n${cleanedLinks.join("\n")}`);
@@ -185,8 +176,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
         assets,
         requirements: values.requirements || null,
         notes: composedNotes,
-        links: cleanedLinks,
-      },
+        links: cleanedLinks},
       {
         onSuccess: () => {
           handleReset();
@@ -199,8 +189,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
         },
         onError: (e) => {
           toast.error(e?.message ?? "Failed to create event");
-        },
-      }
+        }}
     );
   });
 
@@ -466,7 +455,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
                           ))}
                         </SimpleGrid>
                       </Checkbox.Group>
-                      <Divider my={12} color="gray.0" />
+                      <GradientDivider my={12} />
                     </Box>
                   ))}
                 </>

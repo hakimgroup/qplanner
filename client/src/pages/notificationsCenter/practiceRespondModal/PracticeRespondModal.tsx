@@ -9,14 +9,13 @@ import {
 	Textarea,
 	TextInput,
 	Badge,
-	Divider,
 	Flex,
 	Button,
 	useMantineTheme,
 	ActionIcon,
 	ThemeIcon,
-	Select,
-} from "@mantine/core";
+	Select} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import {
@@ -26,12 +25,10 @@ import {
 	IconCircleCheck,
 	IconClock,
 	IconCircle,
-	IconBox,
-} from "@tabler/icons-react";
+	IconBox} from "@tabler/icons-react";
 import {
 	useMarkNotificationRead,
-	useSubmitAssets,
-} from "@/hooks/notification.hooks";
+	useSubmitAssets} from "@/hooks/notification.hooks";
 import StyledButton from "@/components/styledButton/StyledButton";
 import CreativePicker, { CreativeItem } from "./CreativePicker";
 import { format } from "date-fns";
@@ -73,8 +70,7 @@ type Props = {
 export default function PracticeRespondModal({
 	opened,
 	onClose,
-	notification,
-}: Props) {
+	notification}: Props) {
 	const T = useMantineTheme();
 	const isMobile = useIsMobile();
 
@@ -92,8 +88,7 @@ export default function PracticeRespondModal({
 	const baseAssets: Assets = payload?.assets ?? {
 		printedAssets: [],
 		digitalAssets: [],
-		externalPlacements: [],
-	};
+		externalPlacements: []};
 
 	// ─────────────────────────────────
 	// Local state (reset whenever the modal opens for a new notification)
@@ -105,8 +100,7 @@ export default function PracticeRespondModal({
 	}>({
 		printedAssets: [],
 		digitalAssets: [],
-		externalPlacements: [],
-	});
+		externalPlacements: []});
 
 	const [selectedCreative, setSelectedCreative] = useState<string | null>(
 		null
@@ -140,14 +134,12 @@ export default function PracticeRespondModal({
 					? a.quantity
 					: 0,
 				chosenOptionLabel: null,
-				priceNum: normalisePrice(a.price),
-			}));
+				priceNum: normalisePrice(a.price)}));
 
 		setAssetsState({
 			printedAssets: initBucket(baseAssets.printedAssets, false),
 			digitalAssets: initBucket(baseAssets.digitalAssets, false),
-			externalPlacements: initBucket(baseAssets.externalPlacements, true),
-		});
+			externalPlacements: initBucket(baseAssets.externalPlacements, true)});
 
 		setSelectedCreative(null);
 		setCreativeAnswer("");
@@ -183,10 +175,8 @@ export default function PracticeRespondModal({
 				return {
 					...it,
 					userSelected: checked,
-					quantity: checked ? nextQty : 0,
-				};
-			}),
-		}));
+					quantity: checked ? nextQty : 0};
+			})}));
 	}
 
 	// decrement quantity
@@ -209,8 +199,7 @@ export default function PracticeRespondModal({
 						...it,
 						quantity: 0,
 						userSelected: false,
-						chosenOptionLabel: null,
-					};
+						chosenOptionLabel: null};
 				}
 
 				// NEW: if quantity becomes 0 for any asset, userSelected must be false
@@ -218,17 +207,14 @@ export default function PracticeRespondModal({
 					return {
 						...it,
 						quantity: next,
-						userSelected: false,
-					};
+						userSelected: false};
 				}
 
 				return {
 					...it,
 					quantity: next,
-					userSelected: next > 0,
-				};
-			}),
-		}));
+					userSelected: next > 0};
+			})}));
 	}
 
 	// increment quantity
@@ -242,10 +228,8 @@ export default function PracticeRespondModal({
 				return {
 					...it,
 					quantity: next,
-					userSelected: next > 0,
-				};
-			}),
-		}));
+					userSelected: next > 0};
+			})}));
 	}
 
 	// choose pricing option for "card" assets
@@ -264,10 +248,8 @@ export default function PracticeRespondModal({
 					...it,
 					chosenOptionLabel: label,
 					quantity: nextQty,
-					userSelected: true,
-				};
-			}),
-		}));
+					userSelected: true};
+			})}));
 	}
 
 	// ─────────────────────────────────
@@ -455,8 +437,7 @@ export default function PracticeRespondModal({
 									? chosenOpt.value
 									: null,
 							options: a.options ?? [],
-							note: a.note ?? null,
-						};
+							note: a.note ?? null};
 					})
 			);
 		}
@@ -465,8 +446,7 @@ export default function PracticeRespondModal({
 			printedAssets: mapBucket(assetsState.printedAssets),
 			digitalAssets: mapBucket(assetsState.digitalAssets),
 			externalPlacements: mapBucket(assetsState.externalPlacements),
-			creative_answer: creativeAnswer.trim() || null,
-		};
+			creative_answer: creativeAnswer.trim() || null};
 	}
 
 	// submit handler
@@ -483,8 +463,7 @@ export default function PracticeRespondModal({
 				selectionId,
 				chosenCreative: selectedCreative ?? null,
 				assets: finalAssets,
-				note: practiceNote?.trim() || null,
-			},
+				note: practiceNote?.trim() || null},
 			{
 				onSuccess: () => {
 					toast.success("Your asset choices have been sent");
@@ -492,8 +471,7 @@ export default function PracticeRespondModal({
 				},
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Failed to submit assets");
-				},
-			}
+				}}
 		);
 	}
 
@@ -504,16 +482,14 @@ export default function PracticeRespondModal({
 			{ notificationId: notification.id },
 			{
 				onSuccess: () => {},
-				onError: (e: any) => {},
-			}
+				onError: (e: any) => {}}
 		);
 	}
 
 	// quantity row
 	const QuantityRow = ({
 		bucket,
-		asset,
-	}: {
+		asset}: {
 		bucket: keyof typeof assetsState;
 		asset: EditableAsset;
 	}) => {
@@ -548,8 +524,7 @@ export default function PracticeRespondModal({
 						w={46}
 						ta="center"
 						styles={{
-							input: { textAlign: "center" },
-						}}
+							input: { textAlign: "center" }}}
 					/>
 
 					<ActionIcon
@@ -570,8 +545,7 @@ export default function PracticeRespondModal({
 
 	const AssetCard = ({
 		bucket,
-		asset,
-	}: {
+		asset}: {
 		bucket: keyof typeof assetsState;
 		asset: EditableAsset;
 	}) => {
@@ -587,8 +561,7 @@ export default function PracticeRespondModal({
 				py="sm"
 				style={{
 					borderColor: selected ? T.colors.blue[2] : T.colors.blue[0],
-					background: selected ? "rgba(107,123,255,0.06)" : "white",
-				}}
+					background: selected ? "rgba(107,123,255,0.06)" : "white"}}
 			>
 				<Stack gap={8}>
 					<Group justify="space-between" align="flex-start">
@@ -661,8 +634,7 @@ export default function PracticeRespondModal({
 								placeholder="Select an option"
 								data={asset.options.map((opt) => ({
 									value: opt.label,
-									label: `${opt.label} — £${opt.value}`,
-								}))}
+									label: `${opt.label} — £${opt.value}`}))}
 								onChange={(val) => {
 									if (val) {
 										chooseOption(bucket, asset.name, val);
@@ -688,8 +660,7 @@ export default function PracticeRespondModal({
 	const AssetSection = ({
 		title,
 		bucket,
-		list,
-	}: {
+		list}: {
 		title: string;
 		bucket: keyof typeof assetsState;
 		list: EditableAsset[];
@@ -885,8 +856,7 @@ export default function PracticeRespondModal({
 					bottom={20}
 					withBorder
 					style={{
-						borderColor: T.colors.blue[0],
-					}}
+						borderColor: T.colors.blue[0]}}
 				>
 					<Group justify="space-between" align="center">
 						<Text c="gray.7" fw={600}>
@@ -899,7 +869,7 @@ export default function PracticeRespondModal({
 				</Card>
 
 				{/* Footer */}
-				<Divider color="#e9ecef" />
+				<GradientDivider />
 
 				<Flex
 					justify="flex-end"

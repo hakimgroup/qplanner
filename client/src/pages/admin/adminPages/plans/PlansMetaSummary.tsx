@@ -9,10 +9,9 @@ import {
   Grid,
   Badge,
   Tooltip,
-  Divider,
   useMantineTheme,
-  rgba,
-} from "@mantine/core";
+  rgba} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 
 type PlansMeta = {
   onPlan: number;
@@ -36,39 +35,31 @@ const STATUS_COPY: Record<
   onPlan: {
     label: "On Plan",
     hint: "Planned but not yet requested — consider kicking these off.",
-    color: statusColors[SelectionStatus.OnPlan],
-  },
+    color: statusColors[SelectionStatus.OnPlan]},
   requested: {
     label: "Requested",
     hint: "Waiting on the practice to confirm assets/creative.",
-    color: statusColors[SelectionStatus.Requested],
-  },
+    color: statusColors[SelectionStatus.Requested]},
   inProgress: {
     label: "In Progress",
     hint: "Practice has picked assets/creative. Now with designers.",
-    color: statusColors[SelectionStatus.InProgress],
-  },
+    color: statusColors[SelectionStatus.InProgress]},
   awaitingApproval: {
     label: "Awaiting Approval",
     hint: "Ready for practice review and sign-off.",
-    color: statusColors[SelectionStatus.AwaitingApproval],
-  },
+    color: statusColors[SelectionStatus.AwaitingApproval]},
   confirmed: {
     label: "Confirmed",
     hint: "Approved and ready to schedule or go live.",
-    color: statusColors[SelectionStatus.Confirmed],
-  },
+    color: statusColors[SelectionStatus.Confirmed]},
   live: {
     label: "Live",
     hint: "Currently running.",
-    color: statusColors[SelectionStatus.Live],
-  },
+    color: statusColors[SelectionStatus.Live]},
   completed: {
     label: "Completed",
     hint: "Campaign has ended and is no longer running.",
-    color: statusColors[SelectionStatus.Completed],
-  },
-};
+    color: statusColors[SelectionStatus.Completed]}};
 
 function StatCard({ k, value }: { k: keyof PlansMeta; value: number }) {
   const info = STATUS_COPY[k];
@@ -215,7 +206,7 @@ export default function PlansMetaSummary({ meta, title = "Overview" }: Props) {
         </Grid.Col>
       </Grid>
 
-      <Divider size={"xs"} color="blue.0" />
+      <GradientDivider />
 
       <Text size="xs" c="gray.6">
         Tip: Click on the asset icon in the action column of the table below to

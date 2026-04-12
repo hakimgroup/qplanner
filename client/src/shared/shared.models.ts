@@ -12,6 +12,8 @@ export enum AppRoutes {
   Settings = "settings",
   Help = "help-and-support",
   Notifications = "notifications",
+  GodMode = "god-mode",
+  SendEmail = "send-email",
   FAQs = "/faqs",
   NotificationsCenter = "/notifications-center",
 }
@@ -54,6 +56,21 @@ export enum RPCFunctions {
   QueuePracticeOnboardingEmail = "queue_practice_onboarding_email",
   ConfirmAssets = "confirm_assets",
   RequestRevision = "request_revision",
+  GodModeSearchSelections = "god_mode_search_selections",
+  GodModeGetSelectionDetails = "god_mode_get_selection_details",
+  GodModeUpdateSelection = "god_mode_update_selection",
+  GodModeUpdateBespokeCampaign = "god_mode_update_bespoke_campaign",
+  GodModeForceStatus = "god_mode_force_status",
+  GodModeUpdateNotificationPayloads = "god_mode_update_notification_payloads",
+  GodModeRecreateNotification = "god_mode_recreate_notification",
+  GodModeForceMarkRead = "god_mode_force_mark_read",
+  GodModeLogResend = "god_mode_log_resend",
+  GodModeDeleteSelection = "god_mode_delete_selection",
+  GodModeArchiveSelection = "god_mode_archive_selection",
+  GodModeReassignPractice = "god_mode_reassign_practice",
+  GodModeListPractices = "god_mode_list_practices",
+  GodModeReplaceNotificationPayload = "god_mode_replace_notification_payload",
+  GodModeUpdateSelectionCreatives = "god_mode_update_selection_creatives",
 }
 
 export enum UserRoles {

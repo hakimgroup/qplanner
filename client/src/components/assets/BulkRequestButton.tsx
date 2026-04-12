@@ -8,14 +8,12 @@ import {
   Group,
   Badge,
   Card,
-  Divider,
-  useMantineTheme,
-} from "@mantine/core";
+  useMantineTheme} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
   IconAlertTriangle,
   IconCircleCheck,
-  IconMessage,
-} from "@tabler/icons-react";
+  IconMessage} from "@tabler/icons-react";
 import { toast } from "sonner";
 import { useRequestAssetsBulk } from "@/hooks/notification.hooks";
 import StyledButton from "../styledButton/StyledButton";
@@ -28,8 +26,7 @@ type BulkRequestButtonProps = {
 
 export default function BulkRequestButton({
   selectionIds,
-  onCompleted,
-}: BulkRequestButtonProps) {
+  onCompleted}: BulkRequestButtonProps) {
   const T = useMantineTheme().colors;
 	const isMobile = useIsMobile();
   const [opened, setOpened] = useState(false);
@@ -82,8 +79,7 @@ export default function BulkRequestButton({
       onError: (e: any) => {
         setOpened(false);
         toast.error(e?.message ?? "Bulk request failed");
-      },
-    });
+      }});
   };
 
   const title = useMemo(
@@ -128,8 +124,7 @@ export default function BulkRequestButton({
         id: r?.selection_id,
         name: r?.selection_name ?? "—",
         reason: r?.message ?? "Skipped",
-        code: r?.status ?? "skipped",
-      }));
+        code: r?.status ?? "skipped"}));
   }, [result]);
 
   const errorItems = useMemo(() => {
@@ -138,8 +133,7 @@ export default function BulkRequestButton({
       id: e?.selection_id,
       name: e?.selection_name ?? "—",
       error: e?.error ?? "error",
-      reason: e?.message ?? "An error occurred",
-    }));
+      reason: e?.message ?? "An error occurred"}));
   }, [result]);
 
   const hasIssues =
@@ -240,7 +234,7 @@ export default function BulkRequestButton({
                     <Text fw={700} mb={6} c="violet.9">
                       Skipped
                     </Text>
-                    <Divider mb="xs" color="gray.1" />
+                    <GradientDivider mb="xs" />
                     <List spacing={8} size="sm" withPadding>
                       {skippedItems.map((s) => (
                         <List.Item key={`skip-${s.id ?? Math.random()}`}>
@@ -264,7 +258,7 @@ export default function BulkRequestButton({
                     <Text fw={700} mb={6} c="violet.9">
                       Failed
                     </Text>
-                    <Divider mb="sm" />
+                    <GradientDivider mb="sm" />
                     <List spacing={8} size="sm" withPadding>
                       {errorItems.map((e) => (
                         <List.Item key={`err-${e.id ?? Math.random()}`}>

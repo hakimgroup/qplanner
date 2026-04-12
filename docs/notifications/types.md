@@ -35,6 +35,7 @@ All workflow notifications include these standard fields:
 | `assets`          | Selected assets object                                   |
 | `creatives`       | Array of creative options                                |
 | `chosen_creative` | URL of the creative chosen by the practice               |
+| `chosen_creative_label` | Display label/name of the chosen creative (resolved from the creatives array at write time) |
 | `note`            | Step-specific note from the actor                        |
 | `markup_link`     | Link to markup/proofing file (from `awaitingApproval` onwards) |
 | `assets_link`     | Link to assets folder (from the chosen creative or selection) |

@@ -4,6 +4,8 @@ import { AgGridReact } from "ag-grid-react";
 import { ColDef, CsvExportParams, GetRowIdParams, themeQuartz } from "ag-grid-community";
 import { useBreakpoints } from "@/shared/shared.hooks";
 
+export type SortModelEntry = { colId: string; sort: "asc" | "desc" };
+
 interface Props {
   cols: ColDef[];
   rows: any[];
@@ -18,7 +20,12 @@ interface Props {
   pagination?: boolean;
   csvDefaults?: Partial<CsvExportParams>;
   onSelect?: (row: any[]) => void;
+  onRowClick?: (row: any) => void;
   rowIdField?: string;
+  /** Initial sort model — applied once on grid ready */
+  initialSortModel?: SortModelEntry[];
+  /** Fired whenever the user changes sort */
+  onSortChanged?: (model: SortModelEntry[]) => void;
 }
 
 export type TableHandle = {
@@ -40,9 +47,12 @@ const Table = forwardRef<TableHandle, Props>(function Table(
     enableSelection,
     pagination = true,
     onSelect,
+    onRowClick,
     loading,
     csvDefaults,
     rowIdField = "id",
+    initialSortModel,
+    onSortChanged,
   },
   ref
 ) {
@@ -166,6 +176,55 @@ const Table = forwardRef<TableHandle, Props>(function Table(
     [onSelect]
   );
 
+  const onRowClicked = useCallback(
+    (event: any) => {
+      onRowClick?.(event.data);
+    },
+    [onRowClick]
+  );
+
+  // Show pointer cursor on hoverable rows
+  const rowStyle = useMemo(
+    () => (onRowClick ? { cursor: "pointer" } : undefined),
+    [onRowClick]
+  );
+
+  // Apply initial sort once on grid ready
+  const onGridReady = useCallback(
+    (event: any) => {
+      if (initialSortModel && initialSortModel.length > 0) {
+        const colState = initialSortModel.map((s, i) => ({
+          colId: s.colId,
+          sort: s.sort,
+          sortIndex: i,
+        }));
+        event.api.applyColumnState({
+          state: colState,
+          defaultState: { sort: null },
+        });
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  const onSortChangedInternal = useCallback(
+    (event: any) => {
+      if (!onSortChanged) return;
+      const state = event.api.getColumnState() as Array<{
+        colId: string;
+        sort: "asc" | "desc" | null;
+        sortIndex: number | null;
+      }>;
+      const sorted = state
+        .filter((s) => s.sort)
+        .sort((a, b) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0))
+        .map((s) => ({ colId: s.colId, sort: s.sort as "asc" | "desc" }));
+      onSortChanged(sorted);
+    },
+    [onSortChanged]
+  );
+
   return (
     <Box h={height} w={"100%"}>
       <AgGridReact
@@ -184,6 +243,10 @@ const Table = forwardRef<TableHandle, Props>(function Table(
         rowSelection={rowSelection as any}
         columnDefs={mobileCols}
         onSelectionChanged={onSelectionChanged}
+        onRowClicked={onRowClick ? onRowClicked : undefined}
+        onGridReady={onGridReady}
+        onSortChanged={onSortChanged ? onSortChangedInternal : undefined}
+        rowStyle={rowStyle}
         pagination={pagination}
       />
     </Box>

@@ -22,18 +22,24 @@ import {
 	IconBell,
 	IconUsers,
 	IconLogs,
+	IconBolt,
+	IconMail,
 } from "@tabler/icons-react";
-import { AppRoutes } from "@/shared/shared.models";
+import { AppRoutes, UserRoles } from "@/shared/shared.models";
+import { useAuth } from "@/shared/AuthProvider";
 import cl from "./admin.module.scss";
 import clsx from "clsx";
 
+type SidebarLinkItem = {
+	to: string; // absolute route
+	label: string;
+	icon: React.ReactNode;
+	accent?: string; // optional Mantine theme color (e.g. "red")
+};
+
 type SidebarLink = {
 	title: string;
-	links: {
-		to: string; // absolute route
-		label: string;
-		icon: React.ReactNode;
-	}[];
+	links: SidebarLinkItem[];
 };
 
 export default function AdminSidebar({
@@ -52,6 +58,8 @@ export default function AdminSidebar({
 	onNavigate?: () => void;
 }) {
 	const T = useMantineTheme();
+	const { role } = useAuth();
+	const isSuperAdmin = role === UserRoles.SuperAdmin;
 
 	const base = (theme: MantineTheme) =>
 		isMobile
@@ -129,6 +137,38 @@ export default function AdminSidebar({
 		},
 	];
 
+	if (isSuperAdmin) {
+		LINKS.splice(1, 0, {
+			title: "Super Admin",
+			links: [
+				{
+					to: `${AppRoutes.Admin}/${AppRoutes.GodMode}`,
+					label: "God Mode",
+					icon: <IconBolt size={18} color={T.colors.red[6]} />,
+					accent: "red",
+				},
+				// {
+				// 	to: `${AppRoutes.Admin}/${AppRoutes.SendEmail}`,
+				// 	label: "Send Email",
+				// 	icon: <IconMail size={18} color={T.colors.red[6]} />,
+				// 	accent: "red",
+				// },
+			],
+		});
+	}
+
+	const getAccentStyle = (
+		accent: string | undefined,
+		_isActive: boolean
+	): React.CSSProperties => {
+		if (!accent) return {};
+		const palette = (T.colors as any)[accent];
+		if (!palette) return {};
+		return {
+			color: palette[7],
+		};
+	};
+
 	const showExpanded = isMobile || !collapsed;
 
 	return (
@@ -172,6 +212,9 @@ export default function AdminSidebar({
 													[cl.active]: isActive,
 												})
 											}
+											style={({ isActive }) =>
+												getAccentStyle(link.accent, isActive)
+											}
 										>
 											{link.icon}
 										</NavLink>
@@ -185,10 +228,23 @@ export default function AdminSidebar({
 												[cl.active]: isActive,
 											})
 										}
+										style={({ isActive }) =>
+											getAccentStyle(link.accent, isActive)
+										}
 										onClick={onNavigate}
 									>
 										{link.icon}
-										<Text size="sm" fw={500}>
+										<Text
+											size="sm"
+											fw={500}
+											style={
+												link.accent
+													? {
+															color: (T.colors as any)[link.accent]?.[7],
+														}
+													: undefined
+											}
+										>
 											{link.label}
 										</Text>
 									</NavLink>

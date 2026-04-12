@@ -2,7 +2,6 @@ import {
   ActionIcon,
   Badge,
   Card,
-  Divider,
   Flex,
   Indicator,
   Loader,
@@ -12,8 +11,8 @@ import {
   useMantineTheme,
   Box,
   ThemeIcon,
-  ScrollArea,
-} from "@mantine/core";
+  ScrollArea} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
   IconBell,
   IconPlus,
@@ -27,8 +26,7 @@ import {
   IconSend,
   IconClipboardCheck,
   IconClock,
-  IconBuilding,
-} from "@tabler/icons-react";
+  IconBuilding} from "@tabler/icons-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ActorNotificationType, AppRoutes, SelectionStatus } from "@/shared/shared.models";
 
@@ -57,8 +55,7 @@ function getRelativeTime(dateString: string): string {
 
   return date.toLocaleDateString(undefined, {
     month: "short",
-    day: "numeric",
-  });
+    day: "numeric"});
 }
 
 /**
@@ -114,21 +111,18 @@ const Notification = () => {
   const {
     data: notifications,
     isLoading: loadingNotifications,
-    isError,
-  } = useNotifications({
+    isError} = useNotifications({
     readStatus: null,
     limit: 10,
     offset: 0,
-    asPractice,
-  });
+    asPractice});
 
   // modal / open flow hook
   const {
     handleOpenNotification,
     NotificationModalRenderer,
     openingId,
-    isOpening,
-  } = useNotificationOpen();
+    isOpening} = useNotificationOpen();
 
   // derive unread count
   const unreadCount = (notifications || []).filter((n) => !n.read_at).length;
@@ -167,7 +161,7 @@ const Notification = () => {
             </Flex>
           </Box>
 
-          <Divider size="xs" color="gray.1" />
+          <GradientDivider />
 
           {/* Body list with ScrollArea */}
           <ScrollArea.Autosize mah={380} type="auto" offsetScrollbars scrollbarSize={6}>
@@ -239,8 +233,7 @@ const Notification = () => {
                         opacity: isThisOpening ? 0.5 : 1,
                         backgroundColor: isUnread
                           ? T.colors.gray[0]
-                          : "transparent",
-                      }}
+                          : "transparent"}}
                     >
                       <Flex gap={10} align="flex-start">
                         <Box mt={3}>
@@ -318,7 +311,7 @@ const Notification = () => {
                       </Flex>
                     </Card>
 
-                    <Divider size="xs" color="gray.1" />
+                    <GradientDivider />
                   </Menu.Item>
                 );
               })}

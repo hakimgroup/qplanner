@@ -4,22 +4,20 @@ import {
 	Box,
 	Button,
 	Center,
-	Divider,
 	Drawer,
 	Flex,
 	Stack,
 	Text,
 	Title,
-	useMantineTheme,
-} from "@mantine/core";
+	useMantineTheme} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useDisclosure } from "@mantine/hooks";
 import {
 	IconCircleCheck,
 	IconHelp,
 	IconLink,
 	IconPlayerPlay,
-	IconPlayerPlayFilled,
-} from "@tabler/icons-react";
+	IconPlayerPlayFilled} from "@tabler/icons-react";
 import cl from "./help.module.scss";
 import StyledButton from "../styledButton/StyledButton";
 import { useNavigate } from "react-router-dom";
@@ -85,7 +83,7 @@ const Help = () => {
 					</Stack>
 				</Stack>
 
-				<Divider color="gray.1" mt={30} />
+				<GradientDivider mt={30} />
 
 				<Stack gap={8} mt={20}>
 					<VideoThumbnailModal useButton />

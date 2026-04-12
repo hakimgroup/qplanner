@@ -7,22 +7,20 @@ import {
 	Text,
 	Flex,
 	Slider,
-	Divider,
 	Switch,
 	Card,
 	Title,
 	Badge,
 	Group,
 	Button,
-	Box,
-} from "@mantine/core";
+	Box} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useDisclosure } from "@mantine/hooks";
 import {
 	IconArrowRight,
 	IconCheck,
 	IconWand,
-	IconX,
-} from "@tabler/icons-react";
+	IconX} from "@tabler/icons-react";
 import { upperFirst } from "lodash";
 import { useState } from "react";
 import GuidedResult from "./GuidedResult";
@@ -37,9 +35,7 @@ const StyledSlider = ({
 	displayText = {
 		t1: "Low Priority",
 		t2: `${selections[tp.type]}%`,
-		t3: "High Priority",
-	},
-}) => (
+		t3: "High Priority"}}) => (
 	<Stack gap={0} key={i} mt={i !== 0 ? 15 : 0}>
 		<Text fw={500}>{tp.title}</Text>
 		<Text size="sm" c={"gray.6"}>
@@ -71,7 +67,7 @@ const StyledSlider = ({
 			</Text>
 		</Flex>
 
-		<Divider size={"xs"} color="gray.1" mt={15} />
+		<GradientDivider mt={15} />
 	</Stack>
 );
 
@@ -92,8 +88,7 @@ const Guided = () => {
 		eventReady: false,
 		supplierBrand: false,
 		seasonal: false,
-		kids: false,
-	});
+		kids: false});
 
 	const { data, isFetching, refetch } = useGuidedCampaigns(
 		selections,
@@ -107,27 +102,23 @@ const Guided = () => {
 			title: "Clinical Services Emphasis",
 			description:
 				"How much focus do you want on clinical and eye health campaigns?",
-			previewTitle: "Clinical Focus",
-		},
+			previewTitle: "Clinical Focus"},
 		{
 			type: "frame",
 			title: "Frame Product Emphasis",
 			description:
 				"How important are frame-focused campaigns for your practice?",
-			previewTitle: "Frame Focus",
-		},
+			previewTitle: "Frame Focus"},
 		{
 			type: "lens",
 			title: "Lens Product Emphasis",
 			description: "What priority should lens-focused campaigns have?",
-			previewTitle: "Lens Focus",
-		},
+			previewTitle: "Lens Focus"},
 		{
 			type: "contact",
 			title: "Contact Lens Emphasis",
 			description: "What priority should contact lens campaigns have?",
-			previewTitle: "Contact Lens Focus",
-		},
+			previewTitle: "Contact Lens Focus"},
 	];
 
 	const selectionTypes = [
@@ -135,25 +126,21 @@ const Guided = () => {
 			title: "Event Readiness",
 			description:
 				"Are you ready to run time-sensitive promotional events?",
-			type: "eventReady",
-		},
+			type: "eventReady"},
 		{
 			title: "Supplier Brand Participation",
 			description:
 				"Do you want to include campaigns featuring specific supplier brands?",
-			type: "supplierBrand",
-		},
+			type: "supplierBrand"},
 		{
 			title: "Local Seasonality Focus",
 			description:
 				"Should campaigns align with your local seasonal patterns?",
-			type: "seasonal",
-		},
+			type: "seasonal"},
 		{
 			title: "Kids",
 			description: "Would you like children focused campaigns?",
-			type: "kids",
-		},
+			type: "kids"},
 	];
 
 	const activityText = () => {
@@ -258,16 +245,14 @@ const Guided = () => {
 										color="blue.3"
 										checked={selections[tp.type]}
 										onChange={({
-											currentTarget: { checked },
-										}) =>
+											currentTarget: { checked }}) =>
 											setSelections({
 												...selections,
-												[tp.type]: checked,
-											})
+												[tp.type]: checked})
 										}
 									/>
 								</Flex>
-								<Divider size={"xs"} color="gray.1" mt={15} />
+								<GradientDivider mt={15} />
 							</Stack>
 						))}
 
@@ -277,15 +262,13 @@ const Guided = () => {
 									type: "activity",
 									title: "Activity Level",
 									description:
-										"How active do you want your marketing calendar to be?",
-								}}
+										"How active do you want your marketing calendar to be?"}}
 								selections={selections}
 								setSelections={setSelections}
 								displayText={{
 									t1: "Couple campaigns",
 									t2: activityText(),
-									t3: "Constant campaigns",
-								}}
+									t3: "Constant campaigns"}}
 							/>
 						</Box>
 
@@ -343,7 +326,7 @@ const Guided = () => {
 								</Flex>
 							</Stack>
 
-							<Divider size={"xs"} color="gray.1" mt={10} />
+							<GradientDivider mt={10} />
 
 							<Flex
 								align={"center"}

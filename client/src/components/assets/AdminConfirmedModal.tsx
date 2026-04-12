@@ -5,18 +5,16 @@ import {
 	Text,
 	Card,
 	Badge,
-	Divider,
 	Flex,
 	useMantineTheme,
 	ThemeIcon,
-	ActionIcon,
-} from "@mantine/core";
+	ActionIcon} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
 	IconClock,
 	IconCircleCheck,
 	IconExternalLink,
-	IconConfetti,
-} from "@tabler/icons-react";
+	IconConfetti} from "@tabler/icons-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -38,8 +36,7 @@ export default function AdminConfirmedModal({
 	opened,
 	onClose,
 	notification,
-	selection,
-}: Props) {
+	selection}: Props) {
 	const T = useMantineTheme();
 	const isMobile = useIsMobile();
 
@@ -62,8 +59,7 @@ export default function AdminConfirmedModal({
 			{
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Failed to mark as read");
-				},
-			}
+				}}
 		);
 	}
 
@@ -116,8 +112,7 @@ export default function AdminConfirmedModal({
 					py="md"
 					bg={"teal.0"}
 					style={{
-						borderColor: T.colors.teal[2],
-					}}
+						borderColor: T.colors.teal[2]}}
 				>
 					<Group
 						justify="space-between"
@@ -162,8 +157,7 @@ export default function AdminConfirmedModal({
 					py="sm"
 					style={{
 						borderColor: T.colors.indigo[0],
-						backgroundColor: T.colors.indigo[0],
-					}}
+						backgroundColor: T.colors.indigo[0]}}
 				>
 					<Text size="sm" c="indigo.9">
 						{practiceNote}
@@ -222,8 +216,7 @@ export default function AdminConfirmedModal({
 					py="lg"
 					style={{
 						background: `linear-gradient(135deg, ${T.colors.teal[0]} 0%, ${T.colors.green[0]} 100%)`,
-						border: `1px solid ${T.colors.teal[2]}`,
-					}}
+						border: `1px solid ${T.colors.teal[2]}`}}
 				>
 					<Flex align="center" gap="md">
 						<ThemeIcon
@@ -257,7 +250,7 @@ export default function AdminConfirmedModal({
 				<PracticeNoteBlock />
 
 				{/* Footer */}
-				<Divider color="#e9ecef" />
+				<GradientDivider />
 
 				<Flex justify="flex-end">
 					<StyledButton variant="default" onClick={onClose}>

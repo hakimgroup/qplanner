@@ -5,23 +5,21 @@ import {
 	Box,
 	Button,
 	Card,
-	Divider,
 	Flex,
 	Grid,
 	Modal,
 	Stack,
 	Text,
 	useMantineTheme,
-	Highlight,
-} from "@mantine/core";
+	Highlight} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useDisclosure } from "@mantine/hooks";
 import {
 	IconBolt,
 	IconCrown,
 	IconStar,
 	IconTarget,
-	IconTrendingUp,
-} from "@tabler/icons-react";
+	IconTrendingUp} from "@tabler/icons-react";
 import { useContext, useEffect, useState } from "react";
 import cl from "./quick.module.scss";
 import clsx from "clsx";
@@ -39,8 +37,7 @@ import { useIsMobile } from "@/shared/shared.hooks";
 enum Tiers {
 	Good = "good",
 	Better = "better",
-	Best = "best",
-}
+	Best = "best"}
 
 const Quick = () => {
 	const T = useMantineTheme();
@@ -75,9 +72,7 @@ const Quick = () => {
 			includedCampaigns: goodIds,
 			snapshot: {
 				info: "Essential foundations to stay visible all year — quarterly campaigns, core assets, light community activity.",
-				budget: "£1,500 (flex up/down based on asset and activation scope).",
-			},
-		},
+				budget: "£1,500 (flex up/down based on asset and activation scope)."}},
 		{
 			color: "blue.3",
 			tag: "Standard",
@@ -95,9 +90,7 @@ const Quick = () => {
 			includedCampaigns: betterIds,
 			snapshot: {
 				info: "Balanced calendar for steady growth — more campaigns, stronger windows/POS, and one or two standout activations.",
-				budget: "£2,500 (flex with bespoke assets or local media).",
-			},
-		},
+				budget: "£2,500 (flex with bespoke assets or local media)."}},
 		{
 			color: "grape.8",
 			tag: "Premium",
@@ -115,9 +108,7 @@ const Quick = () => {
 			includedCampaigns: bestIds,
 			snapshot: {
 				info: "Always-on, growth-focused presence — multiple campaigns per quarter, premium creative, events and targeted media.",
-				budget: "£3,750+ (flex for event scale, production and paid activity).",
-			},
-		},
+				budget: "£3,750+ (flex for event scale, production and paid activity)."}},
 	];
 
 	const handleConfirm = () => {
@@ -128,8 +119,7 @@ const Quick = () => {
 				to: null,
 				status: SelectionStatus.OnPlan,
 				notes: null,
-				source: SelectionsSource.Quick,
-			},
+				source: SelectionsSource.Quick},
 			{
 				onSuccess: () => {
 					close(); // cache invalidation is handled inside the hook
@@ -141,8 +131,7 @@ const Quick = () => {
 				},
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Failed to add campaigns");
-				},
-			}
+				}}
 		);
 	};
 
@@ -264,14 +253,13 @@ const Quick = () => {
 									</Stack>
 								</Flex>
 
-								<Divider size={"xs"} color="gray.0" mt={20} />
+								<GradientDivider mt={20} />
 
 								<Card
 									radius={10}
 									bg={"violet.0"}
 									style={{
-										border: `1px solid ${T.colors.violet[1]}`,
-									}}
+										border: `1px solid ${T.colors.violet[1]}`}}
 									shadow="xs"
 								>
 									<Stack gap={10}>
@@ -300,8 +288,7 @@ const Quick = () => {
 													fontWeight: 800,
 													backgroundColor:
 														"transparent",
-													color: T.colors.blue[3],
-												}}
+													color: T.colors.blue[3]}}
 											>
 												{t.snapshot.budget}
 											</Highlight>

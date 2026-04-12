@@ -1,8 +1,7 @@
 import StyledButton from "@/components/styledButton/StyledButton";
 import {
 	useConfirmAssets,
-	useRequestRevision,
-} from "@/hooks/notification.hooks";
+	useRequestRevision} from "@/hooks/notification.hooks";
 import { NotificationRow } from "@/models/notification.models";
 import {
 	Modal,
@@ -17,11 +16,10 @@ import {
 	Box,
 	Badge,
 	Flex,
-	Divider,
 	ThemeIcon,
 	Textarea,
-	Checkbox,
-} from "@mantine/core";
+	Checkbox} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
 	IconExternalLink,
 	IconCalendar,
@@ -30,8 +28,7 @@ import {
 	IconThumbUpFilled,
 	IconClipboard,
 	IconArrowLeft,
-	IconSend,
-} from "@tabler/icons-react";
+	IconSend} from "@tabler/icons-react";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
 import { useIsMobile } from "@/shared/shared.hooks";
@@ -45,8 +42,7 @@ export type PracticeApprovalModalProps = {
 export default function PracticeApprovalModal({
 	opened,
 	onClose,
-	notification: ntf,
-}: PracticeApprovalModalProps) {
+	notification: ntf}: PracticeApprovalModalProps) {
 	const T = useMantineTheme().colors;
 	const isMobile = useIsMobile();
 
@@ -67,8 +63,7 @@ export default function PracticeApprovalModal({
 			{
 				onSuccess: () => {
 					onClose();
-				},
-			},
+				}},
 		);
 	};
 
@@ -81,8 +76,7 @@ export default function PracticeApprovalModal({
 					setFeedback("");
 					setShowFeedbackForm(false);
 					onClose();
-				},
-			},
+				}},
 		);
 	};
 
@@ -177,9 +171,7 @@ export default function PracticeApprovalModal({
 							required
 							styles={{
 								input: {
-									backgroundColor: T.gray[0],
-								},
-							}}
+									backgroundColor: T.gray[0]}}}
 						/>
 
 						{/* Info text */}
@@ -188,8 +180,7 @@ export default function PracticeApprovalModal({
 							radius="md"
 							style={{
 								backgroundColor: T.orange[0],
-								border: `1px solid ${T.orange[2]}`,
-							}}
+								border: `1px solid ${T.orange[2]}`}}
 						>
 							<Text size="sm" c="orange.9">
 								Your feedback will be sent to the team and the
@@ -252,8 +243,7 @@ export default function PracticeApprovalModal({
 									p="md"
 									radius="md"
 									style={{
-										backgroundColor: T.gray[0],
-									}}
+										backgroundColor: T.gray[0]}}
 								>
 									<Stack gap="md">
 										{/* Category & Tier Badges */}
@@ -304,7 +294,7 @@ export default function PracticeApprovalModal({
 										{/* Description */}
 										{ntf?.payload?.description && (
 											<>
-												<Divider color="gray.2" />
+												<GradientDivider />
 												<Text
 													size="sm"
 													c="gray.9"
@@ -323,8 +313,7 @@ export default function PracticeApprovalModal({
 									radius="md"
 									style={{
 										background: `linear-gradient(135deg, ${T.teal[0]} 0%, ${T.cyan[0]} 100%)`,
-										border: `1px solid ${T.teal[2]}`,
-									}}
+										border: `1px solid ${T.teal[2]}`}}
 								>
 									<Stack gap="md" align="center">
 										<ThemeIcon
@@ -402,8 +391,7 @@ export default function PracticeApprovalModal({
 									<Paper
 										radius="lg"
 										style={{
-											backgroundColor: "white",
-										}}
+											backgroundColor: "white"}}
 									>
 										{ntf?.payload?.chosen_creative ? (
 											<Image
@@ -423,8 +411,7 @@ export default function PracticeApprovalModal({
 													backgroundColor: T.gray[0],
 													display: "flex",
 													alignItems: "center",
-													justifyContent: "center",
-												}}
+													justifyContent: "center"}}
 											>
 												<Text size="sm" c="gray.5">
 													No preview available
@@ -453,8 +440,7 @@ export default function PracticeApprovalModal({
 									style={{
 										pointerEvents: ntf?.payload?.markup_link
 											? "auto"
-											: "none",
-									}}
+											: "none"}}
 								>
 									<StyledButton
 										fullWidth

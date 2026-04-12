@@ -3,13 +3,12 @@ import {
 	Button,
 	Card,
 	Checkbox,
-	Divider,
 	Flex,
 	Group,
 	Stack,
 	Switch,
-	Text,
-} from "@mantine/core";
+	Text} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { upperFirst } from "@mantine/hooks";
 import {
 	IconCalendar,
@@ -20,8 +19,7 @@ import {
 	IconStack2,
 	IconTableRow,
 	IconTag,
-	IconTarget,
-} from "@tabler/icons-react";
+	IconTarget} from "@tabler/icons-react";
 import { Fragment, useContext } from "react";
 import cl from "./dashboardFilters.module.scss";
 import clsx from "clsx";
@@ -35,62 +33,50 @@ import { updateState } from "@/shared/shared.utilities";
 const DashboardFilters = () => {
 	const {
 		state: { filters, filtersOptions },
-		setState,
-	} = useContext(AppContext);
+		setState} = useContext(AppContext);
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
 
 	const filterRemap = {
 		categories: {
 			name: "Activity",
-			value: "categories",
-		},
+			value: "categories"},
 		objectives: {
 			name: "Objectives",
-			value: "objectives",
-		},
+			value: "objectives"},
 		topics: {
 			name: "Categories",
-			value: "topics",
-		},
-	};
+			value: "topics"}};
 
 	const defaultFilters: Filters = {
 		viewMode: ViewModes.Cards,
 		dateRange: {
 			from: null,
-			to: null,
-		},
+			to: null},
 		categories: [],
 		objectives: [],
 		topics: [],
-		hideSelected: false,
-	};
+		hideSelected: false};
 
 	const filterOptions = {
 		viewModes: [
 			{
 				name: ViewModes.Cards,
 				icon: <IconLayoutGrid size={16} />,
-				show: true,
-			},
+				show: true},
 			{
 				name: ViewModes.Table,
 				icon: <IconTableRow size={16} />,
-				show: true,
-			},
+				show: true},
 			{
 				name: ViewModes.Calendar,
 				icon: <IconCalendar size={16} />,
-				show: filters.userSelectedTab === UserTabModes.Selected,
-			},
-		],
-	};
+				show: filters.userSelectedTab === UserTabModes.Selected},
+		]};
 
 	const filterGroupsIcon = {
 		categories: <IconStack2 size={18} />,
 		topics: <IconTag size={18} />,
-		objectives: <IconTarget size={18} />,
-	};
+		objectives: <IconTarget size={18} />};
 
 	const GroupTitle = ({ title = "", icon = <></> }) => (
 		<Group gap={8} align="center" mb={5}>
@@ -179,7 +165,7 @@ const DashboardFilters = () => {
 				))}
 			</Stack>
 
-			<Divider size={"xs"} color="gray.1" />
+			<GradientDivider />
 
 			<CampaignDates
 				title="Date Range"
@@ -195,19 +181,19 @@ const DashboardFilters = () => {
 				gap={2}
 			/>
 
-			<Divider size={"xs"} color="gray.1" />
+			<GradientDivider />
 
 			<FilterCheckboxes />
-			<Divider size={"xs"} color="gray.1" />
+			<GradientDivider />
 
 			<FilterCheckboxes type="objectives" />
-			<Divider size={"xs"} color="gray.1" />
+			<GradientDivider />
 
 			<FilterCheckboxes type="topics" />
 
 			{!isSelections && (
 				<>
-					<Divider size={"xs"} color="gray.1" />
+					<GradientDivider />
 
 					<Stack gap={6} className={cl["filter-group"]}>
 						<GroupTitle title="Plan Display" />
@@ -243,7 +229,7 @@ const DashboardFilters = () => {
 
 			{!isEqual(defaultFilters, filters) && (
 				<Fragment>
-					<Divider size={"xs"} color="gray.1" />
+					<GradientDivider />
 					<Button
 						fullWidth
 						variant="subtle"

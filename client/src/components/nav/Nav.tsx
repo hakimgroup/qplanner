@@ -5,15 +5,14 @@ import {
 	Box,
 	Burger,
 	Button,
-	Divider,
 	Drawer,
 	Flex,
 	Group,
 	Menu,
 	Stack,
 	Text,
-	useMantineTheme,
-} from "@mantine/core";
+	useMantineTheme} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useDisclosure } from "@mantine/hooks";
 import {
 	IconArrowLeft,
@@ -23,8 +22,7 @@ import {
 	IconLogout,
 	IconSettings,
 	IconUser,
-	IconUserShield,
-} from "@tabler/icons-react";
+	IconUserShield} from "@tabler/icons-react";
 import cl from "./nav.module.scss";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/AuthProvider";
@@ -105,7 +103,7 @@ const Nav = () => {
 				</Box>
 			</Group>
 
-			<Divider />
+			<GradientDivider />
 
 			{isAdmin && <AdminNavigate />}
 
@@ -172,7 +170,7 @@ const Nav = () => {
 				</Button>
 			)}
 
-			<Divider />
+			<GradientDivider />
 
 			<Button
 				variant="subtle"
@@ -208,12 +206,7 @@ const Nav = () => {
 
 								{!isMobile && (
 									<Box h={"30px"}>
-										<Divider
-											size="xs"
-											orientation="vertical"
-											color="gray.1"
-											h={"100%"}
-										/>
+										<GradientDivider orientation="vertical" h={"100%"} />
 									</Box>
 								)}
 							</>
@@ -245,12 +238,7 @@ const Nav = () => {
 						{pathname === AppRoutes.Dashboard && !isMobile && (
 							<>
 								<Box h={"30px"}>
-									<Divider
-										size="xs"
-										orientation="vertical"
-										color="gray.1"
-										h={"100%"}
-									/>
+									<GradientDivider orientation="vertical" h={"100%"} />
 								</Box>
 
 								<PracticeSelector />

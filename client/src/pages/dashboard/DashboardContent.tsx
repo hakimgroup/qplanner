@@ -5,10 +5,9 @@ import {
 	Group,
 	Flex,
 	Text,
-	Divider,
 	Center,
-	Button,
-} from "@mantine/core";
+	Button} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { IconCircleFilled, IconFilter, IconMail } from "@tabler/icons-react";
 import Quick from "@/components/campaignsSetup/quick/Quick";
 import Guided from "@/components/campaignsSetup/guided/Guided";
@@ -37,16 +36,13 @@ export function DashboardContent({ isMobile, onOpenFilters }: DashboardContentPr
 	const {
 		state: {
 			filters,
-			allCampaigns: { hasPlans },
-		},
-		setState,
-	} = useContext(AppContext);
+			allCampaigns: { hasPlans }},
+		setState} = useContext(AppContext);
 	const {
 		activePracticeName,
 		unitedView,
 		setActivePracticeId,
-		setUnitedView,
-	} = usePractice();
+		setUnitedView} = usePractice();
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [sendingEmails, setSendingEmails] = useState(false);
@@ -54,12 +50,20 @@ export function DashboardContent({ isMobile, onOpenFilters }: DashboardContentPr
 	// Handle tab URL parameter on mount
 	useEffect(() => {
 		const tabFromUrl = searchParams.get("tab");
-		if (
+		const sharedCampaign = searchParams.get("campaign");
+
+		// If a shared campaign URL was opened, force-switch to the Browse tab
+		// so the catalog cards render and the matching one can auto-open its drawer.
+		if (sharedCampaign) {
+			updateState(setState, "filters.userSelectedTab", UserTabModes.Browse);
+		} else if (
 			tabFromUrl === UserTabModes.Selected ||
 			tabFromUrl === UserTabModes.Browse
 		) {
 			updateState(setState, "filters.userSelectedTab", tabFromUrl);
-			// Clear the tab param from URL after applying it
+		}
+
+		if (tabFromUrl) {
 			searchParams.delete("tab");
 			setSearchParams(searchParams, { replace: true });
 		}
@@ -76,8 +80,7 @@ export function DashboardContent({ isMobile, onOpenFilters }: DashboardContentPr
 				toast.warning(
 					`Sent ${result.sent} emails with ${result.errors.length} errors`,
 					{
-						description: result.errors.slice(0, 3).join(", "),
-					}
+						description: result.errors.slice(0, 3).join(", ")}
 				);
 			} else {
 				toast.success(
@@ -137,8 +140,7 @@ export function DashboardContent({ isMobile, onOpenFilters }: DashboardContentPr
 										)}
 									</Stack>
 								</Center>
-							),
-						},
+							)},
 						{
 							value: UserTabModes.Selected,
 							label: (
@@ -154,8 +156,7 @@ export function DashboardContent({ isMobile, onOpenFilters }: DashboardContentPr
 										)}
 									</Stack>
 								</Center>
-							),
-						},
+							)},
 					]}
 				/>
 
@@ -233,7 +234,7 @@ export function DashboardContent({ isMobile, onOpenFilters }: DashboardContentPr
 					</Group>
 				)}
 
-				<Divider size="xs" color="gray.1" />
+				<GradientDivider />
 			</Stack>
 
 			<Stack gap={25} pt={25}>

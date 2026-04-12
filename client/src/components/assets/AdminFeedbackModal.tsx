@@ -5,16 +5,14 @@ import {
 	Text,
 	Card,
 	Badge,
-	Divider,
 	Flex,
 	useMantineTheme,
-	ThemeIcon,
-} from "@mantine/core";
+	ThemeIcon} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
 	IconClock,
 	IconMessageCircle,
-	IconAlertTriangle,
-} from "@tabler/icons-react";
+	IconAlertTriangle} from "@tabler/icons-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -36,8 +34,7 @@ export default function AdminFeedbackModal({
 	opened,
 	onClose,
 	notification,
-	selection,
-}: Props) {
+	selection}: Props) {
 	const T = useMantineTheme();
 	const isMobile = useIsMobile();
 
@@ -58,8 +55,7 @@ export default function AdminFeedbackModal({
 			{
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Failed to mark as read");
-				},
-			}
+				}}
 		);
 	}
 
@@ -149,8 +145,7 @@ export default function AdminFeedbackModal({
 					py="lg"
 					style={{
 						background: `linear-gradient(135deg, ${T.colors.orange[0]} 0%, ${T.colors.yellow[0]} 100%)`,
-						border: `1px solid ${T.colors.orange[2]}`,
-					}}
+						border: `1px solid ${T.colors.orange[2]}`}}
 				>
 					<Flex align="center" gap="md">
 						<ThemeIcon
@@ -190,8 +185,7 @@ export default function AdminFeedbackModal({
 							py="md"
 							style={{
 								borderColor: T.colors.orange[2],
-								backgroundColor: T.colors.orange[0],
-							}}
+								backgroundColor: T.colors.orange[0]}}
 						>
 							<Text
 								size="sm"
@@ -226,7 +220,7 @@ export default function AdminFeedbackModal({
 				</Card>
 
 				{/* Footer */}
-				<Divider color="#e9ecef" />
+				<GradientDivider />
 
 				<Flex justify="flex-end">
 					<StyledButton variant="default" onClick={onClose}>

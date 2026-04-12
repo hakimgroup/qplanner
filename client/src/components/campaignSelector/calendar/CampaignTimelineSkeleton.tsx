@@ -5,14 +5,13 @@ import {
 	Box,
 	Flex,
 	Text,
-	Divider,
 	Group,
 	Badge,
 	Card,
 	rgba,
 	Stack,
-	Spoiler,
-} from "@mantine/core";
+	Spoiler} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { IconCircleFilled, IconGridDots } from "@tabler/icons-react";
 import { Fragment, useContext, useMemo, useState } from "react";
 import { usePractice } from "@/shared/PracticeProvider";
@@ -141,8 +140,7 @@ function toIntervals(campaigns: Campaign[]): Interval[] {
 				id: c.id,
 				startMs: s.getTime(),
 				endMsIncl: msInclusive(e).getTime(),
-				campaign: c,
-			};
+				campaign: c};
 		})
 		.sort((a, b) => a.startMs - b.startMs || a.endMsIncl - b.endMsIncl);
 }
@@ -189,8 +187,7 @@ function QuarterRow({
 	color,
 	year,
 	startMonth0, // 0 for H1, 6 for H2
-	labelWidth,
-}: {
+	labelWidth}: {
 	mode: Mode;
 	color: string;
 	year: number;
@@ -218,7 +215,7 @@ function QuarterRow({
 							? `Q3 ${year}`
 							: `Q4 ${year}`}
 					</Text>
-					<Divider color={color} size="sm" />
+					<GradientDivider />
 				</Box>
 			))}
 		</Flex>
@@ -230,8 +227,7 @@ function MonthRow({
 	labels,
 	year,
 	startMonth0,
-	labelWidth,
-}: {
+	labelWidth}: {
 	mode: Mode;
 	labels: string[];
 	year: number;
@@ -261,7 +257,7 @@ function MonthRow({
 			</Flex>
 			<Flex mt="sm">
 				<Box w={labelWidth} />
-				<Divider size="xs" flex={1} color="gray.1" />
+				<GradientDivider flex={1} />
 			</Flex>
 		</>
 	);
@@ -278,8 +274,7 @@ function CampaignRow({
 	laneHeight = 34,
 	laneGap = 6,
 	minBlockWidth = 10,
-	labelWidth = LABEL_COL_WIDTH,
-}: {
+	labelWidth = LABEL_COL_WIDTH}: {
 	mode: Mode;
 	group: GroupRowData;
 	rangeStartISO: string; // "2025-01-01" or "2025-07-01"
@@ -367,8 +362,7 @@ function CampaignRow({
 											border: `2px solid ${statusToColor(
 												c.status
 											)}`,
-											cursor: "pointer",
-										}}
+											cursor: "pointer"}}
 										title={`${c.name} (${c.selection_from_date}–${c.selection_to_date})`}
 										onClick={() => setCp(c)}
 									>
@@ -407,8 +401,7 @@ function CampaignRow({
  *  MAIN COMPONENT
  *  ========================= */
 export default function CampaignTimeline({
-	mode = "equal",
-}: {
+	mode = "equal"}: {
 	mode?: Mode;
 }) {
 	const isMobile = useIsMobile();
@@ -417,9 +410,7 @@ export default function CampaignTimeline({
 
 	const {
 		state: {
-			allCampaigns: { data },
-		},
-	} = useContext(AppContext);
+			allCampaigns: { data }}} = useContext(AppContext);
 
 	// We’ll use the current practice/unitedView to decide grouping.
 	const { unitedView, activePracticeId, practices } = usePractice() as {
@@ -467,14 +458,12 @@ export default function CampaignTimeline({
 				id: `${pid}-h1`,
 				name,
 				dotColor: "blue",
-				campaigns: [],
-			};
+				campaigns: []};
 			const gH2: GroupRowData = {
 				id: `${pid}-h2`,
 				name,
 				dotColor: "red",
-				campaigns: [],
-			};
+				campaigns: []};
 
 			for (const it of list) {
 				const startMonth = new Date(it.selection_from_date).getMonth(); // 0..11
@@ -494,8 +483,7 @@ export default function CampaignTimeline({
 					const left: Campaign = { ...it, selection_to_date: h1End };
 					const right: Campaign = {
 						...it,
-						selection_from_date: h2Start,
-					};
+						selection_from_date: h2Start};
 					gH1.campaigns.push(left);
 					gH2.campaigns.push(right);
 				}

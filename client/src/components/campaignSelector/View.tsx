@@ -3,7 +3,6 @@ import {
 	Flex,
 	Badge,
 	Stack,
-	Divider,
 	Card,
 	Group,
 	Grid,
@@ -16,8 +15,8 @@ import {
 	Collapse,
 	ThemeIcon,
 	Anchor,
-	Paper,
-} from "@mantine/core";
+	Paper} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
 	IconShare3,
 	IconCalendar,
@@ -35,8 +34,7 @@ import {
 	IconExternalLink,
 	IconPrinter,
 	IconCheck,
-	IconLink,
-} from "@tabler/icons-react";
+	IconLink} from "@tabler/icons-react";
 import { useContext, useMemo, useRef, useState } from "react";
 import CampaignDates from "../campaignDates/CampaignDates";
 import StyledButton from "../styledButton/StyledButton";
@@ -45,8 +43,7 @@ import {
 	firstSentence,
 	formatDateRange,
 	getReferenceLinkLabel,
-	updateState,
-} from "@/shared/shared.utilities";
+	updateState} from "@/shared/shared.utilities";
 import { toast } from "sonner";
 import {
 	addDays,
@@ -56,8 +53,7 @@ import {
 	format,
 	isValid as isValidDate,
 	isAfter,
-	isBefore,
-} from "date-fns";
+	isBefore} from "date-fns";
 import { useAddSelection, useDeleteSelection } from "@/hooks/selection.hooks";
 import { useSelectionNotifications } from "@/hooks/notification.hooks";
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
@@ -210,14 +206,13 @@ function LifecycleDetails({ campaign: c }: { campaign: Campaign }) {
 
 	return (
 		<>
-			<Divider size="xs" color="gray.1" />
+			<GradientDivider />
 			<Paper
 				radius="md"
 				p="md"
 				style={{
 					background: `linear-gradient(135deg, ${T.colors.indigo[0]} 0%, ${T.colors.violet[0]} 100%)`,
-					border: `1px solid ${T.colors.indigo[1]}`,
-				}}
+					border: `1px solid ${T.colors.indigo[1]}`}}
 			>
 				<Stack gap="md">
 					{/* Header */}
@@ -541,9 +536,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 	const [campaign, setCampaign] = useState<{ dateRange: DateRange }>(() => ({
 		dateRange: {
 			from: defaultFrom,
-			to: defaultTo,
-		},
-	}));
+			to: defaultTo}}));
 
 	const { mutate: addSelection, isPending: adding } =
 		useAddSelection(handleAddSuccess);
@@ -632,8 +625,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 
 		setCampaign((prev) => ({
 			...prev,
-			dateRange: { from: start, to: end },
-		}));
+			dateRange: { from: start, to: end }}));
 	};
 
 	const daysDuration = (() => {
@@ -674,13 +666,11 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 				status: SelectionStatus.OnPlan,
 				source: SelectionsSource.Manual,
 				campaignName: c.name,
-				campaignCategory: c.category,
-			},
+				campaignCategory: c.category},
 			{
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Could not add to plan");
-				},
-			},
+				}},
 		);
 	};
 
@@ -690,12 +680,10 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 				selectionId: c.selection_id,
 				bespokeId: c.bespoke_campaign_id,
 				campaignName: c.name,
-				campaignCategory: c.category,
-			},
+				campaignCategory: c.category},
 			{
 				onError: (e: any) =>
-					toast.error(e.message ?? "Could not remove"),
-			},
+					toast.error(e.message ?? "Could not remove")},
 		);
 	};
 
@@ -725,8 +713,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 							radius={10}
 							bg={"violet.0"}
 							style={{
-								border: `1px solid ${T.colors.violet[1]}`,
-							}}
+								border: `1px solid ${T.colors.violet[1]}`}}
 							shadow="xs"
 						>
 							<Group align="center" justify="space-between">
@@ -774,7 +761,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 
 					{validCreatives.length > 0 && (
 						<>
-							<Divider size={"xs"} color="gray.1" />
+							<GradientDivider />
 							<Stack gap={10}>
 								<Group gap={6}>
 									<IconPhoto
@@ -801,8 +788,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 													border: `1px solid ${T.colors.gray[2]}`,
 													position: "relative",
 													transition:
-														"box-shadow 0.15s ease",
-												}}
+														"box-shadow 0.15s ease"}}
 												onMouseEnter={(e) => {
 													e.currentTarget.style.boxShadow = `0 0 0 2px ${T.colors.blue[3]}`;
 												}}
@@ -815,8 +801,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 														url: cr.url!,
 														label:
 															cr.label ||
-															`Creative ${idx + 1}`,
-													})
+															`Creative ${idx + 1}`})
 												}
 											>
 												<Image
@@ -842,8 +827,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 															T.colors.blue[4],
 														boxShadow:
 															"0 1px 4px rgba(0,0,0,0.3)",
-														pointerEvents: "none",
-													}}
+														pointerEvents: "none"}}
 												>
 													<IconArrowsMaximize
 														size={12}
@@ -868,10 +852,10 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 						</>
 					)}
 
-					<Divider size={"xs"} color="gray.1" />
+					<GradientDivider />
 					<Objectives />
 					<Topics />
-					<Divider size={"xs"} color="gray.1" />
+					<GradientDivider />
 
 					<Text fw={500} size="sm">
 						Description
@@ -887,7 +871,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 
 					{validCreatives.length === 0 && (
 						<>
-							<Divider size={"xs"} color="gray.1" />
+							<GradientDivider />
 
 							<Stack gap={10}>
 								<Text fw={500} size="sm">
@@ -928,7 +912,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 
 					{validCreatives.length > 0 && !!c.reference_links?.length && (
 						<>
-							<Divider size={"xs"} color="gray.1" />
+							<GradientDivider />
 
 							<Stack gap={10}>
 								<Text fw={500} size="sm">
@@ -959,7 +943,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 
 					{c.selected && (
 						<>
-							<Divider size={"xs"} color="gray.1" />
+							<GradientDivider />
 
 							<Grid gutter={10}>
 								<Grid.Col span={8}>
@@ -996,7 +980,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 
 					{!addOpened && !c.selected && (
 						<>
-							<Divider size={"xs"} color="gray.1" />
+							<GradientDivider />
 							<Button
 								fullWidth
 								radius={10}
@@ -1041,8 +1025,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 									onChange={(range) =>
 										setCampaign((prev) => ({
 											...prev,
-											dateRange: range,
-										}))
+											dateRange: range}))
 									}
 									startLabel="Start Date"
 									endLabel="End Date"

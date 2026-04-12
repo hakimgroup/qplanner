@@ -5,7 +5,6 @@ import {
   Button,
   Checkbox,
   Chip,
-  Divider,
   Flex,
   Grid,
   Group,
@@ -20,8 +19,8 @@ import {
   ThemeIcon,
   Collapse,
   Progress,
-  Paper,
-} from "@mantine/core";
+  Paper} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import {
@@ -42,8 +41,7 @@ import {
   IconBox,
   IconChartBar,
   IconAlertTriangle,
-  IconRocket,
-} from "@tabler/icons-react";
+  IconRocket} from "@tabler/icons-react";
 import { useCallback, useContext, useMemo, useState } from "react";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
 import { isValid as isValidDate } from "date-fns";
@@ -83,8 +81,7 @@ function formatBriefToDescription(answers: BriefAnswers): string {
 
 function BriefGuide({
   answers,
-  onChange,
-}: {
+  onChange}: {
   answers: BriefAnswers;
   onChange: (answers: BriefAnswers) => void;
 }) {
@@ -126,8 +123,7 @@ function BriefGuide({
               bg={hasAnswer ? `${q.color}.0` : "#fafafa"}
               style={{
                 borderLeft: `3px solid ${T.colors[q.color][hasAnswer ? 5 : 1]}`,
-                transition: "all 0.2s",
-              }}
+                transition: "all 0.2s"}}
             >
               <Group
                 gap="sm"
@@ -191,10 +187,7 @@ function BriefGuide({
                         backgroundColor: T.colors.gray[0],
                         borderColor: T.colors[q.color][1],
                         "&:focus": {
-                          borderColor: T.colors[q.color][4],
-                        },
-                      },
-                    }}
+                          borderColor: T.colors[q.color][4]}}}}
                   />
                 </Box>
               </Collapse>
@@ -207,8 +200,7 @@ function BriefGuide({
 }
 
 const Bespoke = ({
-  buttonText = "Bespoke Campaign",
-}: {
+  buttonText = "Bespoke Campaign"}: {
   buttonText?: string;
 }) => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -216,16 +208,14 @@ const Bespoke = ({
   const isMobile = useIsMobile();
   const {
     state: { filtersOptions },
-    setState,
-  } = useContext(AppContext);
+    setState} = useContext(AppContext);
 
   const [links, setLinks] = useState<string[]>([""]);
   const [briefAnswers, setBriefAnswers] = useState<BriefAnswers>({});
   const {
     data: assetsData,
     isLoading: loadingAssets,
-    error: assetsError,
-  } = useAssets();
+    error: assetsError} = useAssets();
   const { mutate: createBespoke, isPending: creating } =
     useCreateBespokeSelection();
 
@@ -243,8 +233,7 @@ const Bespoke = ({
       dateRange: { from: null, to: null },
       objectives: [],
       topics: [],
-      selectedAssets: [],
-    },
+      selectedAssets: []},
     validate: {
       title: (v) => (!v.trim() ? "Title is required" : null),
       dateRange: ({ from, to }) => {
@@ -257,9 +246,7 @@ const Bespoke = ({
         arr.length === 0 ? "Select at least one objective" : null,
       topics: (arr) => (arr.length === 0 ? "Select at least one topic" : null),
       selectedAssets: (arr) =>
-        arr.length === 0 ? "Select at least one asset" : null,
-    },
-  });
+        arr.length === 0 ? "Select at least one asset" : null}});
 
   const handleChangeLink = (index: number, value: string) => {
     const updated = [...links];
@@ -294,8 +281,7 @@ const Bespoke = ({
       dateRange,
       objectives,
       topics,
-      selectedAssets,
-    } = values;
+      selectedAssets} = values;
     const description = formatBriefToDescription(briefAnswers);
     const { from, to } = dateRange;
     if (!from || !to) {
@@ -310,15 +296,13 @@ const Bespoke = ({
       const section = assetsData?.[key]?.content ?? [];
       return section.map((a) => ({
         ...a,
-        userSelected: values.selectedAssets.includes(a.name),
-      }));
+        userSelected: values.selectedAssets.includes(a.name)}));
     };
 
     const assets = {
       printedAssets: buildAssets("printedAssets"),
       digitalAssets: buildAssets("digitalAssets"),
-      externalPlacements: buildAssets("externalPlacements"),
-    };
+      externalPlacements: buildAssets("externalPlacements")};
 
     createBespoke(
       {
@@ -331,8 +315,7 @@ const Bespoke = ({
         objectives,
         topics,
         assets,
-        reference_links: cleanedLinks,
-      },
+        reference_links: cleanedLinks},
       {
         onSuccess: () => {
           resetForm();
@@ -345,8 +328,7 @@ const Bespoke = ({
         },
         onError: (e: any) => {
           toast.error(e?.message ?? "Could not create bespoke campaign");
-        },
-      }
+        }}
     );
   });
 
@@ -558,7 +540,7 @@ const Bespoke = ({
                           ))}
                         </SimpleGrid>
                       </Checkbox.Group>
-                      <Divider my={12} color="gray.0" />
+                      <GradientDivider my={12} />
                     </Box>
                   ))}
                 </>

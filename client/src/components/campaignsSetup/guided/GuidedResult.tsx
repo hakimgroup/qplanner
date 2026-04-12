@@ -2,13 +2,12 @@ import {
 	Badge,
 	Button,
 	Card,
-	Divider,
 	Flex,
 	Grid,
 	Group,
 	Stack,
-	Text,
-} from "@mantine/core";
+	Text} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import cl from "./guided.module.scss";
 import StyledButton from "@/components/styledButton/StyledButton";
 import { IconCircleCheck, IconTrash } from "@tabler/icons-react";
@@ -44,8 +43,7 @@ const GuidedResult = ({ data, goBack, closeModal }: Props) => {
 				to: null,
 				status: SelectionStatus.OnPlan,
 				notes: null,
-				source: SelectionsSource.Guided,
-			},
+				source: SelectionsSource.Guided},
 			{
 				onSuccess: () => {
 					closeModal();
@@ -57,8 +55,7 @@ const GuidedResult = ({ data, goBack, closeModal }: Props) => {
 				},
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Failed to add campaigns");
-				},
-			}
+				}}
 		);
 	};
 
@@ -82,7 +79,7 @@ const GuidedResult = ({ data, goBack, closeModal }: Props) => {
 				</Flex>
 			</Card>
 
-			<Divider size={"xs"} color="gray.1" />
+			<GradientDivider />
 
 			<Stack gap={10}>
 				{dt.map((d) => (

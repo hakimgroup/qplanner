@@ -16,6 +16,9 @@ import { CampaignAddedEmail } from "../emails/CampaignAddedEmail";
 import { CampaignUpdatedEmail } from "../emails/CampaignUpdatedEmail";
 import { CampaignDeletedEmail } from "../emails/CampaignDeletedEmail";
 import { PlannerOverviewEmail } from "../emails/PlannerOverviewEmail";
+import CustomSimpleEmail from "../emails/CustomSimpleEmail";
+import CustomActionEmail from "../emails/CustomActionEmail";
+import CustomAnnouncementEmail from "../emails/CustomAnnouncementEmail";
 
 interface EmailBody {
 	to: string;
@@ -526,11 +529,16 @@ app.all(["/process-onboarding-emails", "/api/process-onboarding-emails"], async 
 // Called by client after request_assets or submit_assets RPC
 // ============================================================
 app.post("/send-notification-email", async (req: Request, res: Response) => {
-	const { notificationId, testEmailOverride } = req.body;
+	const { notificationId, testEmailOverride, recipientEmailsOverride } = req.body;
 
 	if (!notificationId) {
 		return res.status(400).json({ error: "notificationId is required" });
 	}
+
+	const overrideEmails: string[] | null =
+		Array.isArray(recipientEmailsOverride) && recipientEmailsOverride.length > 0
+			? recipientEmailsOverride.map((e: any) => String(e).trim()).filter(Boolean)
+			: null;
 
 	const appUrl = process.env.APP_URL || "https://planner.hakimgroup.co.uk";
 
@@ -570,35 +578,47 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 			return res.status(404).json({ error: "Practice not found" });
 		}
 
-		// 3. Get notification targets (recipients)
-		const { data: targets, error: targetsError } = await supabase
-			.from("notification_targets")
-			.select("user_id")
-			.eq("notification_id", notificationId);
+		// 3. Determine recipients — either from God Mode override or from notification_targets
+		let recipientEmails: string[] = [];
+		let eligibleUsers: any[] = [];
 
-		if (targetsError || !targets || targets.length === 0) {
-			console.log("[Notification Email] No targets for notification:", notificationId);
-			return res.status(200).json({ message: "No recipients", sent: 0 });
+		if (overrideEmails) {
+			// God Mode resend: explicit recipient list, bypasses notification_targets
+			recipientEmails = overrideEmails;
+			console.log(
+				`[Notification Email] Using God Mode override recipients: ${overrideEmails.length} addresses`
+			);
+		} else {
+			const { data: targets, error: targetsError } = await supabase
+				.from("notification_targets")
+				.select("user_id")
+				.eq("notification_id", notificationId);
+
+			if (targetsError || !targets || targets.length === 0) {
+				console.log("[Notification Email] No targets for notification:", notificationId);
+				return res.status(200).json({ message: "No recipients", sent: 0 });
+			}
+
+			// 4. Get user emails from allowed_users
+			const userIds = targets.map((t: any) => t.user_id).filter(Boolean);
+			const { data: users, error: usersError } = await supabase
+				.from("allowed_users")
+				.select("id, email, first_name, email_notifications_enabled")
+				.in("id", userIds);
+
+			if (usersError || !users || users.length === 0) {
+				console.log("[Notification Email] No valid users found");
+				return res.status(200).json({ message: "No valid recipients", sent: 0 });
+			}
+
+			// Filter out admins who opted out of email notifications (practice users always receive)
+			eligibleUsers = notification.audience === "admins"
+				? users.filter((u: any) => u.email_notifications_enabled !== false)
+				: users;
+
+			recipientEmails = eligibleUsers.map((u: any) => u.email).filter(Boolean);
 		}
 
-		// 4. Get user emails from allowed_users
-		const userIds = targets.map((t: any) => t.user_id).filter(Boolean);
-		const { data: users, error: usersError } = await supabase
-			.from("allowed_users")
-			.select("id, email, first_name, email_notifications_enabled")
-			.in("id", userIds);
-
-		if (usersError || !users || users.length === 0) {
-			console.log("[Notification Email] No valid users found");
-			return res.status(200).json({ message: "No valid recipients", sent: 0 });
-		}
-
-		// Filter out admins who opted out of email notifications (practice users always receive)
-		const eligibleUsers = notification.audience === "admins"
-			? users.filter((u: any) => u.email_notifications_enabled !== false)
-			: users;
-
-		const recipientEmails = eligibleUsers.map((u: any) => u.email).filter(Boolean);
 		if (recipientEmails.length === 0) {
 			return res.status(200).json({ message: "No valid emails", sent: 0 });
 		}
@@ -716,10 +736,17 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 			html: emailHtml,
 		});
 
+		// Build a unified log-recipient list that works in both modes:
+		// - normal mode: use eligibleUsers (has user_id)
+		// - override mode (god mode): just emails, no user_id
+		const logRecipients: Array<{ email: string; id: string | null }> = overrideEmails
+			? overrideEmails.map((e) => ({ email: e, id: null }))
+			: eligibleUsers.map((u: any) => ({ email: u.email, id: u.id }));
+
 		if (sendError) {
 			console.error("[Notification Email] Send error:", sendError);
 			// Log the failed attempt
-			for (const user of eligibleUsers) {
+			for (const user of logRecipients) {
 				await supabase.from("notification_emails_log").insert({
 					notification_id: notificationId,
 					email_type: emailType,
@@ -739,7 +766,7 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 		}
 
 		// 7. Log successful send
-		for (const user of eligibleUsers) {
+		for (const user of logRecipients) {
 			await supabase.from("notification_emails_log").insert({
 				notification_id: notificationId,
 				email_type: emailType,
@@ -2103,6 +2130,79 @@ app.get(["/cron-health", "/api/cron-health"], (req, res) => {
 		hasTestEmail: !!process.env.ONBOARDING_TEST_EMAIL,
 		testEmail: process.env.ONBOARDING_TEST_EMAIL || null,
 	});
+});
+
+// ============================================================================
+// Send Custom Email (super admin feature)
+// ============================================================================
+app.post("/send-custom-email", async (req: Request, res: Response) => {
+	const {
+		template,
+		subject,
+		body,
+		practiceName,
+		senderName,
+		ctaText,
+		ctaUrl,
+		recipientEmails,
+	} = req.body;
+
+	if (!template || !subject || !body || !recipientEmails?.length) {
+		return res.status(400).json({
+			error: "template, subject, body, and recipientEmails are required",
+		});
+	}
+
+	const testOverride = process.env.TEST_EMAIL_OVERRIDE;
+	const fromEmail = process.env.FROM_EMAIL || "Team@planner.hakimgroup.io";
+	const appUrl = process.env.APP_URL || "https://planner.hakimgroup.co.uk";
+
+	try {
+		const templateProps = {
+			subject,
+			body,
+			practiceName: practiceName || "Practice",
+			senderName: senderName || undefined,
+			ctaText: ctaText || "Open QPlanner",
+			ctaUrl: ctaUrl || appUrl,
+		};
+
+		let emailHtml: string;
+		if (template === "action") {
+			emailHtml = await render(CustomActionEmail(templateProps));
+		} else if (template === "announcement") {
+			emailHtml = await render(CustomAnnouncementEmail(templateProps));
+		} else {
+			emailHtml = await render(CustomSimpleEmail(templateProps));
+		}
+
+		const finalRecipients = testOverride
+			? [testOverride]
+			: (recipientEmails as string[]).filter(Boolean);
+
+		const { error: sendError } = await resend.emails.send({
+			from: fromEmail,
+			to: finalRecipients,
+			subject,
+			html: emailHtml,
+		});
+
+		if (sendError) {
+			console.error("[Custom Email] Send error:", sendError);
+			return res.status(500).json({ error: sendError.message });
+		}
+
+		console.log(
+			`[Custom Email] Sent "${template}" template to ${finalRecipients.length} recipients`
+		);
+		return res.status(200).json({
+			sent: finalRecipients.length,
+			template,
+		});
+	} catch (error: any) {
+		console.error("[Custom Email] Error:", error);
+		return res.status(500).json({ error: error.message });
+	}
 });
 
 app.use("/", (req, res) => {

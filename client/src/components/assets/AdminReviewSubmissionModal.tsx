@@ -6,20 +6,18 @@ import {
 	Card,
 	SimpleGrid,
 	Badge,
-	Divider,
 	Flex,
 	Button,
 	useMantineTheme,
 	ThemeIcon,
-	ActionIcon,
-} from "@mantine/core";
+	ActionIcon} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
 	IconClock,
 	IconCircleCheck,
 	IconCircle,
 	IconBox,
-	IconExternalLink,
-} from "@tabler/icons-react";
+	IconExternalLink} from "@tabler/icons-react";
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -29,8 +27,7 @@ import { useMarkNotificationRead } from "@/hooks/notification.hooks";
 import { toLower } from "lodash";
 import {
 	NotificationPayload,
-	NotificationRow,
-} from "@/models/notification.models";
+	NotificationRow} from "@/models/notification.models";
 import { useIsMobile } from "@/shared/shared.hooks";
 
 /**
@@ -67,8 +64,7 @@ export default function AdminReviewSubmissionModal({
 	opened,
 	onClose,
 	notification,
-	selection,
-}: Props) {
+	selection}: Props) {
 	const T = useMantineTheme();
 	const isMobile = useIsMobile();
 
@@ -87,8 +83,7 @@ export default function AdminReviewSubmissionModal({
 	const assets: SubmittedAssetsGroup | any = payload?.assets ?? {
 		printedAssets: [],
 		digitalAssets: [],
-		externalPlacements: [],
-	};
+		externalPlacements: []};
 
 	// hook for marking notification as read
 	const { mutate: markRead, isPending: markingRead } =
@@ -102,8 +97,7 @@ export default function AdminReviewSubmissionModal({
 				onSuccess: () => {},
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Failed to mark as read");
-				},
-			}
+				}}
 		);
 	}
 
@@ -228,8 +222,7 @@ export default function AdminReviewSubmissionModal({
 					py="md"
 					bg={"violet.0"}
 					style={{
-						borderColor: T.colors.blue[0],
-					}}
+						borderColor: T.colors.blue[0]}}
 				>
 					<Group
 						justify="space-between"
@@ -275,8 +268,7 @@ export default function AdminReviewSubmissionModal({
 					py="sm"
 					style={{
 						borderColor: T.colors.indigo[0],
-						backgroundColor: T.colors.indigo[0],
-					}}
+						backgroundColor: T.colors.indigo[0]}}
 				>
 					<Text size="sm" c="indigo.9">
 						{practiceNote}
@@ -296,8 +288,7 @@ export default function AdminReviewSubmissionModal({
 				py="sm"
 				style={{
 					borderColor: T.colors.blue[0],
-					background: "rgba(107,123,255,0.06)",
-				}}
+					background: "rgba(107,123,255,0.06)"}}
 			>
 				<Stack gap={8}>
 					<Group justify="space-between" align="flex-start">
@@ -352,8 +343,7 @@ export default function AdminReviewSubmissionModal({
 
 	const AssetSection = ({
 		title,
-		list,
-	}: {
+		list}: {
 		title: string;
 		list: SubmittedAsset[];
 	}) => (
@@ -482,8 +472,7 @@ export default function AdminReviewSubmissionModal({
 					bottom={20}
 					withBorder
 					style={{
-						borderColor: T.colors.blue[0],
-					}}
+						borderColor: T.colors.blue[0]}}
 				>
 					<Group justify="space-between" align="center">
 						<Text c="gray.7" fw={600}>
@@ -496,7 +485,7 @@ export default function AdminReviewSubmissionModal({
 				</Card>
 
 				{/* Footer */}
-				<Divider color="#e9ecef" />
+				<GradientDivider />
 
 				<Flex
 					justify="flex-end"

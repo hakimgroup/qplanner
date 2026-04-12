@@ -4,8 +4,7 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
-} from "react";
+  useState} from "react";
 import { ColDef } from "ag-grid-community";
 import Table, { TableHandle } from "@/components/table/Table";
 import {
@@ -18,9 +17,8 @@ import {
   Modal,
   Avatar,
   ScrollArea,
-  Flex,
-  Divider,
-} from "@mantine/core";
+  Flex} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { IconEye } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { startCase } from "lodash";
@@ -76,8 +74,7 @@ const AdminNotificationsTable = forwardRef<
 
   useImperativeHandle(ref, () => ({
     exportCsv: (opts) => tableRef.current?.exportCsv?.(opts),
-    getSelectedIds: () => selectedIdsRef.current,
-  }));
+    getSelectedIds: () => selectedIdsRef.current}));
 
   const openRecipientsModal = useCallback((row: NotificationRow) => {
     const list = Array.isArray(row.recipients) ? row.recipients : [];
@@ -85,8 +82,7 @@ const AdminNotificationsTable = forwardRef<
       title: row.practice_name
         ? `Recipients · ${row.practice_name}`
         : "Recipients",
-      recipients: list,
-    });
+      recipients: list});
     setRecipientsModalOpen(true);
   }, []);
 
@@ -113,8 +109,7 @@ const AdminNotificationsTable = forwardRef<
         <Text size="xs" c="gray.6" fw={500} title={value ?? ""}>
           {value ?? "—"}
         </Text>
-      ),
-    },
+      )},
 
     // Recipients
     {
@@ -173,8 +168,7 @@ const AdminNotificationsTable = forwardRef<
             )}
           </Stack>
         );
-      },
-    },
+      }},
 
     // Practice
     {
@@ -194,8 +188,7 @@ const AdminNotificationsTable = forwardRef<
             {data?.practice_name || "—"}
           </Text>
         </Stack>
-      ),
-    },
+      )},
 
     // Change (from → to)
     {
@@ -220,8 +213,7 @@ const AdminNotificationsTable = forwardRef<
             {startCase(data?.to_status ?? "—")}
           </Badge>
         </Group>
-      ),
-    },
+      )},
 
     // Message (human readable)
     {
@@ -234,8 +226,7 @@ const AdminNotificationsTable = forwardRef<
         <Text size="sm" fw={500} c="indigo" lineClamp={2} title={value ?? ""}>
           {value ?? "—"}
         </Text>
-      ),
-    },
+      )},
 
     // Actions
     {
@@ -262,8 +253,7 @@ const AdminNotificationsTable = forwardRef<
           </ActionIcon>
           {/* onResend intentionally not shown for history */}
         </Group>
-      ),
-    },
+      )},
   ], [T.blue, onOpen, openRecipientsModal]);
 
   const modalContent = useMemo(() => {
@@ -277,7 +267,7 @@ const AdminNotificationsTable = forwardRef<
     }
     return (
       <Stack gap="xs">
-        <Divider color="gray.1" />
+        <GradientDivider />
         <ScrollArea.Autosize mah={360}>
           <Stack gap="sm">
             {list.map((r, idx) => {

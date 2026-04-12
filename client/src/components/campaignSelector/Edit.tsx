@@ -10,27 +10,23 @@ import {
   useMantineTheme,
   Text,
   Badge,
-  Drawer,
-  Divider,
-} from "@mantine/core";
+  Drawer} from "@mantine/core";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
   IconEdit,
   IconCalendar,
   IconTrash,
-  IconCalendarCheck,
-} from "@tabler/icons-react";
+  IconCalendarCheck} from "@tabler/icons-react";
 import CampaignDates from "../campaignDates/CampaignDates";
 import StyledButton from "../styledButton/StyledButton";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   differenceInCalendarDays,
   format,
-  isValid as isValidDate,
-} from "date-fns";
+  isValid as isValidDate} from "date-fns";
 import {
   useUpdateSelection,
-  useDeleteSelection,
-} from "@/hooks/selection.hooks";
+  useDeleteSelection} from "@/hooks/selection.hooks";
 import { toast } from "sonner";
 import { SelectionStatus } from "@/shared/shared.models";
 import { Campaign } from "@/models/campaign.models";
@@ -65,8 +61,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 
   // ---- Local UI state (dates, status, notes)
   const [campaign, setCampaign] = useState<{ dateRange: DateRange }>({
-    dateRange: { from: null, to: null },
-  });
+    dateRange: { from: null, to: null }});
   const [statusValue, setStatusValue] = useState<SelectionStatus | null>(
     s?.status ?? SelectionStatus.OnPlan
   );
@@ -145,15 +140,12 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
           from_date: format(from as Date, "yyyy-MM-dd"),
           to_date: format(to as Date, "yyyy-MM-dd"),
           status: statusValue ?? undefined,
-          notes: notes ?? undefined,
-        },
+          notes: notes ?? undefined},
         campaignName: s.name,
-        campaignCategory: s.category,
-      },
+        campaignCategory: s.category},
       {
         onError: (e: any) =>
-          toast.error(e?.message ?? "Could not save changes"),
-      }
+          toast.error(e?.message ?? "Could not save changes")}
     );
   };
 
@@ -163,11 +155,9 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
         selectionId: s.selection_id,
         bespokeId: s.bespoke_campaign_id,
         campaignName: s.name,
-        campaignCategory: s.category,
-      },
+        campaignCategory: s.category},
       {
-        onError: (e: any) => toast.error(e?.message ?? "Could not remove"),
-      }
+        onError: (e: any) => toast.error(e?.message ?? "Could not remove")}
     );
   };
 
@@ -207,8 +197,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
             radius={10}
             bg={"violet.0"}
             style={{
-              border: `1px solid ${T.colors.violet[1]}`,
-            }}
+              border: `1px solid ${T.colors.violet[1]}`}}
             shadow="xs"
           >
             <Group align="center" justify="space-between">
@@ -239,7 +228,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
           </Stack>
         </Card>
 
-        <Divider size={"xs"} color="gray.1" />
+        <GradientDivider />
 
         <Text size="sm" c={"gray.9"} fw={600}>
           {s?.is_event ? "Event Dates" : "Campaign Dates"}
@@ -257,7 +246,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
           hideTitleIcon
         />
 
-        <Divider size={"xs"} color="gray.1" />
+        <GradientDivider />
 
         <Card radius={10} bg={"violet.0"} p={10} mt={5}>
           <Text size="sm" c={"gray.7"}>
@@ -274,7 +263,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
           </Text>
         </Card>
 
-        <Divider size={"xs"} color="gray.1" />
+        <GradientDivider />
 
         <Textarea
           withAsterisk
@@ -290,7 +279,7 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
           onChange={(e) => setNotes(e.currentTarget.value)}
         />
 
-        <Divider size={"xs"} color="gray.1" />
+        <GradientDivider />
 
         <Group align={"center"} justify="space-between">
           <Button

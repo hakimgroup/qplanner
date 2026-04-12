@@ -24,6 +24,9 @@ import NotificationsCenter from "./pages/notificationsCenter/NotificationsCenter
 import AdminNotifications from "./pages/admin/adminPages/notifications/AdminNotifications";
 import Practices from "./pages/admin/adminPages/practices/Practices";
 import Settings from "./pages/admin/adminPages/settings/Settings";
+import GodMode from "./pages/admin/adminPages/godMode/GodMode";
+import SendEmail from "./pages/admin/adminPages/sendEmail/SendEmail";
+import RequireSuperAdmin from "./shared/RequireSuperAdmin";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
@@ -121,6 +124,22 @@ export default function App() {
                       <Route
                         path={AppRoutes.Settings}
                         element={<Settings />}
+                      />
+                      <Route
+                        path={AppRoutes.GodMode}
+                        element={
+                          <RequireSuperAdmin>
+                            <GodMode />
+                          </RequireSuperAdmin>
+                        }
+                      />
+                      <Route
+                        path={AppRoutes.SendEmail}
+                        element={
+                          <RequireSuperAdmin>
+                            <SendEmail />
+                          </RequireSuperAdmin>
+                        }
                       />
                     </Route>
 
