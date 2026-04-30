@@ -18,7 +18,7 @@ import { find, upperFirst } from "lodash";
 import { roles } from "@/filters.json";
 import { usePractice } from "@/shared/PracticeProvider";
 import { IconCircleFilled, IconEdit, IconSearch } from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDebouncedValue } from "@mantine/hooks";
 import { useUpdateUser } from "@/pages/auth/auth.hooks";
 import { useAuth } from "@/shared/AuthProvider";
@@ -42,27 +42,55 @@ const PeopleActions = ({ row, opened, closePanel, mode }: Props) => {
 
   const [query, setQuery] = useState("");
   const [debounced] = useDebouncedValue(query, 150);
-  const [assignedPractices, setAssignedPractices] = useState(
-    row?.assigned_practices?.map((p) => p.id)
+  const [assignedPractices, setAssignedPractices] = useState<string[]>(
+    row?.assigned_practices?.map((p) => p.id) ?? []
   );
 
   // NEW: role editing state
   const [editingRole, setEditingRole] = useState(false);
   const [roleValue, setRoleValue] = useState<string | null>(row?.role ?? null);
 
+  // Sync local state whenever the panel opens for a different user, since
+  // PeopleActions is a long-lived component and useState's initial value
+  // only runs once.
+  useEffect(() => {
+    setAssignedPractices(row?.assigned_practices?.map((p) => p.id) ?? []);
+    setRoleValue(row?.role ?? null);
+    setEditingRole(false);
+    setQuery("");
+  }, [row?.id]);
+
   // API
   const { mutate: updateUser, isPending } = useUpdateUser();
 
+  // Snapshot of the practices originally assigned to this user.
+  // Used purely for sorting so the list doesn't reshuffle as the admin
+  // checks/unchecks boxes mid-interaction.
+  const originallyAssignedSet = useMemo(
+    () => new Set((row?.assigned_practices ?? []).map((p) => p.id)),
+    [row?.id]
+  );
+
   const filteredPractices = useMemo(() => {
     const q = debounced.trim().toLowerCase();
-    if (!q) return practices;
 
-    return practices.filter((p) => {
+    const matchesQuery = (p: any) => {
+      if (!q) return true;
       const name = (p.name ?? "").toLowerCase();
       const code = p.id?.toLowerCase?.() ?? "";
       return name.includes(q) || code.includes(q);
+    };
+
+    const matched = (practices ?? []).filter(matchesQuery);
+
+    // Sort: originally-assigned practices first, then the rest — both alphabetical
+    return [...matched].sort((a, b) => {
+      const aAssigned = originallyAssignedSet.has(a.id);
+      const bAssigned = originallyAssignedSet.has(b.id);
+      if (aAssigned !== bAssigned) return aAssigned ? -1 : 1;
+      return (a.name ?? "").localeCompare(b.name ?? "");
     });
-  }, [practices, debounced]);
+  }, [practices, debounced, originallyAssignedSet]);
 
   return (
     <Drawer
