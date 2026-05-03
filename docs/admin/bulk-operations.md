@@ -81,11 +81,12 @@ Clone one practice's campaign selections to another. Available from the **Calend
 4. Confirm
 
 ### Behaviour (post-cutover)
-The hook calls `copy_practice_campaigns_v2`. Per source row:
+The hook calls `copy_practice_campaigns_v2`. **Only catalog campaigns are copied** — bespoke campaigns and events are inherently per-practice (custom briefs) and are intentionally excluded. The UI shows a notice explaining this when the practice opens the copy panel.
+
+Per copied catalog row:
 
 - **Catalog campaigns** with a chosen creative on source → cloned at `inProgress` with the creative + asset choices preserved. An `inProgress` admin notification is created.
 - **Catalog campaigns** without a chosen creative on source → cloned at `draft`. Practice configures and clicks "Send to Design Team" to advance.
-- **Bespoke campaigns** → always cloned at `inProgress` with the default brand creative auto-applied.
 
 ### Email behaviour
 The actor `campaigns_copied` email goes to the practice. **No** per-campaign admin email is fired for the cloned `inProgress` notifications (same trade-off as Quick Populate — would storm inboxes). Admins discover via the in-app bell.
