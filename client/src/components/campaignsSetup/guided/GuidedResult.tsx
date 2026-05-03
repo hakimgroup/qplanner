@@ -13,15 +13,16 @@ import StyledButton from "@/components/styledButton/StyledButton";
 import { IconCircleCheck, IconTrash } from "@tabler/icons-react";
 import { Campaign, GuidedCampaign } from "@/models/campaign.models";
 import { BadgeList } from "@/components/badgeList/BadgeList";
-import { useBulkAddCampaigns } from "@/hooks/campaign.hooks";
+import { useBulkAddCampaignsWithAssets } from "@/hooks/campaign.hooks";
 import { toast } from "sonner";
-import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
+import { SelectionsSource } from "@/shared/shared.models";
 import { useContext, useState } from "react";
 import { UserTabModes } from "@/models/general.models";
 import AppContext from "@/shared/AppContext";
 import { updateState } from "@/shared/shared.utilities";
 import View from "@/components/campaignSelector/View";
 import { isEmpty } from "lodash";
+import { formatAvailabilityForUI } from "@/shared/shared.utilities";
 
 interface Props {
 	data: Campaign[];
@@ -31,19 +32,18 @@ interface Props {
 
 const GuidedResult = ({ data, goBack, closeModal }: Props) => {
 	const { setState } = useContext(AppContext);
-	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaigns();
+	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaignsWithAssets();
 	const [dt, setDt] = useState(data);
 	const [selection, setSelection] = useState<Campaign>(null);
 
 	const handleConfirm = () => {
 		bulkAdd(
 			{
-				campaignIds: data.map((d) => d.id), // array of catalog campaign IDs
+				campaigns: dt,
 				from: null,
 				to: null,
-				status: SelectionStatus.OnPlan,
-				notes: null,
-				source: SelectionsSource.Guided},
+				source: SelectionsSource.Guided,
+			},
 			{
 				onSuccess: () => {
 					closeModal();
@@ -55,7 +55,8 @@ const GuidedResult = ({ data, goBack, closeModal }: Props) => {
 				},
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Failed to add campaigns");
-				}}
+				},
+			}
 		);
 	};
 
@@ -123,8 +124,7 @@ const GuidedResult = ({ data, goBack, closeModal }: Props) => {
 								>
 									<Stack align="flex-end" gap={10}>
 										<Text size="xs" c="gray.6" fw={500}>
-											{d.availability.from} -{" "}
-											{d.availability.to}
+											{formatAvailabilityForUI(d.availability)}
 										</Text>
 
 										<Badge

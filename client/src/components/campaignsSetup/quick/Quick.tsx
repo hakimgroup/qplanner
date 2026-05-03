@@ -20,13 +20,14 @@ import {
 	IconStar,
 	IconTarget,
 	IconTrendingUp} from "@tabler/icons-react";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import cl from "./quick.module.scss";
 import clsx from "clsx";
 import { upperFirst } from "lodash";
 import { usePractice } from "@/shared/PracticeProvider";
-import { useBulkAddCampaigns } from "@/hooks/campaign.hooks";
-import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
+import { useBulkAddCampaignsWithAssets } from "@/hooks/campaign.hooks";
+import { SelectionsSource } from "@/shared/shared.models";
+import { Campaign } from "@/models/campaign.models";
 import { toast } from "sonner";
 import { useTiers } from "@/shared/TierProvider";
 import AppContext from "@/shared/AppContext";
@@ -42,15 +43,58 @@ enum Tiers {
 const Quick = () => {
 	const T = useMantineTheme();
 	const isMobile = useIsMobile();
-	const { setState } = useContext(AppContext);
+	const { state, setState } = useContext(AppContext);
 	const { activePracticeName } = usePractice();
 	const { goodIds, betterIds, bestIds, loading, refresh } = useTiers();
 	const [opened, { open, close }] = useDisclosure(false);
 	const [tier, setTier] = useState<Tiers>(null);
-	const [selections, setSelections] = useState(null);
+	const [selections, setSelections] = useState<string[]>(null);
 
 	//APIs
-	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaigns();
+	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaignsWithAssets();
+
+	// Derive tier counts from the live catalog so the badges + bullets always
+	// match the IDs that will actually be added.
+	const tierCounts = useMemo(() => {
+		const catalog = (state?.allCampaigns?.data ?? []) as Campaign[];
+		const byId = new Map(catalog.map((c) => [String(c.id), c]));
+		const compute = (ids: string[]) => {
+			const inTier = ids
+				.map((id) => byId.get(String(id)))
+				.filter((c): c is Campaign => Boolean(c));
+			const seasonalEvents = inTier.filter(
+				(c) => c.category === "Event" || c.is_event === true
+			).length;
+			const brandActivations = inTier.filter(
+				(c) => c.category === "brand activation"
+			).length;
+			return {
+				total: ids.length,
+				events: seasonalEvents + brandActivations,
+				seasonalEvents,
+				brandActivations,
+			};
+		};
+		return {
+			[Tiers.Good]: compute(goodIds),
+			[Tiers.Better]: compute(betterIds),
+			[Tiers.Best]: compute(bestIds),
+		} as const;
+	}, [state?.allCampaigns?.data, goodIds, betterIds, bestIds]);
+
+	const pluralize = (n: number, word: string) =>
+		`${n} ${word}${n === 1 ? "" : "s"}`;
+	const eventsBullet = (
+		seasonalEvents: number,
+		brandActivations: number
+	): string => {
+		const parts: string[] = [];
+		if (seasonalEvents > 0)
+			parts.push(pluralize(seasonalEvents, "seasonal event"));
+		if (brandActivations > 0)
+			parts.push(pluralize(brandActivations, "brand activation"));
+		return parts.length ? parts.join(" and ") : "Seasonal events as scheduled";
+	};
 
 	const tiers = [
 		{
@@ -62,12 +106,15 @@ const Quick = () => {
 			variant: "light",
 			name: Tiers.Good,
 			description: "Essential campaigns to get started",
-			numberOfCampaigns: 4,
-			numberOfEvents: 1,
+			numberOfCampaigns: tierCounts[Tiers.Good].total,
+			numberOfEvents: tierCounts[Tiers.Good].events,
 			inclusions: [
-				"4 campaigns for the year",
+				`${tierCounts[Tiers.Good].total} campaigns for the year`,
 				"Always-on: Google Reviews Pack (all year)",
-				"1 seasonal event",
+				eventsBullet(
+					tierCounts[Tiers.Good].seasonalEvents,
+					tierCounts[Tiers.Good].brandActivations
+				),
 			],
 			includedCampaigns: goodIds,
 			snapshot: {
@@ -80,12 +127,15 @@ const Quick = () => {
 			variant: "filled",
 			name: Tiers.Better,
 			description: "Balanced mix for steady growth",
-			numberOfCampaigns: 7,
-			numberOfEvents: 2,
+			numberOfCampaigns: tierCounts[Tiers.Better].total,
+			numberOfEvents: tierCounts[Tiers.Better].events,
 			inclusions: [
-				"7 campaigns for the year",
+				`${tierCounts[Tiers.Better].total} campaigns for the year`,
 				"Always-on: Google Reviews Pack + light monthly social (all year)",
-				"1 seasonal event and 1 brand activation",
+				eventsBullet(
+					tierCounts[Tiers.Better].seasonalEvents,
+					tierCounts[Tiers.Better].brandActivations
+				),
 			],
 			includedCampaigns: betterIds,
 			snapshot: {
@@ -98,12 +148,15 @@ const Quick = () => {
 			variant: "filled",
 			name: Tiers.Best,
 			description: "Maximum impact with always-on strategy",
-			numberOfCampaigns: 10,
-			numberOfEvents: 4,
+			numberOfCampaigns: tierCounts[Tiers.Best].total,
+			numberOfEvents: tierCounts[Tiers.Best].events,
 			inclusions: [
-				"10 campaigns for the year",
+				`${tierCounts[Tiers.Best].total} campaigns for the year`,
 				"Always-on: Google Reviews Pack + monthly pulses (all year)",
-				"2 seasonal events and 2 brand activations",
+				eventsBullet(
+					tierCounts[Tiers.Best].seasonalEvents,
+					tierCounts[Tiers.Best].brandActivations
+				),
 			],
 			includedCampaigns: bestIds,
 			snapshot: {
@@ -112,17 +165,26 @@ const Quick = () => {
 	];
 
 	const handleConfirm = () => {
+		if (!selections?.length) return;
+		const catalog = (state?.allCampaigns?.data ?? []) as Campaign[];
+		const idSet = new Set(selections.map(String));
+		const campaigns = catalog.filter((c) => idSet.has(String(c.id)));
+
+		if (!campaigns.length) {
+			toast.error("Could not find campaign data for selected tier");
+			return;
+		}
+
 		bulkAdd(
 			{
-				campaignIds: selections, // array of catalog campaign IDs
+				campaigns,
 				from: null,
 				to: null,
-				status: SelectionStatus.OnPlan,
-				notes: null,
-				source: SelectionsSource.Quick},
+				source: SelectionsSource.Quick,
+			},
 			{
 				onSuccess: () => {
-					close(); // cache invalidation is handled inside the hook
+					close();
 					updateState(
 						setState,
 						"filters.userSelectedTab",
@@ -131,7 +193,8 @@ const Quick = () => {
 				},
 				onError: (e: any) => {
 					toast.error(e?.message ?? "Failed to add campaigns");
-				}}
+				},
+			}
 		);
 	};
 

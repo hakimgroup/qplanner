@@ -26,7 +26,7 @@
 The React frontend communicates directly with Supabase for:
 - **Authentication** — Azure AD OAuth via Supabase Auth
 - **Data queries** — RPC function calls (`get_plans`, `get_campaigns`, etc.)
-- **Mutations** — RPC function calls (`request_assets`, `submit_assets`, `confirm_assets`, etc.)
+- **Mutations** — RPC function calls (`add_campaign_with_assets`, `create_bespoke_selection_v2`, `confirm_assets`, etc.)
 - **Real-time** — Not currently used
 
 All data access goes through **RPC functions** (not direct table access). This provides a clean API layer with built-in authorization checks.

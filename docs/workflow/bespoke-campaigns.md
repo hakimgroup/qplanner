@@ -12,30 +12,32 @@ Practices can create custom campaigns and events that aren't in the catalog.
 ## Creation Flow
 
 1. Practice opens the "Bespoke Campaign" or "Bespoke Event" modal from the dashboard
-2. Fills in: title, description, dates (must be 30+ days in the future), objectives, topics, assets, reference links, notes
-3. Events also collect: event type and requirements
-4. On submit, two records are created:
+2. **Step 1 — Brief**: title, description, dates (must be 30+ days in the future), objectives, topics, the asset names they want, reference links, notes. Events also collect: event type and requirements.
+3. Click **Continue** → opens the shared **Submit Choices** modal showing only the assets the practice picked, pre-selected with quantity 1, alongside a read-only preview of the default brand creative.
+4. **Step 2 — Configure**: practice tweaks quantities and pricing options for each chosen asset, optionally adds a final note, and submits.
+5. On submit, two records are created:
    - `bespoke_campaigns` row — the campaign template
-   - `selections` row — the practice's instance with dates and status (`onPlan`)
-5. A **default creative** is automatically set: `Bespoke - {Campaign Title}` with a standard placeholder image
-6. If the practice is onboarded, an actor notification email is sent
+   - `selections` row — practice instance with dates, configured assets, and status `inProgress`
+6. The default brand creative URL is applied server-side (the v2 RPCs accept `null` for `p_chosen_creative` and substitute the constant).
+7. An `inProgress` notification is created for admins; an actor confirmation notification is created for the practice.
+8. If the practice is onboarded, an actor email is sent.
 
 ## Default Creative
 
-All bespoke campaigns are created with a default creative:
-- **Name:** `Bespoke - {Campaign Title}`
-- **Image URL:** `https://cdn.hakimgroup.io/digE8/LEquQaPE75.png/raw`
-- **Assets Link:** None
-- **Custom Question:** None
+All bespoke campaigns get a default creative applied server-side. The URL is hardcoded in `create_bespoke_selection_v2` / `create_bespoke_event_v2` and mirrored on the client at `client/src/shared/shared.const.ts` (`DEFAULT_BESPOKE_CREATIVE`). Keep both in sync if it ever changes.
 
-This means admins can immediately use **bulk request assets** on bespoke campaigns without needing to manually set creatives first. Admins can still override the creative by opening the individual "Request Assets" modal.
+- **Image URL:** `https://cdn.hakimgroup.io/digE8/LEquQaPE75.png/raw`
+- **Label:** `Hakim Brand Creative` (client side) / `Bespoke - {Campaign Title}` (server side)
+- **Behaviour:** Practice sees a read-only preview card in the submit modal that says the design team will be in touch with creative options to choose from.
 
 ## Status Workflow
 
-Bespoke campaigns follow the **same status workflow** as catalog campaigns:
+Bespoke campaigns enter the lifecycle directly at `inProgress`, same as catalog campaigns added via the new flow:
 
 ```
-onPlan → requested → inProgress → awaitingApproval → confirmed → live → completed
+inProgress → awaitingApproval → confirmed → live → completed
+     ↕
+feedbackRequested (revision loop)
 ```
 
 See [Selection Lifecycle](./selection-lifecycle) for the full flow.
@@ -49,8 +51,10 @@ See [Selection Lifecycle](./selection-lifecycle) for the full flow.
 
 | Function | Purpose |
 |----------|---------|
-| `create_bespoke_selection` | Creates a bespoke campaign + selection |
-| `create_bespoke_event` | Creates a bespoke event + selection |
+| `create_bespoke_selection_v2` | Creates a bespoke campaign + selection at `inProgress` with chosen creative + configured assets |
+| `create_bespoke_event_v2` | Creates a bespoke event + selection at `inProgress` |
+| `create_bespoke_selection` | Legacy (pre-May 2026) — creates at `onPlan`. Retained for backward compatibility. |
+| `create_bespoke_event` | Legacy (pre-May 2026) — creates at `onPlan`. Retained for backward compatibility. |
 
 ## Notification Payload
 

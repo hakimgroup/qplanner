@@ -3,6 +3,7 @@ import { IconCircleCheck } from "@tabler/icons-react";
 import { statusColors } from "@/shared/shared.const";
 
 type StatusValue =
+  | "draft"
   | "onPlan"
   | "inProgress"
   | "awaitingApproval"
@@ -12,6 +13,7 @@ type StatusValue =
   | "live";
 
 const STATUS_LABELS: Record<StatusValue, string> = {
+  draft: "Draft",
   onPlan: "On Plan",
   requested: "Request Assets",
   inProgress: "In Progress",
@@ -27,6 +29,7 @@ const toStatusValue = (raw?: string | null): StatusValue | undefined => {
   if (!raw) return undefined;
   const key = raw.toLowerCase().replace(/[\s_-]/g, "");
   const map: Record<string, StatusValue> = {
+    draft: "draft",
     onplan: "onPlan",
     inprogress: "inProgress",
     requested: "requested",
@@ -52,7 +55,7 @@ const Status: React.FC<StatusProps> = ({ status }) => {
     <Badge variant="light" color={color} miw={100}>
       <Flex align={"center"} gap={5}>
         {value === "onPlan" && <IconCircleCheck size={15} stroke={2.4} />}
-        <Text fw={700} size="xs" mt={1}>
+        <Text fw={700} size="xs" mt={1} tt="uppercase">
           {label}
         </Text>
       </Flex>

@@ -1,4 +1,4 @@
-import { Colors, statusColors } from "@/shared/shared.const";
+import { Colors } from "@/shared/shared.const";
 import {
   Stack,
   Flex,
@@ -10,23 +10,30 @@ import {
   useMantineTheme,
   Text,
   Badge,
-  Drawer} from "@mantine/core";
+  Drawer,
+  Alert,
+} from "@mantine/core";
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
   IconEdit,
   IconCalendar,
   IconTrash,
-  IconCalendarCheck} from "@tabler/icons-react";
+  IconCalendarCheck,
+  IconLock,
+  IconInfoCircle,
+} from "@tabler/icons-react";
 import CampaignDates from "../campaignDates/CampaignDates";
 import StyledButton from "../styledButton/StyledButton";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   differenceInCalendarDays,
   format,
-  isValid as isValidDate} from "date-fns";
+  isValid as isValidDate,
+} from "date-fns";
 import {
   useUpdateSelection,
-  useDeleteSelection} from "@/hooks/selection.hooks";
+  useDeleteSelection,
+} from "@/hooks/selection.hooks";
 import { toast } from "sonner";
 import { SelectionStatus } from "@/shared/shared.models";
 import { Campaign } from "@/models/campaign.models";
@@ -35,6 +42,7 @@ import AppContext from "@/shared/AppContext";
 import { UserTabModes } from "@/models/general.models";
 import { updateState } from "@/shared/shared.utilities";
 import { useIsMobile } from "@/shared/shared.hooks";
+import Status from "@/components/status/Status";
 
 type DateRange = { from: Date | null; to: Date | null };
 
@@ -48,10 +56,19 @@ interface EditProps {
   selection: Campaign;
 }
 
+// Practice can freely edit the selection only at these stages.
+// Anything past this is locked — it would lie about the design team's state.
+const EDITABLE_STATUSES = new Set<string>([
+  SelectionStatus.Draft,
+  SelectionStatus.OnPlan,
+]);
+
 const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
   const T = useMantineTheme();
-	const isMobile = useIsMobile();
+  const isMobile = useIsMobile();
   const { setState } = useContext(AppContext);
+
+  const isEditable = EDITABLE_STATUSES.has(s?.status ?? "");
 
   // Combined callback for modal close + tab switch
   const handleSuccess = () => {
@@ -59,12 +76,9 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
     updateState(setState, "filters.userSelectedTab", UserTabModes.Selected);
   };
 
-  // ---- Local UI state (dates, status, notes)
   const [campaign, setCampaign] = useState<{ dateRange: DateRange }>({
-    dateRange: { from: null, to: null }});
-  const [statusValue, setStatusValue] = useState<SelectionStatus | null>(
-    s?.status ?? SelectionStatus.OnPlan
-  );
+    dateRange: { from: null, to: null },
+  });
   const [notes, setNotes] = useState<string>(s?.notes ?? "");
 
   // Seed state from incoming selection when opened/selection changes
@@ -73,19 +87,19 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
     const from = s.selection_from_date ? new Date(s.selection_from_date) : null;
     const to = s.selection_to_date ? new Date(s.selection_to_date) : null;
     setCampaign({ dateRange: { from, to } });
-    setStatusValue(s.status ?? SelectionStatus.OnPlan);
     setNotes(s.notes ?? "");
   }, [s, opened]);
 
-  // ---- Mutations
-  const { mutate: updateSelection, isPending: saving } = useUpdateSelection(handleSuccess);
-  const { mutate: deleteSelection, isPending: removing } = useDeleteSelection(handleSuccess);
+  const { mutate: updateSelection, isPending: saving } =
+    useUpdateSelection(handleSuccess);
+  const { mutate: deleteSelection, isPending: removing } =
+    useDeleteSelection(handleSuccess);
 
-  // ---- Header chip examples (kept, but derive from selection if provided)
   const Objectives = () => {
-    const items = s.objectives?.length ? s.objectives : ["AOV", "Sales"];
+    const items = s.objectives?.length ? s.objectives : [];
+    if (!items.length) return null;
     return (
-      <Flex align={"center"} gap={4}>
+      <Flex align={"center"} gap={4} wrap="wrap">
         {items.map((c) => (
           <Badge key={c} color="red.4">
             {startCase(c)}
@@ -96,9 +110,10 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
   };
 
   const Topics = () => {
-    const items = s.topics?.length ? s.topics : ["Kids", "Clinical"];
+    const items = s.topics?.length ? s.topics : [];
+    if (!items.length) return null;
     return (
-      <Flex align={"center"} gap={4}>
+      <Flex align={"center"} gap={4} wrap="wrap">
         {items.map((c) => (
           <Badge key={c} variant="outline" color="gray.1">
             <Text size="xs" fw={600} c={"gray.9"}>
@@ -110,27 +125,23 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
     );
   };
 
-  // ---- Derived UI: duration & pretty date range
   const { from, to } = campaign.dateRange;
   const durationDays = useMemo(() => {
     if (!from || !to || !isValidDate(from) || !isValidDate(to)) return null;
-    return differenceInCalendarDays(to, from) + 1; // inclusive
+    return differenceInCalendarDays(to, from) + 1;
   }, [from, to]);
 
   const prettyRange = useMemo(() => {
     if (!from || !to || !isValidDate(from) || !isValidDate(to)) return null;
-    // Example format: Friday, Aug 15th → Monday, Sep 15th
     return `${format(from, "EEEE, MMM do")} → ${format(to, "EEEE, MMM do")}`;
   }, [from, to]);
 
-  // ---- Validation for save
   const canSave =
-    !!from && !!to && isValidDate(from) && isValidDate(to) && !!statusValue;
+    !!from && !!to && isValidDate(from) && isValidDate(to) && isEditable;
 
-  // ---- Handlers
   const handleSave = () => {
     if (!canSave) {
-      toast.error("Please choose a valid date range and status.");
+      toast.error("Please choose a valid date range.");
       return;
     }
     updateSelection(
@@ -139,13 +150,15 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
         patch: {
           from_date: format(from as Date, "yyyy-MM-dd"),
           to_date: format(to as Date, "yyyy-MM-dd"),
-          status: statusValue ?? undefined,
-          notes: notes ?? undefined},
+          notes: notes ?? undefined,
+        },
         campaignName: s.name,
-        campaignCategory: s.category},
+        campaignCategory: s.category,
+      },
       {
         onError: (e: any) =>
-          toast.error(e?.message ?? "Could not save changes")}
+          toast.error(e?.message ?? "Could not save changes"),
+      }
     );
   };
 
@@ -155,11 +168,19 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
         selectionId: s.selection_id,
         bespokeId: s.bespoke_campaign_id,
         campaignName: s.name,
-        campaignCategory: s.category},
+        campaignCategory: s.category,
+      },
       {
-        onError: (e: any) => toast.error(e?.message ?? "Could not remove")}
+        onError: (e: any) => toast.error(e?.message ?? "Could not remove"),
+      }
     );
   };
+
+  const titleText = isEditable
+    ? `Edit ${s?.is_event ? "Event" : "Campaign"}`
+    : `${s?.is_event ? "Event" : "Campaign"} Details`;
+
+  const subtitleText = isEditable ? "Modify the details for" : "Details for";
 
   return (
     <Drawer
@@ -168,14 +189,18 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
       title={
         <Stack gap={0}>
           <Flex align={"center"} gap={7}>
-            <IconEdit color={T.colors.blue[3]} size={22} />
+            {isEditable ? (
+              <IconEdit color={T.colors.blue[3]} size={22} />
+            ) : (
+              <IconLock color={T.colors.gray[6]} size={20} />
+            )}
             <Title order={4} fw={600}>
-              Edit {s?.is_event ? "Event" : "Campaign"}
+              {titleText}
             </Title>
           </Flex>
 
           <Text size="sm" c="gray.8">
-            Modify the details for{" "}
+            {subtitleText}{" "}
             <Text span c="blue.4" fw={700}>
               &quot;
               {s?.name}
@@ -197,7 +222,8 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
             radius={10}
             bg={"violet.0"}
             style={{
-              border: `1px solid ${T.colors.violet[1]}`}}
+              border: `1px solid ${T.colors.violet[1]}`,
+            }}
             shadow="xs"
           >
             <Group align="center" justify="space-between">
@@ -217,7 +243,12 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
 
         <Card radius={10} bg={Colors.cream}>
           <Stack gap={7}>
-            <Text fw={500}>{s?.name}</Text>
+            <Group justify="space-between" align="flex-start">
+              <Text fw={500} style={{ flex: 1 }}>
+                {s?.name}
+              </Text>
+              {s?.status && <Status status={s.status} />}
+            </Group>
             <Text size="sm" c="gray.7">
               {s.description}
             </Text>
@@ -228,25 +259,52 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
           </Stack>
         </Card>
 
+        {!isEditable && (
+          <Alert
+            icon={<IconInfoCircle size={16} />}
+            color="blue.3"
+            radius={10}
+            variant="light"
+            title="This selection is locked"
+          >
+            <Text size="xs" c="gray.7">
+              Once submitted to the design team, dates and notes can't be
+              changed here. Need to update something or pull this campaign?
+              Contact your admin and they'll coordinate with the design team.
+            </Text>
+          </Alert>
+        )}
+
         <GradientDivider />
 
         <Text size="sm" c={"gray.9"} fw={600}>
           {s?.is_event ? "Event Dates" : "Campaign Dates"}
         </Text>
 
-        <CampaignDates
-          icon={<IconCalendar size={16} />}
-          dateRange={campaign.dateRange}
-          onChange={(range) => setCampaign({ ...campaign, dateRange: range })}
-          startLabel={s?.is_event ? "Event Start Date" : "Start Date"}
-          endLabel={s?.is_event ? "Event End Date" : "Start Date"}
-          inputSize="sm"
-          labelSize="sm"
-          titleLabelSize="sm"
-          hideTitleIcon
-        />
-
-        <GradientDivider />
+        {isEditable ? (
+          <CampaignDates
+            icon={<IconCalendar size={16} />}
+            dateRange={campaign.dateRange}
+            onChange={(range) =>
+              setCampaign({ ...campaign, dateRange: range })
+            }
+            startLabel={s?.is_event ? "Event Start Date" : "Start Date"}
+            endLabel={s?.is_event ? "Event End Date" : "End Date"}
+            inputSize="sm"
+            labelSize="sm"
+            titleLabelSize="sm"
+            hideTitleIcon
+          />
+        ) : (
+          <Card radius={10} bg={"gray.0"} p={12}>
+            <Group gap={8} align="center">
+              <IconCalendar size={16} color={T.colors.gray[7]} />
+              <Text size="sm" fw={500}>
+                {prettyRange ?? "—"}
+              </Text>
+            </Group>
+          </Card>
+        )}
 
         <Card radius={10} bg={"violet.0"} p={10} mt={5}>
           <Text size="sm" c={"gray.7"}>
@@ -258,52 +316,76 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
             </Text>
           </Text>
 
-          <Text size="sm" c={"gray.7"}>
-            {prettyRange ?? "—"}
-          </Text>
+          {isEditable && (
+            <Text size="sm" c={"gray.7"}>
+              {prettyRange ?? "—"}
+            </Text>
+          )}
         </Card>
 
         <GradientDivider />
 
-        <Textarea
-          withAsterisk
-          resize="vertical"
-          size="sm"
-          radius={10}
-          label="Notes (Optional)"
-          placeholder="Add any additional notes or details about this campaign"
-          minRows={3}
-          maxRows={10}
-          autosize
-          value={notes}
-          onChange={(e) => setNotes(e.currentTarget.value)}
-        />
+        {isEditable ? (
+          <Textarea
+            resize="vertical"
+            size="sm"
+            radius={10}
+            label="Notes (Optional)"
+            placeholder="Add any additional notes or details about this campaign"
+            minRows={3}
+            maxRows={10}
+            autosize
+            value={notes}
+            onChange={(e) => setNotes(e.currentTarget.value)}
+          />
+        ) : (
+          <Stack gap={6}>
+            <Text size="sm" fw={600} c="gray.9">
+              Notes
+            </Text>
+            <Card radius={10} bg={"gray.0"} p={12}>
+              <Text
+                size="sm"
+                c={notes ? "gray.8" : "gray.5"}
+                style={{ whiteSpace: "pre-wrap" }}
+              >
+                {notes || "—"}
+              </Text>
+            </Card>
+          </Stack>
+        )}
 
         <GradientDivider />
 
-        <Group align={"center"} justify="space-between">
-          <Button
-            radius={10}
-            color="red.4"
-            leftSection={<IconTrash size={14} />}
-            onClick={handleRemove}
-            loading={removing}
-          >
-            Remove from Plan
-          </Button>
-          <Flex align={"center"} gap={8}>
-            <StyledButton onClick={closeModal}>Cancel</StyledButton>
+        {isEditable ? (
+          <Group align={"center"} justify="space-between">
             <Button
               radius={10}
-              color={s?.is_event ? "violet" : "blue.3"}
-              onClick={handleSave}
-              loading={saving}
-              disabled={!canSave}
+              color="red.4"
+              leftSection={<IconTrash size={14} />}
+              onClick={handleRemove}
+              loading={removing}
             >
-              Save Changes
+              Remove from Plan
             </Button>
+            <Flex align={"center"} gap={8}>
+              <StyledButton onClick={closeModal}>Cancel</StyledButton>
+              <Button
+                radius={10}
+                color={s?.is_event ? "violet" : "blue.3"}
+                onClick={handleSave}
+                loading={saving}
+                disabled={!canSave}
+              >
+                Save Changes
+              </Button>
+            </Flex>
+          </Group>
+        ) : (
+          <Flex justify="flex-end">
+            <StyledButton onClick={closeModal}>Close</StyledButton>
           </Flex>
-        </Group>
+        )}
       </Stack>
     </Drawer>
   );

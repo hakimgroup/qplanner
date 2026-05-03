@@ -2,24 +2,42 @@
 
 ## Transition Table
 
+### Current path (May 2026 onwards)
+
 | From             | To               | Triggered By                  | RPC / Mechanism                               |
 | ---------------- | ---------------- | ----------------------------- | --------------------------------------------- |
-| —                | `onPlan`         | Practice selects campaign     | `add_campaigns_bulk` / bespoke creation RPCs  |
-| `onPlan`         | `requested`      | Admin requests assets         | `request_assets` / `request_assets_bulk`      |
-| `requested`      | `inProgress`     | Practice submits choices      | `submit_assets`                               |
+| —                | `draft`          | Quick Populate (tier-based)   | `add_campaigns_bulk` with `p_status='draft'`  |
+| —                | `draft`          | Guided Recommendations         | `add_campaigns_bulk` with `p_status='draft'`  |
+| —                | `draft`          | Copy practice campaigns (catalog rows without a chosen creative) | `copy_practice_campaigns_v2` |
+| `draft`          | `inProgress`     | Practice clicks "Send to Design Team" | `submit_draft_selection`              |
+| —                | `inProgress`     | Practice adds a catalog campaign with asset choices | `add_campaign_with_assets`                    |
+| —                | `inProgress`     | Practice creates a bespoke campaign | `create_bespoke_selection_v2`                 |
+| —                | `inProgress`     | Practice creates a bespoke event | `create_bespoke_event_v2`                     |
+| —                | `inProgress`     | Copy practice campaigns (when source has a chosen creative) | `copy_practice_campaigns_v2`                  |
 | `inProgress`     | `awaitingApproval` | n8n automation              | DB trigger `trg_selections_awaiting_approval` |
 | `awaitingApproval` | `confirmed`    | Practice confirms             | `confirm_assets`                              |
 | `awaitingApproval` | `inProgress`   | Practice requests revision    | `request_revision`                            |
 | `confirmed`      | `live`           | Cron job (8am UK daily)       | `/activate-live-campaigns`                    |
 | `live`           | `completed`      | Cron job (8am UK daily)       | `/activate-live-campaigns`                    |
 
+### Legacy path (pre-cutover selections only)
+
+These transitions only apply to selections created before the May 2026 cutover. The v1 RPCs remain live so existing rows can finish their flow.
+
+| From             | To               | Triggered By                  | RPC / Mechanism                               |
+| ---------------- | ---------------- | ----------------------------- | --------------------------------------------- |
+| —                | `onPlan`         | Practice selects campaign (legacy) | `add_campaigns_bulk` / `create_bespoke_selection` / `create_bespoke_event` |
+| `onPlan`         | `requested`      | Admin requests assets         | `request_assets` / `request_assets_bulk`      |
+| `requested`      | `inProgress`     | Practice submits choices      | `submit_assets`                               |
+
 ## Status Descriptions
 
 | Status             | Meaning                                                    |
 | ------------------ | ---------------------------------------------------------- |
-| `onPlan`           | Campaign is planned but assets haven't been requested yet  |
-| `requested`        | Admin has requested assets; waiting for practice response   |
-| `inProgress`       | Practice has submitted choices; artwork being produced      |
+| `draft`            | Practice planning — added via Quick Populate, Guided Recommendations, or copy. Practice-only (admins do not see drafts). Practice clicks "Send to Design Team" to advance to `inProgress`. |
+| `onPlan`           | Legacy only — campaign planned but assets not yet requested. New selections no longer enter this state. |
+| `requested`        | Legacy only — admin has requested assets; waiting for practice response. New selections no longer enter this state. |
+| `inProgress`       | Practice has submitted choices (or made them at add-time); artwork being produced |
 | `awaitingApproval` | Artwork is ready for practice to review and approve        |
 | `confirmed`        | Practice has approved the artwork                          |
 | `live`             | Campaign start date has arrived; campaign is active        |

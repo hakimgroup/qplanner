@@ -38,7 +38,7 @@ When a user clicks a notification, the `useNotificationOpen` hook determines whi
 
 | Notification Type     | User Role | Modal Component              |
 | --------------------- | --------- | ---------------------------- |
-| `requested`           | Practice  | `PracticeRespondModal`       |
+| `requested`           | Practice  | `PracticeRespondModal` (legacy — only opens for pre-cutover `onPlan → requested` selections) |
 | `inProgress`          | Admin     | `AdminReviewSubmissionModal` |
 | `awaitingApproval`    | Practice  | `PracticeApprovalModal`      |
 | `confirmed`           | Admin     | `AdminConfirmedModal`        |

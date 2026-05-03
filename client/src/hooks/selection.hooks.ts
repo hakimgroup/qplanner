@@ -25,7 +25,7 @@ import { useAuth } from "@/shared/AuthProvider";
 import { toast } from "sonner";
 import { GetAssetsResponse } from "@/models/general.models";
 import { useAssets } from "./general.hooks";
-import { sendActorEmail } from "@/api/emails";
+import { sendActorEmail, sendNotificationEmail } from "@/api/emails";
 
 /**
  * Check if a practice has been onboarded (received their onboarding summary email).
@@ -343,6 +343,161 @@ export function useAddSelection(onSuccess?: (campaignName?: string) => void) {
   });
 }
 
+// ─────────────────────────────────────────────────────────────────
+// New flow: practice adds catalog campaign with creative + assets,
+// goes straight to inProgress.
+// ─────────────────────────────────────────────────────────────────
+export type AddCampaignWithAssetsInput = {
+  campaignId: string;
+  fromDate: string; // yyyy-MM-dd
+  toDate: string;   // yyyy-MM-dd
+  chosenCreative?: string | null;
+  assets?: any | null; // full assets jsonb (printed/digital/external)
+  note?: string | null;
+  source?: string | null;
+  campaignName?: string;
+  campaignCategory?: string;
+  isBespoke?: boolean;
+};
+
+export function useAddCampaignWithAssets(
+  onSuccess?: (campaignName?: string) => void
+) {
+  const qc = useQueryClient();
+  const { activePracticeId } = usePractice();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (input: AddCampaignWithAssetsInput) => {
+      if (!activePracticeId) throw new Error("No active practice selected");
+
+      const { data, error } = await supabase.rpc(
+        RPCFunctions.AddCampaignWithAssets,
+        {
+          p_practice: activePracticeId,
+          p_campaign_id: input.campaignId,
+          p_from_date: input.fromDate,
+          p_to_date: input.toDate,
+          p_chosen_creative: input.chosenCreative ?? null,
+          p_assets: input.assets ?? null,
+          p_note: input.note ?? null,
+          p_source: input.source ?? "manual",
+        }
+      );
+
+      if (error) throw error;
+      if (data && !data.success)
+        throw new Error(data.error || "Failed to add campaign");
+
+      return {
+        ...data,
+        campaignName: input.campaignName,
+        campaignCategory: input.campaignCategory,
+        fromDate: input.fromDate,
+        toDate: input.toDate,
+        isBespoke: input.isBespoke ?? false,
+      };
+    },
+    onSuccess: async (result) => {
+      const { selection_id, notification_id, campaignName, campaignCategory, fromDate, toDate, isBespoke } = result as any;
+
+      toast.success(`"${campaignName || "Campaign"}" added to your plan`);
+      onSuccess?.(campaignName);
+
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.CampaignsCatalog],
+        exact: false,
+      });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Selections],
+        exact: false,
+      });
+      qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+
+      // Fire the inProgress email to admins (fire-and-forget)
+      if (notification_id) {
+        sendNotificationEmail({ notificationId: notification_id });
+      }
+
+      // Onboarding email + actor confirmation (existing pattern)
+      if (activePracticeId && user?.id) {
+        queuePracticeOnboardingEmail(activePracticeId, user.id);
+
+        const isOnboarded = await isPracticeOnboarded(activePracticeId);
+        if (isOnboarded && selection_id) {
+          await sendActorEmail({
+            type: "added",
+            userId: user.id,
+            practiceId: activePracticeId,
+            selectionId: selection_id,
+            campaignName: campaignName || "Campaign",
+            campaignCategory: campaignCategory || "Campaign",
+            fromDate,
+            toDate,
+            isBespoke,
+          });
+          qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
+        }
+      }
+    },
+  });
+}
+
+export type SubmitDraftSelectionInput = {
+  selectionId: string;
+  chosenCreative?: string | null;
+  assets?: any | null;
+  note?: string | null;
+  campaignName?: string;
+};
+
+export function useSubmitDraftSelection(onSuccess?: () => void) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: SubmitDraftSelectionInput) => {
+      const { data, error } = await supabase.rpc(
+        RPCFunctions.SubmitDraftSelection,
+        {
+          p_selection_id: input.selectionId,
+          p_chosen_creative: input.chosenCreative ?? null,
+          p_assets: input.assets ?? null,
+          p_note: input.note ?? null,
+        }
+      );
+      if (error) throw error;
+      if (data && !data.success)
+        throw new Error(data.error || "Failed to submit draft");
+      return {
+        ...data,
+        campaignName: input.campaignName,
+      };
+    },
+    onSuccess: (result: any) => {
+      const { notification_id, campaignName } = result;
+
+      toast.success(`"${campaignName || "Campaign"}" submitted to design team`);
+
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.CampaignsCatalog],
+        exact: false,
+      });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Selections],
+        exact: false,
+      });
+      qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+
+      // Fire the inProgress email to admins (fire-and-forget)
+      if (notification_id) {
+        sendNotificationEmail({ notificationId: notification_id });
+      }
+
+      onSuccess?.();
+    },
+  });
+}
+
 export function useUpdateSelection(onSuccess?: (campaignName?: string) => void) {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -576,10 +731,13 @@ export function useCopyPracticeCampaigns() {
       if (sourceId === targetId)
         throw new Error("Source and target cannot be the same");
 
-      const { error } = await supabase.rpc(RPCFunctions.CopyPracticeCampaigns, {
-        p_source: sourceId,
-        p_target: targetId,
-      });
+      const { error } = await supabase.rpc(
+        RPCFunctions.CopyPracticeCampaignsV2,
+        {
+          p_source: sourceId,
+          p_target: targetId,
+        }
+      );
 
       if (error) throw error;
       return { sourceId, targetId };

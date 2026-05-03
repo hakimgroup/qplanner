@@ -6,8 +6,8 @@ Emails are sent via **Resend** using **React Email** templates. The Express serv
 
 | Notification Type   | Email Template           | Sent To   | Trigger                         |
 | ------------------- | ------------------------ | --------- | ------------------------------- |
-| `requested`         | `AssetsRequestedEmail`   | Practice  | Admin requests assets           |
-| `inProgress`        | `AssetsSubmittedEmail`   | Admins    | Practice submits choices        |
+| `requested`         | `AssetsRequestedEmail`   | Practice  | Admin requests assets (legacy gate — only for pre-cutover `onPlan` selections) |
+| `inProgress`        | `AssetsSubmittedEmail`   | Admins    | Practice picks creative + assets at add-time, or submits choices via the legacy gate. Bulk add-time flows (Quick Populate, Guided, Copy Practice) intentionally skip this email to avoid storming admin inboxes — admins discover via the in-app bell. |
 | `awaitingApproval`  | `AwaitingApprovalEmail`  | Practice  | n8n completes artwork (via pg_net) |
 | `confirmed`         | `AssetsConfirmedEmail`   | Admins    | Practice confirms artwork       |
 | `feedbackRequested` | `FeedbackRequestedEmail` | Admins    | Practice requests revision      |

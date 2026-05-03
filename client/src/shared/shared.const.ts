@@ -10,7 +10,16 @@ export const Colors = {
   cream: "#f3f4f6",
 };
 
+// Default brand creative auto-applied to bespoke campaigns/events server-side.
+// Mirrors the URL hardcoded inside `create_bespoke_selection_v2` /
+// `create_bespoke_event_v2` SQL functions — keep them in sync.
+export const DEFAULT_BESPOKE_CREATIVE = {
+  url: "https://cdn.hakimgroup.io/digE8/LEquQaPE75.png/raw",
+  label: "Hakim Brand Creative",
+};
+
 export const statusColors = {
+  [SelectionStatus.Draft]: "#374151",
   [SelectionStatus.OnPlan]: "#10ac84",
   [SelectionStatus.Requested]: "#ff7f50",
   [SelectionStatus.InProgress]: "#1e90ff",

@@ -20,7 +20,8 @@ All data access in QPlanner goes through Supabase RPC functions. These are Postg
 | ----------------------------- | --------------------------------- |
 | `assign_user_to_practice`     | Add user to a practice            |
 | `unassign_user_from_practice` | Remove user from a practice       |
-| `copy_practice_campaigns`     | Clone campaign selections between practices |
+| `copy_practice_campaigns_v2`  | Clone campaign selections between practices. Catalog rows with a chosen creative go to `inProgress` (with notification); bespoke rows always go to `inProgress`; catalog rows without a chosen creative go to `onPlan`. |
+| `copy_practice_campaigns`     | Legacy v1 — clones at `onPlan`. Retained for backward compatibility. |
 
 ## Campaigns & Selections
 
@@ -29,21 +30,25 @@ All data access in QPlanner goes through Supabase RPC functions. These are Postg
 | `get_campaigns`             | Fetch catalog campaigns with filters            |
 | `get_guided_campaigns`      | AI-guided campaign recommendations              |
 | `get_plans`                 | Fetch selections with filters (main admin query) |
-| `add_campaigns_bulk`        | Bulk add selections to a practice               |
-| `create_bespoke_selection`  | Create a custom campaign + selection             |
-| `create_bespoke_event`      | Create a custom event + selection                |
+| `add_campaign_with_assets`  | Add a single catalog campaign at `inProgress` with chosen creative + configured assets. Used by the practice's drawer "Continue → Submit" flow. |
+| `create_bespoke_selection_v2` | Create a bespoke campaign + selection at `inProgress`. Auto-applies default brand creative when `p_chosen_creative` is null. |
+| `create_bespoke_event_v2`   | Create a bespoke event + selection at `inProgress`. Auto-applies default brand creative when `p_chosen_creative` is null. |
+| `submit_draft_selection`    | Transitions an existing selection from `draft` → `inProgress`. Practice supplies chosen creative + configured assets via `SubmitChoicesModal`. Creates the standard `inProgress` admin notification. |
+| `add_campaigns_bulk`        | Bulk insert selections. Now used in the drafts model — Quick Populate / Guided Recommendations call this with `p_status='draft'`. |
 | `delete_selection`          | Remove a selection                               |
+| `create_bespoke_selection`  | Legacy v1 — creates at `onPlan`. Retained for backward compatibility. |
+| `create_bespoke_event`      | Legacy v1 — creates at `onPlan`. Retained for backward compatibility. |
 
 ## Asset Workflow
 
 | Function              | Purpose                                     |
 | --------------------- | ------------------------------------------- |
 | `get_assets`          | Fetch asset definitions                     |
-| `request_assets`      | Admin requests assets from practice (individual) |
-| `request_assets_bulk` | Admin requests assets for multiple selections at once |
-| `submit_assets`       | Practice submits chosen creative + assets   |
 | `confirm_assets`      | Practice confirms/approves artwork          |
 | `request_revision`    | Practice requests changes (sends feedback)  |
+| `request_assets`      | Legacy admin gate — fires for pre-cutover selections still in `onPlan` |
+| `request_assets_bulk` | Legacy admin gate (bulk variant) — same caveat as above |
+| `submit_assets`       | Legacy — practice submits choices for a `requested` selection. New selections collect choices at add-time so this rarely fires. |
 
 ## Notifications
 

@@ -71,6 +71,11 @@ export enum RPCFunctions {
   GodModeListPractices = "god_mode_list_practices",
   GodModeReplaceNotificationPayload = "god_mode_replace_notification_payload",
   GodModeUpdateSelectionCreatives = "god_mode_update_selection_creatives",
+  AddCampaignWithAssets = "add_campaign_with_assets",
+  CreateBespokeSelectionV2 = "create_bespoke_selection_v2",
+  CreateBespokeEventV2 = "create_bespoke_event_v2",
+  CopyPracticeCampaignsV2 = "copy_practice_campaigns_v2",
+  SubmitDraftSelection = "submit_draft_selection",
 }
 
 export enum UserRoles {
@@ -80,6 +85,7 @@ export enum UserRoles {
 }
 
 export enum SelectionStatus {
+  Draft = "draft",
   OnPlan = "onPlan",
   Requested = "requested",
   InProgress = "inProgress",

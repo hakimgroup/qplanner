@@ -54,9 +54,14 @@ import {
 	isValid as isValidDate,
 	isAfter,
 	isBefore} from "date-fns";
-import { useAddSelection, useDeleteSelection } from "@/hooks/selection.hooks";
+import {
+	useAddCampaignWithAssets,
+	useDeleteSelection,
+	useSubmitDraftSelection,
+} from "@/hooks/selection.hooks";
 import { useSelectionNotifications } from "@/hooks/notification.hooks";
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
+import SubmitChoicesModal from "@/components/assets/SubmitChoicesModal";
 import Status from "../status/Status";
 import Edit from "./Edit";
 import { useDisclosure } from "@mantine/hooks";
@@ -492,7 +497,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 	const { setState } = useContext(AppContext);
 	const [editOpened, { open: openEdit, close: closeEdit }] =
 		useDisclosure(false);
-	const [addOpened, { toggle: toggleAdd }] = useDisclosure(false);
+	const [addOpened, { toggle: toggleAddRaw }] = useDisclosure(false);
 	const addSectionRef = useRef<HTMLDivElement>(null);
 	const [previewImage, setPreviewImage] = useState<{
 		url: string;
@@ -538,10 +543,21 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 			from: defaultFrom,
 			to: defaultTo}}));
 
-	const { mutate: addSelection, isPending: adding } =
-		useAddSelection(handleAddSuccess);
+	// Submit modal opens after dates picked
+	const [submitModalOpen, setSubmitModalOpen] = useState(false);
+	// Separate modal for submitting an existing draft selection to design team
+	const [draftSubmitOpen, setDraftSubmitOpen] = useState(false);
+
+	const toggleAdd = () => {
+		toggleAddRaw();
+	};
+
+	const { mutate: addCampaignWithAssets, isPending: adding } =
+		useAddCampaignWithAssets(handleAddSuccess);
 	const { mutate: deleteSelection, isPending: deleting } =
 		useDeleteSelection(handleAddSuccess);
+	const { mutate: submitDraft, isPending: submittingDraft } =
+		useSubmitDraftSelection(handleAddSuccess);
 
 	const Objectives = ({ noTitle = false }) => (
 		<Stack gap={5}>
@@ -643,34 +659,75 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 		)}`;
 	})();
 
-	const canSubmit =
+	const datesValid =
 		!!campaign.dateRange.from &&
 		!!campaign.dateRange.to &&
 		isValidDate(campaign.dateRange.from as Date) &&
 		isValidDate(campaign.dateRange.to as Date);
 
-	const handleAddToPlan = () => {
-		if (!canSubmit) {
+	const validCreativesForAdd = useMemo(
+		() => c.creatives?.filter((cr) => cr.url?.trim()) ?? [],
+		[c.creatives],
+	);
+
+	const handleContinueToSubmit = () => {
+		if (!datesValid) {
 			toast.error("Please choose a valid start and end date");
 			return;
 		}
+		setSubmitModalOpen(true);
+	};
 
-		addSelection(
+	const handleSubmitDraft = (result: {
+		chosenCreative: string | null;
+		finalAssets: any;
+		note: string | null;
+	}) => {
+		if (!c.selection_id) return;
+		submitDraft(
 			{
-				campaign_id: c.id,
-				from_date: format(
-					campaign.dateRange.from as Date,
-					"yyyy-MM-dd",
-				),
-				to_date: format(campaign.dateRange.to as Date, "yyyy-MM-dd"),
-				status: SelectionStatus.OnPlan,
+				selectionId: c.selection_id,
+				chosenCreative: result.chosenCreative,
+				assets: result.finalAssets,
+				note: result.note,
+				campaignName: c.name,
+			},
+			{
+				onSuccess: () => setDraftSubmitOpen(false),
+				onError: (e: any) =>
+					toast.error(e?.message ?? "Could not submit draft"),
+			},
+		);
+	};
+
+	const handleSubmitWithAssets = (result: {
+		chosenCreative: string | null;
+		finalAssets: any;
+		note: string | null;
+	}) => {
+		if (!c.id) return;
+
+		addCampaignWithAssets(
+			{
+				campaignId: c.id,
+				fromDate: format(campaign.dateRange.from as Date, "yyyy-MM-dd"),
+				toDate: format(campaign.dateRange.to as Date, "yyyy-MM-dd"),
+				chosenCreative: result.chosenCreative,
+				assets: result.finalAssets,
+				note: result.note,
 				source: SelectionsSource.Manual,
 				campaignName: c.name,
-				campaignCategory: c.category},
+				campaignCategory: c.category,
+				isBespoke: false,
+			},
 			{
+				onSuccess: () => {
+					setSubmitModalOpen(false);
+				},
 				onError: (e: any) => {
-					toast.error(e?.message ?? "Could not add to plan");
-				}},
+					toast.error(e?.message ?? "Could not submit campaign");
+				},
+			},
 		);
 	};
 
@@ -945,36 +1002,52 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 						<>
 							<GradientDivider />
 
-							<Grid gutter={10}>
-								<Grid.Col span={8}>
-									<StyledButton
-										fw={500}
-										fullWidth
-										leftSection={
-											<IconEdit
-												size={18}
-												color={T.colors.gray[9]}
-											/>
-										}
-										onClick={openEdit}
-									>
-										Edit Dates
-									</StyledButton>
-								</Grid.Col>
+							{c.status === SelectionStatus.Draft && (
+								<Button
+									fullWidth
+									radius={10}
+									color="blue.3"
+									leftSection={<IconCheck size={16} />}
+									loading={submittingDraft}
+									onClick={() => setDraftSubmitOpen(true)}
+								>
+									Send to Design Team
+								</Button>
+							)}
 
-								<Grid.Col span={4}>
-									<Button
-										fullWidth
-										radius={10}
-										color="red.4"
-										leftSection={<IconX size={15} />}
-										loading={deleting}
-										onClick={onRemove}
-									>
-										Remove
-									</Button>
-								</Grid.Col>
-							</Grid>
+							{(c.status === SelectionStatus.Draft ||
+								c.status === SelectionStatus.OnPlan) && (
+								<Grid gutter={10}>
+									<Grid.Col span={8}>
+										<StyledButton
+											fw={500}
+											fullWidth
+											leftSection={
+												<IconEdit
+													size={18}
+													color={T.colors.gray[9]}
+												/>
+											}
+											onClick={openEdit}
+										>
+											Edit Dates
+										</StyledButton>
+									</Grid.Col>
+
+									<Grid.Col span={4}>
+										<Button
+											fullWidth
+											radius={10}
+											color="red.4"
+											leftSection={<IconX size={15} />}
+											loading={deleting}
+											onClick={onRemove}
+										>
+											Remove
+										</Button>
+									</Grid.Col>
+								</Grid>
+							)}
 						</>
 					)}
 
@@ -1104,10 +1177,10 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 									</StyledButton>
 									<Button
 										fullWidth
-										onClick={handleAddToPlan}
+										onClick={handleContinueToSubmit}
 										leftSection={<IconCalendar size={18} />}
 									>
-										Add to Calendar
+										Continue
 									</Button>
 								</Flex>
 							</Stack>
@@ -1146,6 +1219,40 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 			</Modal>
 
 			<Edit opened={editOpened} closeModal={closeEdit} selection={c} />
+
+			<SubmitChoicesModal
+				opened={submitModalOpen}
+				onClose={() => setSubmitModalOpen(false)}
+				title={`Submit ${c.name ?? "Campaign"}`}
+				subtitle={c.is_event ? `${c.event_type ?? "Event"}` : undefined}
+				category={c.category ?? null}
+				description={c.description ?? null}
+				fromDate={campaign.dateRange.from}
+				toDate={campaign.dateRange.to}
+				assets={c.assets}
+				creatives={validCreativesForAdd}
+				preselectAssets={false}
+				loading={adding}
+				submitLabel="Submit Campaign"
+				onSubmit={handleSubmitWithAssets}
+			/>
+
+			<SubmitChoicesModal
+				opened={draftSubmitOpen}
+				onClose={() => setDraftSubmitOpen(false)}
+				title={`Send ${c.name ?? "Campaign"} to design team`}
+				subtitle={c.is_event ? `${c.event_type ?? "Event"}` : undefined}
+				category={c.category ?? null}
+				description={c.description ?? null}
+				fromDate={c.selection_from_date ?? null}
+				toDate={c.selection_to_date ?? null}
+				assets={c.assets}
+				creatives={validCreativesForAdd}
+				preselectAssets={false}
+				loading={submittingDraft}
+				submitLabel="Send to Design Team"
+				onSubmit={handleSubmitDraft}
+			/>
 		</>
 	);
 };

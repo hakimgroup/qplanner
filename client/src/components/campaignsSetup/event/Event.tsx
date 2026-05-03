@@ -30,6 +30,10 @@ import { toast } from "sonner";
 import { useCreateBespokeEvent } from "@/hooks/campaign.hooks";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
 import { UserTabModes, GetAssetsResponse } from "@/models/general.models";
+import SubmitChoicesModal, {
+  SubmitChoicesResult,
+} from "@/components/assets/SubmitChoicesModal";
+import { DEFAULT_BESPOKE_CREATIVE } from "@/shared/shared.const";
 import AppContext from "@/shared/AppContext";
 import { updateState } from "@/shared/shared.utilities";
 import { startCase } from "lodash";
@@ -73,6 +77,20 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
   const T = useMantineTheme();
 	const isMobile = useIsMobile();
   const [links, setLinks] = useState<string[]>([""]);
+  const [submitModalOpen, setSubmitModalOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<{
+    eventType: string;
+    title: string;
+    description: string;
+    eventFromDate: Date;
+    eventToDate: Date;
+    objectives: string[];
+    topics: string[];
+    requirements: string | null;
+    notes: string;
+    cleanedLinks: string[];
+    filteredAssets: any;
+  } | null>(null);
 
   const {
     data: assetsData,
@@ -145,18 +163,19 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
       return;
     }
 
-    // ✅ Build structured assets object
-    const buildAssets = <K extends keyof GetAssetsResponse>(key: K) => {
+    // Build FILTERED assets — only items the user picked in step 1
+    const buildFiltered = <K extends keyof GetAssetsResponse>(key: K) => {
       const section = assetsData?.[key]?.content ?? [];
-      return section.map((a) => ({
-        ...a,
-        userSelected: values.selectedAssets.includes(a.name)}));
+      return section
+        .filter((a) => values.selectedAssets.includes(a.name))
+        .map((a) => ({ ...a, userSelected: true }));
     };
 
-    const assets = {
-      printedAssets: buildAssets("printedAssets"),
-      digitalAssets: buildAssets("digitalAssets"),
-      externalPlacements: buildAssets("externalPlacements")};
+    const filteredAssets = {
+      printedAssets: buildFiltered("printedAssets"),
+      digitalAssets: buildFiltered("digitalAssets"),
+      externalPlacements: buildFiltered("externalPlacements"),
+    };
 
     const extra: string[] = [];
     if (cleanedLinks.length) extra.push(`Links:\n${cleanedLinks.join("\n")}`);
@@ -164,21 +183,49 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
       .filter(Boolean)
       .join("\n\n");
 
+    setPendingPayload({
+      eventType: values.eventType,
+      title: values.title,
+      description: values.description,
+      eventFromDate: values.dateRange.from as Date,
+      eventToDate: values.dateRange.to as Date,
+      objectives: values.objectives,
+      topics: values.topics,
+      requirements: values.requirements || null,
+      notes: composedNotes,
+      cleanedLinks,
+      filteredAssets,
+    });
+    setSubmitModalOpen(true);
+  });
+
+  const handleModalSubmit = (result: SubmitChoicesResult) => {
+    if (!pendingPayload) return;
+
+    const composedNotes = [pendingPayload.notes, result.note]
+      .filter(Boolean)
+      .join("\n\n");
+
     createEvent(
       {
-        eventType: values.eventType,
-        title: values.title,
-        description: values.description,
-        eventFromDate: values.dateRange.from as Date,
-        eventToDate: values.dateRange.to as Date,
-        objectives: values.objectives,
-        topics: values.topics,
-        assets,
-        requirements: values.requirements || null,
+        eventType: pendingPayload.eventType,
+        title: pendingPayload.title,
+        description: pendingPayload.description,
+        eventFromDate: pendingPayload.eventFromDate,
+        eventToDate: pendingPayload.eventToDate,
+        objectives: pendingPayload.objectives,
+        topics: pendingPayload.topics,
+        assets: pendingPayload.filteredAssets,
+        requirements: pendingPayload.requirements,
         notes: composedNotes,
-        links: cleanedLinks},
+        links: pendingPayload.cleanedLinks,
+        chosenCreative: result.chosenCreative,
+        selectedAssets: result.finalAssets,
+      },
       {
         onSuccess: () => {
+          setSubmitModalOpen(false);
+          setPendingPayload(null);
           handleReset();
           close();
           updateState(
@@ -189,9 +236,10 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
         },
         onError: (e) => {
           toast.error(e?.message ?? "Failed to create event");
-        }}
+        },
+      }
     );
-  });
+  };
 
   const canSubmit =
     !!form.values.eventType?.trim() &&
@@ -230,7 +278,7 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
               </Text>
             </Flex>
             <Text size="sm" c="gray.6">
-              Create an event campaign tailored to your specific occasion.
+              Submit an event brief — our design team picks it up straight away.
             </Text>
           </Stack>
         }
@@ -541,16 +589,31 @@ const Event = ({ buttonText = "Bespoke Event" }) => {
                 type="submit"
                 radius={10}
                 color="blue.3"
-                loading={creating}
                 disabled={!canSubmit}
                 leftSection={<IconPlus size={14} />}
               >
-                Create Event
+                Continue
               </Button>
             </Flex>
           </Stack>
         </form>
       </Modal>
+
+      <SubmitChoicesModal
+        opened={submitModalOpen}
+        onClose={() => setSubmitModalOpen(false)}
+        title={`Submit ${pendingPayload?.title ?? "Event"}`}
+        category="Event"
+        description={pendingPayload?.description ?? null}
+        fromDate={pendingPayload?.eventFromDate ?? null}
+        toDate={pendingPayload?.eventToDate ?? null}
+        assets={pendingPayload?.filteredAssets}
+        defaultCreative={DEFAULT_BESPOKE_CREATIVE}
+        preselectAssets
+        loading={creating}
+        submitLabel="Submit Event"
+        onSubmit={handleModalSubmit}
+      />
     </>
   );
 };

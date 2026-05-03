@@ -47,8 +47,11 @@ import CampaignDates from "@/components/campaignDates/CampaignDates";
 import { isValid as isValidDate } from "date-fns";
 import { toast } from "sonner";
 import { useCreateBespokeSelection } from "@/hooks/campaign.hooks";
-import { SelectionStatus } from "@/shared/shared.models";
 import { GetAssetsResponse, UserTabModes } from "@/models/general.models";
+import SubmitChoicesModal, {
+  SubmitChoicesResult,
+} from "@/components/assets/SubmitChoicesModal";
+import { DEFAULT_BESPOKE_CREATIVE } from "@/shared/shared.const";
 import AppContext from "@/shared/AppContext";
 import { updateState } from "@/shared/shared.utilities";
 import { useAssets } from "@/hooks/general.hooks";
@@ -212,6 +215,18 @@ const Bespoke = ({
 
   const [links, setLinks] = useState<string[]>([""]);
   const [briefAnswers, setBriefAnswers] = useState<BriefAnswers>({});
+  const [submitModalOpen, setSubmitModalOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<{
+    title: string;
+    description: string;
+    from: Date;
+    to: Date;
+    notes: string;
+    objectives: string[];
+    topics: string[];
+    cleanedLinks: string[];
+    filteredAssets: any;
+  } | null>(null);
   const {
     data: assetsData,
     isLoading: loadingAssets,
@@ -275,15 +290,8 @@ const Bespoke = ({
   };
 
   const onSubmit = form.onSubmit((values) => {
-    const {
-      title,
-      notes,
-      dateRange,
-      objectives,
-      topics,
-      selectedAssets} = values;
     const description = formatBriefToDescription(briefAnswers);
-    const { from, to } = dateRange;
+    const { from, to } = values.dateRange;
     if (!from || !to) {
       toast.error("Please choose a valid start and end date.");
       return;
@@ -291,33 +299,59 @@ const Bespoke = ({
 
     const cleanedLinks = links.map((l) => l.trim()).filter(Boolean);
 
-    // ✅ Build structured assets object
-    const buildAssets = <K extends keyof GetAssetsResponse>(key: K) => {
+    // Build FILTERED assets — only the items the user checked
+    const buildFiltered = <K extends keyof GetAssetsResponse>(key: K) => {
       const section = assetsData?.[key]?.content ?? [];
-      return section.map((a) => ({
-        ...a,
-        userSelected: values.selectedAssets.includes(a.name)}));
+      return section
+        .filter((a) => values.selectedAssets.includes(a.name))
+        .map((a) => ({ ...a, userSelected: true }));
     };
 
-    const assets = {
-      printedAssets: buildAssets("printedAssets"),
-      digitalAssets: buildAssets("digitalAssets"),
-      externalPlacements: buildAssets("externalPlacements")};
+    const filteredAssets = {
+      printedAssets: buildFiltered("printedAssets"),
+      digitalAssets: buildFiltered("digitalAssets"),
+      externalPlacements: buildFiltered("externalPlacements"),
+    };
+
+    setPendingPayload({
+      title: values.title.trim(),
+      description: description.trim(),
+      from,
+      to,
+      notes: values.notes,
+      objectives: values.objectives,
+      topics: values.topics,
+      cleanedLinks,
+      filteredAssets,
+    });
+    setSubmitModalOpen(true);
+  });
+
+  const handleModalSubmit = (result: SubmitChoicesResult) => {
+    if (!pendingPayload) return;
+
+    const composedNotes = [pendingPayload.notes, result.note]
+      .filter(Boolean)
+      .join("\n\n");
 
     createBespoke(
       {
-        name: title.trim(),
-        description: description.trim(),
-        from,
-        to,
-        status: SelectionStatus.OnPlan,
-        notes,
-        objectives,
-        topics,
-        assets,
-        reference_links: cleanedLinks},
+        name: pendingPayload.title,
+        description: pendingPayload.description,
+        from: pendingPayload.from,
+        to: pendingPayload.to,
+        notes: composedNotes,
+        objectives: pendingPayload.objectives,
+        topics: pendingPayload.topics,
+        assets: pendingPayload.filteredAssets,
+        reference_links: pendingPayload.cleanedLinks,
+        chosenCreative: result.chosenCreative,
+        selectedAssets: result.finalAssets,
+      },
       {
         onSuccess: () => {
+          setSubmitModalOpen(false);
+          setPendingPayload(null);
           resetForm();
           close();
           updateState(
@@ -328,9 +362,10 @@ const Bespoke = ({
         },
         onError: (e: any) => {
           toast.error(e?.message ?? "Could not create bespoke campaign");
-        }}
+        },
+      }
     );
-  });
+  };
 
   return (
     <>
@@ -355,7 +390,7 @@ const Bespoke = ({
               </Text>
             </Flex>
             <Text size="sm" c="gray.6">
-              Create a custom campaign tailored to your specific needs
+              Submit a custom campaign brief — our design team picks it up straight away.
             </Text>
           </Stack>
         }
@@ -608,16 +643,31 @@ const Bespoke = ({
                 type="submit"
                 radius={10}
                 color="blue.3"
-                loading={creating}
                 disabled={!canSubmit}
                 leftSection={<IconPlus size={14} />}
               >
-                Create Campaign
+                Continue
               </Button>
             </Flex>
           </Stack>
         </form>
       </Modal>
+
+      <SubmitChoicesModal
+        opened={submitModalOpen}
+        onClose={() => setSubmitModalOpen(false)}
+        title={`Submit ${pendingPayload?.title ?? "Bespoke Campaign"}`}
+        category="Bespoke"
+        description={pendingPayload?.description ?? null}
+        fromDate={pendingPayload?.from ?? null}
+        toDate={pendingPayload?.to ?? null}
+        assets={pendingPayload?.filteredAssets}
+        defaultCreative={DEFAULT_BESPOKE_CREATIVE}
+        preselectAssets
+        loading={creating}
+        submitLabel="Submit Campaign"
+        onSubmit={handleModalSubmit}
+      />
     </>
   );
 };

@@ -14,7 +14,7 @@ import { ActorNotificationType, DatabaseTables, RPCFunctions } from "@/shared/sh
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { sendActorEmail } from "@/api/emails";
+import { sendActorEmail, sendNotificationEmail } from "@/api/emails";
 
 /**
  * Check if a practice has been onboarded (received their onboarding summary email).
@@ -182,7 +182,12 @@ export const useCreateBespokeSelection = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (input: CreateBespokeInput) => {
+    mutationFn: async (
+      input: CreateBespokeInput & {
+        chosenCreative?: string | null;
+        selectedAssets?: any | null;
+      }
+    ) => {
       if (!activePracticeId) {
         throw new Error("No active practice selected.");
       }
@@ -192,59 +197,69 @@ export const useCreateBespokeSelection = () => {
         description,
         from,
         to,
-        status = "onPlan",
         notes = null,
         objectives = [],
         topics = [],
         assets = [],
         reference_links,
+        chosenCreative = null,
+        selectedAssets = null,
       } = input;
 
       const { data, error } = await supabase.rpc(
-        RPCFunctions.CreateBespokeSelection,
+        RPCFunctions.CreateBespokeSelectionV2,
         {
-          // REQUIRED first (per function signature)
           p_practice: activePracticeId,
           p_name: name,
           p_description: description,
           p_from_date: format(from, "yyyy-MM-dd"),
           p_to_date: format(to, "yyyy-MM-dd"),
-
-          // OPTIONAL (defaults applied by the RPC too)
-          p_status: status,
           p_notes: notes,
-          p_objectives: objectives, // supabase js client serializes to jsonb
+          p_objectives: objectives,
           p_topics: topics,
           p_assets: assets,
           p_reference_links: reference_links,
+          p_chosen_creative: chosenCreative,
+          p_selected_assets: selectedAssets,
         }
       );
 
       if (error) throw error;
-      // RPC returns the new selection_id (uuid)
-      return { selectionId: data as string, name, from, to };
+      if (data && !data.success)
+        throw new Error(data.error || "Failed to create bespoke campaign");
+
+      return {
+        selectionId: data.selection_id as string,
+        notificationId: data.notification_id as string | undefined,
+        name,
+        from,
+        to,
+      };
     },
 
-    onSuccess: async ({ selectionId, name, from, to }) => {
-      // Show toast notification
+    onSuccess: async ({ selectionId, notificationId, name, from, to }) => {
       toast.success(`"${name}" added to your plan`);
 
-      // Refresh all get_campaigns caches (united + practice-scoped)
       qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog],
         exact: false,
       });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Selections],
+        exact: false,
+      });
+      qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
 
-      // Queue first-time practice onboarding email (fire-and-forget)
+      // Fire inProgress email to admins
+      if (notificationId) {
+        sendNotificationEmail({ notificationId });
+      }
+
       if (activePracticeId && user?.id) {
         queuePracticeOnboardingEmail(activePracticeId, user.id);
 
-        // Check if practice has been onboarded before sending actor notification/email
         const isOnboarded = await isPracticeOnboarded(activePracticeId);
-
         if (isOnboarded) {
-          // Send actor email and create in-app notification (handled by server)
-          // Await to ensure notification is created before invalidating
           await sendActorEmail({
             type: "bespoke_added",
             userId: user.id,
@@ -256,8 +271,6 @@ export const useCreateBespokeSelection = () => {
             toDate: format(to, "yyyy-MM-dd"),
             isBespoke: true,
           });
-
-          // Invalidate notifications to show the new actor notification
           qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
         }
       }
@@ -348,6 +361,94 @@ export function useBulkAddCampaigns() {
   });
 }
 
+export function useBulkAddCampaignsWithAssets() {
+  // Kept as a thin alias for back-compat with previous call sites.
+  // Forwards to the existing legacy useBulkAddCampaigns hook with status='draft'
+  // so Quick/Guided populate the practice's plan as drafts.
+  const qc = useQueryClient();
+  const { activePracticeId } = usePractice();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (input: {
+      campaigns: Campaign[];
+      from?: Date | string | null;
+      to?: Date | string | null;
+      source?: string | null;
+    }) => {
+      const { campaigns, from, to, source } = input;
+      if (!activePracticeId) throw new Error("No active practice selected.");
+      if (!Array.isArray(campaigns) || campaigns.length === 0) {
+        throw new Error("No campaigns selected.");
+      }
+
+      const campaignIds = campaigns
+        .map((c) => c.id)
+        .filter((id): id is string => Boolean(id));
+
+      const { error } = await supabase.rpc(RPCFunctions.AddCampaignsBulk, {
+        p_practice: activePracticeId,
+        p_campaign_ids: campaignIds,
+        p_from_date: from ?? null,
+        p_to_date: to ?? null,
+        p_status: "draft",
+        p_notes: null,
+        p_source: source ?? null,
+      });
+
+      if (error) throw error;
+      return {
+        succeeded: campaignIds.length,
+        failed: 0,
+        total: campaigns.length,
+        from,
+        to,
+      };
+    },
+    onSuccess: async ({ succeeded, total, from, to }) => {
+      toast.success(
+        `${succeeded} campaign${succeeded === 1 ? "" : "s"} added to your plan as draft${succeeded === 1 ? "" : "s"}`,
+      );
+
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.CampaignsCatalog],
+        exact: false,
+      });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Selections],
+        exact: false,
+      });
+      qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+
+      void total;
+
+      if (activePracticeId && user?.id) {
+        queuePracticeOnboardingEmail(activePracticeId, user.id);
+        const isOnboarded = await isPracticeOnboarded(activePracticeId);
+        if (isOnboarded) {
+          const fromDateStr =
+            typeof from === "string"
+              ? from
+              : from?.toISOString?.() || new Date().toISOString();
+          const toDateStr =
+            typeof to === "string"
+              ? to
+              : to?.toISOString?.() || new Date().toISOString();
+          await sendActorEmail({
+            type: "bulk_added",
+            userId: user.id,
+            practiceId: activePracticeId,
+            campaignsCount: succeeded,
+            fromDate: fromDateStr,
+            toDate: toDateStr,
+          });
+          qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
+        }
+      }
+    },
+  });
+}
+
 function keyGuided(params?: GuidedParams, practiceId?: string | null) {
   // Keep the key stable—order matters
   return [
@@ -426,11 +527,16 @@ export function useCreateBespokeEvent() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (input: CreateBespokeEventInput) => {
+    mutationFn: async (
+      input: CreateBespokeEventInput & {
+        chosenCreative?: string | null;
+        selectedAssets?: any | null;
+      }
+    ) => {
       const practiceId = input.practiceId ?? activePracticeId;
 
       const { data, error } = await supabase.rpc(
-        RPCFunctions.CreateBespokeEvent,
+        RPCFunctions.CreateBespokeEventV2,
         {
           p_practice: practiceId,
           p_event_type: input.eventType,
@@ -444,13 +550,18 @@ export function useCreateBespokeEvent() {
           p_requirements: input.requirements ?? null,
           p_notes: input.notes ?? null,
           p_reference_links: input.links ?? [],
+          p_chosen_creative: input.chosenCreative ?? null,
+          p_selected_assets: input.selectedAssets ?? null,
         }
       );
 
       if (error) throw error;
-      // RPC returns the new selection_id (uuid)
+      if (data && !data.success)
+        throw new Error(data.error || "Failed to create bespoke event");
+
       return {
-        selectionId: data as string,
+        selectionId: data.selection_id as string,
+        notificationId: data.notification_id as string | undefined,
         practiceId,
         title: input.title,
         eventType: input.eventType,
@@ -458,7 +569,7 @@ export function useCreateBespokeEvent() {
         toDate: format(input.eventToDate, "yyyy-MM-dd"),
       };
     },
-    onSuccess: async ({ selectionId, practiceId, title, eventType, fromDate, toDate }) => {
+    onSuccess: async ({ selectionId, notificationId, practiceId, title, eventType, fromDate, toDate }) => {
       // Show toast notification
       toast.success(`"${title}" event added to your plan`);
 
@@ -466,6 +577,16 @@ export function useCreateBespokeEvent() {
       await qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog, activePracticeId],
       });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Selections],
+        exact: false,
+      });
+      qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+
+      // Fire inProgress email to admins
+      if (notificationId) {
+        sendNotificationEmail({ notificationId });
+      }
 
       // Queue first-time practice onboarding email (fire-and-forget)
       const pid = practiceId ?? activePracticeId;

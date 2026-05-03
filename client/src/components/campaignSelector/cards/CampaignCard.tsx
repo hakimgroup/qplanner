@@ -18,6 +18,7 @@ import {
 	IconCheck,
 	IconPencil,
 	IconPlus,
+	IconSend,
 	IconShare3,
 } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
@@ -33,6 +34,8 @@ import Status from "@/components/status/Status";
 import { AppRoutes, SelectionStatus } from "@/shared/shared.models";
 import AppContext from "@/shared/AppContext";
 import { UserTabModes } from "@/models/general.models";
+import { useSubmitDraftSelection } from "@/hooks/selection.hooks";
+import SubmitChoicesModal from "@/components/assets/SubmitChoicesModal";
 import clsx from "clsx";
 import { format } from "date-fns";
 import { useSearchParams } from "react-router-dom";
@@ -43,10 +46,38 @@ const CampaignCard = (c: Campaign) => {
 	const [opened, { open, close }] = useDisclosure(false);
 	const [editOpened, { open: openEdit, close: closeEdit }] =
 		useDisclosure(false);
+	const [draftSubmitOpen, setDraftSubmitOpen] = useState(false);
 	const {
 		state: { filters },
 	} = useContext(AppContext);
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
+	const isDraft = c.status === SelectionStatus.Draft;
+	const validCreatives = c.creatives?.filter((cr) => cr.url?.trim()) ?? [];
+
+	const { mutate: submitDraft, isPending: submittingDraft } =
+		useSubmitDraftSelection();
+
+	const handleSubmitDraft = (result: {
+		chosenCreative: string | null;
+		finalAssets: any;
+		note: string | null;
+	}) => {
+		if (!c.selection_id) return;
+		submitDraft(
+			{
+				selectionId: c.selection_id,
+				chosenCreative: result.chosenCreative,
+				assets: result.finalAssets,
+				note: result.note,
+				campaignName: c.name,
+			},
+			{
+				onSuccess: () => setDraftSubmitOpen(false),
+				onError: (e: any) =>
+					toast.error(e?.message ?? "Could not submit draft"),
+			}
+		);
+	};
 	const mih = useMatches({
 		base: 430,
 		md: 480,
@@ -161,7 +192,7 @@ const CampaignCard = (c: Campaign) => {
 							{c.selected && (
 								<Status
 									status={
-										!isSelections
+										!isSelections && c.status !== SelectionStatus.Draft
 											? SelectionStatus.OnPlan
 											: c.status
 									}
@@ -239,57 +270,82 @@ const CampaignCard = (c: Campaign) => {
 
 					<Topics />
 
-					<Flex
-						justify={"space-between"}
-						pos={"absolute"}
-						bottom={20}
-						left={0}
-						pr={20}
-						pl={20}
-						w={"100%"}
-					>
-						<StyledButton
-							variant={c.is_event ? "light" : "subtle"}
-							color="violet"
-							onClick={(e) => {
-								e.stopPropagation();
-								setViewMode("view");
-								open();
-							}}
+					{isDraft ? (
+						<Box
+							pos={"absolute"}
+							bottom={20}
+							left={20}
+							right={20}
 						>
-							View {c.is_event && <>Event</>} Details
-						</StyledButton>
-
-						{c.selected ? (
 							<Button
-								color={
-									c.is_event
-										? "violet"
-										: isSelections
-										? "blue.3"
-										: "red.4"
-								}
-								leftSection={<IconPencil size={14} />}
+								fullWidth
+								variant="gradient"
+								gradient={{ from: "violet", to: "grape", deg: 90 }}
+								leftSection={<IconSend size={14} />}
+								loading={submittingDraft}
 								onClick={(e) => {
 									e.stopPropagation();
-									openEdit();
+									setDraftSubmitOpen(true);
 								}}
 							>
-								Edit
+								Send to Design Team
 							</Button>
-						) : (
-							<Button
-								leftSection={<IconPlus size={14} />}
+						</Box>
+					) : (
+						<Flex
+							justify={"space-between"}
+							pos={"absolute"}
+							bottom={20}
+							left={0}
+							pr={20}
+							pl={20}
+							w={"100%"}
+						>
+							<StyledButton
+								variant={c.is_event ? "light" : "subtle"}
+								color="violet"
 								onClick={(e) => {
 									e.stopPropagation();
-									setViewMode("add");
+									setViewMode("view");
 									open();
 								}}
 							>
-								Add
-							</Button>
-						)}
-					</Flex>
+								View {c.is_event && <>Event</>} Details
+							</StyledButton>
+
+							{c.selected ? (
+								c.status === SelectionStatus.OnPlan ? (
+									<Button
+										color={
+											c.is_event
+												? "violet"
+												: isSelections
+												? "blue.3"
+												: "red.4"
+										}
+										leftSection={<IconPencil size={14} />}
+										onClick={(e) => {
+											e.stopPropagation();
+											openEdit();
+										}}
+									>
+										Edit
+									</Button>
+								) : null
+							) : (
+								<Button
+									leftSection={<IconPlus size={14} />}
+									onClick={(e) => {
+										e.stopPropagation();
+										setViewMode("add");
+										open();
+									}}
+								>
+									Add
+								</Button>
+							)}
+						</Flex>
+					)}
 				</Stack>
 			</Card>
 
@@ -303,6 +359,24 @@ const CampaignCard = (c: Campaign) => {
 
 			{/* Editing Card */}
 			<Edit opened={editOpened} closeModal={closeEdit} selection={c} />
+
+			{/* Send to Design Team modal (drafts only) */}
+			<SubmitChoicesModal
+				opened={draftSubmitOpen}
+				onClose={() => setDraftSubmitOpen(false)}
+				title={`Send ${c.name ?? "Campaign"} to design team`}
+				subtitle={c.is_event ? `${c.event_type ?? "Event"}` : undefined}
+				category={c.category ?? null}
+				description={c.description ?? null}
+				fromDate={c.selection_from_date ?? null}
+				toDate={c.selection_to_date ?? null}
+				assets={c.assets}
+				creatives={validCreatives}
+				preselectAssets={false}
+				loading={submittingDraft}
+				submitLabel="Send to Design Team"
+				onSubmit={handleSubmitDraft}
+			/>
 		</>
 	);
 };

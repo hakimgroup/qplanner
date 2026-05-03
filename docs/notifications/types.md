@@ -4,8 +4,8 @@
 
 | Type                 | Audience   | Created By             | Description                          |
 | -------------------- | ---------- | ---------------------- | ------------------------------------ |
-| `requested`          | `practice` | `request_assets` RPC   | Admin has requested assets           |
-| `inProgress`         | `admins`   | `submit_assets` RPC    | Practice submitted their choices     |
+| `requested`          | `practice` | `request_assets` RPC (legacy) | Admin has requested assets — only fires for pre-cutover selections still in `onPlan` |
+| `inProgress`         | `admins`   | `add_campaign_with_assets`, `create_bespoke_selection_v2`, `create_bespoke_event_v2`, `copy_practice_campaigns_v2`, `submit_assets` (legacy) | Practice has made/submitted asset choices |
 | `awaitingApproval`   | `practice` | DB trigger (pg_net)    | Artwork is ready for review          |
 | `confirmed`          | `admins`   | `confirm_assets` RPC   | Practice confirmed the artwork       |
 | `feedbackRequested`  | `admins`   | `request_revision` RPC | Practice requested changes           |
