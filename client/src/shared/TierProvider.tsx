@@ -35,13 +35,28 @@ export const TierProvider: React.FC<{ children: React.ReactNode }> = ({
 		if (!user) return;
 		setLoading(true);
 
-		// Fetch only rows that have at least one of the three tiers
+		// Fetch tier rows. We filter hidden + ISO-date-expired client-side
+		// so a campaign that's been hidden or rolled past its 'to' date
+		// stops appearing in Quick Populate batches silently.
 		const { data, error } = await supabase
-			.from(DatabaseTables.CampaignsCatalog) // "campaigns_catalog"
-			.select("id, tiers")
-			.overlaps("tiers", ["good", "better", "best"]);
+			.from(DatabaseTables.CampaignsCatalog)
+			.select("id, tiers, hidden, availability")
+			.overlaps("tiers", ["good", "better", "best"])
+			.eq("hidden", false);
 
 		if (!error && Array.isArray(data)) {
+			const today = new Date();
+			today.setHours(0, 0, 0, 0);
+
+			const isExpired = (availability: any): boolean => {
+				const to = availability?.to;
+				if (typeof to !== "string") return false;
+				// Month codes (JAN, FEB, ...) recur every year and never expire.
+				if (!/^\d{4}-\d{2}-\d{2}$/.test(to)) return false;
+				const toDate = new Date(to);
+				return toDate < today;
+			};
+
 			const good = new Set<string>();
 			const better = new Set<string>();
 			const best = new Set<string>();
@@ -49,7 +64,11 @@ export const TierProvider: React.FC<{ children: React.ReactNode }> = ({
 			for (const row of data as Array<{
 				id: string;
 				tiers: string[] | null;
+				hidden: boolean;
+				availability: { from?: string; to?: string } | null;
 			}>) {
+				if (isExpired(row.availability)) continue;
+
 				const tArr = Array.isArray(row.tiers)
 					? row.tiers.map((t) => t?.toLowerCase?.() ?? t)
 					: [];

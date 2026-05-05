@@ -19,6 +19,25 @@ Catalog campaigns are the pre-built marketing campaigns available to all practic
 3. Make changes and save
 4. Changes affect the **template** — existing selections keep their own snapshot of assets/creatives, captured at the moment the practice added the campaign.
 
+### How to Hide a Catalog Campaign
+
+Each row in the admin campaigns table has a **Visible** toggle. Flipping it to off sets `campaigns_catalog.hidden = true` and the campaign immediately disappears from practice-facing surfaces:
+
+- The campaign browse / selector
+- Guided Recommendations (it's never recommended again)
+- Quick Populate tiers (silently filtered out of `goodIds`/`betterIds`/`bestIds`)
+
+**What's preserved when hidden:**
+- The `campaigns_catalog` row stays in the database (no data lost).
+- Practices that have already selected it keep seeing it in their plan with the full lifecycle continuing normally.
+- Admin views (this page, God Mode) keep showing it with the toggle in the off position.
+
+**Auto-expiry**: campaigns also disappear from practice-facing surfaces automatically when `availability.to` parses as an ISO date in the past. Month-coded availability (e.g., `JAN`, `FEB`) recurs every year and never expires. No flag flip is needed — practices just stop seeing them.
+
+::: tip Use hide instead of delete
+Catalog rows can never be safely deleted because existing selections reference them by `campaign_id`. Hiding is the supported way to "remove" a campaign from circulation while keeping the historical data intact.
+:::
+
 ### How to Set Creatives on a Campaign
 
 Creatives are the artwork options that practices choose from at the moment they add the campaign. Each creative has:

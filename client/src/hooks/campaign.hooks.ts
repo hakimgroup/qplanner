@@ -725,6 +725,26 @@ export function useUpdateCampaignTier() {
   });
 }
 
+export function useToggleCampaignHidden() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, hidden }: { id: string; hidden: boolean }) => {
+      const { error } = await supabase
+        .from(DatabaseTables.CampaignsCatalog)
+        .update({ hidden })
+        .eq("id", id);
+      if (error) throw error;
+      return { id, hidden };
+    },
+    onSuccess: ({ hidden }) => {
+      qc.invalidateQueries({ queryKey: [DatabaseTables.CampaignsCatalog] });
+      toast.success(hidden ? "Campaign hidden" : "Campaign visible");
+    },
+    onError: (e: any) =>
+      toast.error(e?.message ?? "Failed to update visibility"),
+  });
+}
+
 export function useBulkUpdateCampaignTier() {
   const qc = useQueryClient();
   return useMutation({

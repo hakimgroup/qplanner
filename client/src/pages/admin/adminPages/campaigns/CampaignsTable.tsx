@@ -8,7 +8,9 @@ import {
   Flex,
   Group,
   Stack,
+  Switch,
   Text,
+  Tooltip,
   useMantineTheme,
 } from "@mantine/core";
 import TierCell from "./TierCell";
@@ -18,6 +20,7 @@ import { formatAvailabilityForUI } from "@/shared/shared.utilities";
 import { IconEdit } from "@tabler/icons-react";
 import { startCase } from "lodash";
 import AdminRequestAssetsButton from "@/components/assets/AdminRequestAssetsButton";
+import { useToggleCampaignHidden } from "@/hooks/campaign.hooks";
 
 export type CampaignRow = {
   id: string;
@@ -29,6 +32,7 @@ export type CampaignRow = {
   availability?: { from?: string | null; to?: string | null } | null;
   objectives?: string[];
   topics?: string[];
+  hidden?: boolean;
   updated_at?: string;
 };
 
@@ -49,6 +53,8 @@ const CampaignsTable = forwardRef<
   const T = useMantineTheme().colors;
   const tableRef = useRef<TableHandle>(null);
   const selectedIdsRef = useRef<string[]>([]);
+  const { mutate: toggleHidden, isPending: togglingHidden } =
+    useToggleCampaignHidden();
 
   useImperativeHandle(ref, () => ({
     exportCsv: (opts) => tableRef.current?.exportCsv?.(opts),
@@ -161,6 +167,43 @@ const CampaignsTable = forwardRef<
     },
 
     {
+      field: "hidden",
+      headerName: "Visible",
+      width: 120,
+      minWidth: 110,
+      sortable: true,
+      filter: false,
+      cellRenderer: ({ data }: { data: CampaignRow }) => {
+        const isHidden = !!data?.hidden;
+        return (
+          <Tooltip
+            label={
+              isHidden
+                ? "Hidden from practice browse — flip on to make it selectable"
+                : "Visible to practices — flip off to hide"
+            }
+            withArrow
+          >
+            <Switch
+              size="sm"
+              color="blue.3"
+              checked={!isHidden}
+              disabled={togglingHidden}
+              onLabel="On"
+              offLabel="Off"
+              onChange={(e) =>
+                toggleHidden({
+                  id: data.id,
+                  hidden: !e.currentTarget.checked,
+                })
+              }
+            />
+          </Tooltip>
+        );
+      },
+    },
+
+    {
       field: "actions",
       headerName: "Actions",
       pinned: "right",
@@ -201,7 +244,7 @@ const CampaignsTable = forwardRef<
         </Flex>
       ),
     },
-  ], [T.blue, onEdit]);
+  ], [T.blue, onEdit, toggleHidden, togglingHidden]);
 
   return (
     <Table
