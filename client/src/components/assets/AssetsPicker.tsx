@@ -220,6 +220,11 @@ function describeAssetPrice(a: EditableAsset): string {
 	if (a.priceNum != null) {
 		return a.suffix ? `£${a.priceNum} ${a.suffix}` : `£${a.priceNum} each`;
 	}
+	// Admin sometimes enters human-readable strings like "from £15" or "POA"
+	// in the price field. Show that as-is rather than the empty "£—" placeholder.
+	if (typeof a.price === "string" && a.price.trim().length > 0) {
+		return a.price.trim();
+	}
 	return "£—";
 }
 
