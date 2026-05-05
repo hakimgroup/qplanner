@@ -62,6 +62,7 @@ import {
 import { useSelectionNotifications } from "@/hooks/notification.hooks";
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
 import SubmitChoicesModal from "@/components/assets/SubmitChoicesModal";
+import { filterToAdminCuratedAssets } from "@/components/assets/AssetsPicker";
 import Status from "../status/Status";
 import Edit from "./Edit";
 import { useDisclosure } from "@mantine/hooks";
@@ -1229,7 +1230,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 				description={c.description ?? null}
 				fromDate={campaign.dateRange.from}
 				toDate={campaign.dateRange.to}
-				assets={c.assets}
+				assets={filterToAdminCuratedAssets(c.assets)}
 				creatives={validCreativesForAdd}
 				preselectAssets={false}
 				loading={adding}
@@ -1246,7 +1247,7 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 				description={c.description ?? null}
 				fromDate={c.selection_from_date ?? null}
 				toDate={c.selection_to_date ?? null}
-				assets={c.assets}
+				assets={filterToAdminCuratedAssets(c.assets)}
 				creatives={validCreativesForAdd}
 				preselectAssets={false}
 				loading={submittingDraft}

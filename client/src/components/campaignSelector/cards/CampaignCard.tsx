@@ -36,6 +36,7 @@ import AppContext from "@/shared/AppContext";
 import { UserTabModes } from "@/models/general.models";
 import { useSubmitDraftSelection } from "@/hooks/selection.hooks";
 import SubmitChoicesModal from "@/components/assets/SubmitChoicesModal";
+import { filterToAdminCuratedAssets } from "@/components/assets/AssetsPicker";
 import clsx from "clsx";
 import { format } from "date-fns";
 import { useSearchParams } from "react-router-dom";
@@ -370,7 +371,7 @@ const CampaignCard = (c: Campaign) => {
 				description={c.description ?? null}
 				fromDate={c.selection_from_date ?? null}
 				toDate={c.selection_to_date ?? null}
-				assets={c.assets}
+				assets={filterToAdminCuratedAssets(c.assets)}
 				creatives={validCreatives}
 				preselectAssets={false}
 				loading={submittingDraft}

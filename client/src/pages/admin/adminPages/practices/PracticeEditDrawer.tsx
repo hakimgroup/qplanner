@@ -62,8 +62,12 @@ const PracticeEditDrawer = ({ practice, opened, onClose }: Props) => {
 		}
 	}, [practice]);
 
-	const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
-		setForm((f) => ({ ...f, [key]: e.currentTarget.value }));
+	const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+		// Capture synchronously — React clears e.currentTarget after the event
+		// handler returns, so reading it inside the setForm updater throws.
+		const value = e.currentTarget.value;
+		setForm((f) => ({ ...f, [key]: value }));
+	};
 
 	const { mutate: save, isPending } = useMutation({
 		mutationFn: async () => {

@@ -57,6 +57,35 @@ export function initAssetsState(baseAssets: Assets | undefined): AssetsState {
 	};
 }
 
+// For catalog flows: keep only assets the admin curated for this campaign.
+// The catalog template stores the curation marker as `userSelected: true` on
+// each item (the admin's "include this in the practice's choices" flag).
+// If no items are flagged in any bucket, fall back to the full set so
+// practices aren't presented with an empty picker.
+export function filterToAdminCuratedAssets(
+	baseAssets: Assets | undefined,
+): Assets | undefined {
+	if (!baseAssets) return baseAssets;
+
+	const curate = (list: AssetItem[] | undefined): AssetItem[] =>
+		(list ?? []).filter((a) => a.userSelected === true);
+
+	const printed = curate(baseAssets.printedAssets);
+	const digital = curate(baseAssets.digitalAssets);
+	const external = curate(baseAssets.externalPlacements);
+
+	const anyCurated =
+		printed.length > 0 || digital.length > 0 || external.length > 0;
+	if (!anyCurated) return baseAssets;
+
+	return {
+		...baseAssets,
+		printedAssets: printed,
+		digitalAssets: digital,
+		externalPlacements: external,
+	};
+}
+
 // Mark every non-card item as userSelected with qty 1 — used for bespoke flow
 // where the practice has already explicitly checked the assets they want.
 export function initAssetsStatePreselected(
