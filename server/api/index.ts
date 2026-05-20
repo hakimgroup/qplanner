@@ -2209,8 +2209,13 @@ app.use("/", (req, res) => {
 	res.send("Server is running.");
 });
 
-//Serve
+// On Vercel, the platform invokes the default-exported Express app as a
+// serverless handler — no app.listen() needed and calling it would crash the
+// function. We only call listen() when this module is run directly (local dev).
+if (require.main === module) {
+	app.listen(port, () => {
+		console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+	});
+}
 
-app.listen(port, () => {
-	console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
-});
+export default app;
