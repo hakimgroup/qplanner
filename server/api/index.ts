@@ -729,7 +729,8 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 		// 6. Send email
 		const finalRecipients = testEmailOverride || process.env.TEST_EMAIL_OVERRIDE ? [testEmailOverride || process.env.TEST_EMAIL_OVERRIDE] : recipientEmails;
 
-		const { error: sendError } = await resend.emails.send({
+		const attemptedAt = new Date().toISOString();
+		const { data: sendData, error: sendError } = await resend.emails.send({
 			from: "HG Planner <noreply@planner.hakimgroup.io>",
 			to: finalRecipients,
 			subject: emailSubject,
@@ -760,12 +761,16 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 					status: "failed",
 					error_message: sendError.message,
 					payload,
+					attempt_source: "server",
+					attempted_at: attemptedAt,
+					subject: emailSubject,
 				});
 			}
 			return res.status(500).json({ error: sendError.message });
 		}
 
 		// 7. Log successful send
+		const resendMessageId = (sendData as any)?.id ?? null;
 		for (const user of logRecipients) {
 			await supabase.from("notification_emails_log").insert({
 				notification_id: notificationId,
@@ -779,11 +784,16 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 				actor_user_id: notification.actor_user_id,
 				status: "sent",
 				payload,
+				attempt_source: "server",
+				attempted_at: attemptedAt,
+				sent_at: new Date().toISOString(),
+				resend_message_id: resendMessageId,
+				subject: emailSubject,
 			});
 		}
 
-		console.log(`[Notification Email] Sent ${emailType} to ${recipientEmails.length} recipients`);
-		return res.status(200).json({ sent: recipientEmails.length, emailType });
+		console.log(`[Notification Email] Sent ${emailType} to ${recipientEmails.length} recipients (resend_id=${resendMessageId})`);
+		return res.status(200).json({ sent: recipientEmails.length, emailType, resend_message_id: resendMessageId });
 	} catch (error: any) {
 		console.error("[Notification Email] Unexpected error:", error);
 		return res.status(500).json({ error: error.message });
@@ -897,7 +907,8 @@ app.post("/send-bulk-notification-email", async (req: Request, res: Response) =>
 			const finalRecipients = testEmailOverride || process.env.TEST_EMAIL_OVERRIDE ? [testEmailOverride || process.env.TEST_EMAIL_OVERRIDE] : recipientEmails;
 
 			// Send email
-			const { error: sendError } = await resend.emails.send({
+			const attemptedAt = new Date().toISOString();
+			const { data: sendData, error: sendError } = await resend.emails.send({
 				from: "HG Planner <noreply@planner.hakimgroup.io>",
 				to: finalRecipients,
 				subject: emailSubject,
@@ -906,10 +917,33 @@ app.post("/send-bulk-notification-email", async (req: Request, res: Response) =>
 
 			if (sendError) {
 				console.error(`[Bulk Notification Email] Send error for practice ${practice.name}:`, sendError);
+				// Log failed attempt for each notification × recipient
+				const failedEntries = users.flatMap((user: any) =>
+					practiceNotifs.map((notif: any) => ({
+						notification_id: notif.id,
+						email_type: "assets_requested_bulk",
+						recipient_email: user.email,
+						recipient_user_id: user.id,
+						selection_id: notif.selection_id,
+						practice_id: practice.id,
+						practice_name: practice.name,
+						campaign_name: notif.payload?.name,
+						actor_user_id: notif.actor_user_id,
+						status: "failed",
+						error_message: sendError.message,
+						payload: { campaigns_count: campaigns.length, all_campaigns: campaigns },
+						attempt_source: "server",
+						attempted_at: attemptedAt,
+						subject: emailSubject,
+					}))
+				);
+				await supabase.from("notification_emails_log").insert(failedEntries);
 				return { practiceId, error: sendError.message };
 			}
 
 			// Batch insert all log entries at once
+			const resendMessageId = (sendData as any)?.id ?? null;
+			const sentAt = new Date().toISOString();
 			const logEntries = users.flatMap((user: any) =>
 				practiceNotifs.map((notif: any) => ({
 					notification_id: notif.id,
@@ -923,6 +957,11 @@ app.post("/send-bulk-notification-email", async (req: Request, res: Response) =>
 					actor_user_id: notif.actor_user_id,
 					status: "sent",
 					payload: { campaigns_count: campaigns.length, all_campaigns: campaigns },
+					attempt_source: "server",
+					attempted_at: attemptedAt,
+					sent_at: sentAt,
+					resend_message_id: resendMessageId,
+					subject: emailSubject,
 				}))
 			);
 			await supabase.from("notification_emails_log").insert(logEntries);
@@ -1105,8 +1144,9 @@ app.post("/send-actor-email", async (req: Request, res: Response) => {
 
 		// 4. Send email
 		const recipientEmail = testEmailOverride || user.email;
+		const attemptedAt = new Date().toISOString();
 
-		const { error: sendError } = await resend.emails.send({
+		const { data: sendData, error: sendError } = await resend.emails.send({
 			from: "HG Planner <noreply@planner.hakimgroup.io>",
 			to: [recipientEmail],
 			subject: emailSubject,
@@ -1128,11 +1168,14 @@ app.post("/send-actor-email", async (req: Request, res: Response) => {
 				status: "failed",
 				error_message: sendError.message,
 				payload: { type, campaignCategory, fromDate, toDate, isBespoke, campaignsCount },
+				attempt_source: "server",
+				attempted_at: attemptedAt,
 			});
 			return res.status(500).json({ error: sendError.message });
 		}
 
 		// 5. Log successful send
+		const resendMessageId = (sendData as any)?.id ?? null;
 		await supabase.from("notification_emails_log").insert({
 			email_type: emailType,
 			recipient_email: user.email,
@@ -1144,6 +1187,10 @@ app.post("/send-actor-email", async (req: Request, res: Response) => {
 			actor_user_id: userId,
 			status: "sent",
 			payload: { type, campaignCategory, fromDate, toDate, isBespoke, campaignsCount },
+			attempt_source: "server",
+			attempted_at: attemptedAt,
+			sent_at: new Date().toISOString(),
+			resend_message_id: resendMessageId,
 		});
 
 		// 6. Create in-app notification for actor
@@ -2201,6 +2248,330 @@ app.post("/send-custom-email", async (req: Request, res: Response) => {
 		});
 	} catch (error: any) {
 		console.error("[Custom Email] Error:", error);
+		return res.status(500).json({ error: error.message });
+	}
+});
+
+// ============================================================
+// Reconcile email log against Resend
+// ============================================================
+// For every notification_emails_log row in the recent window with a
+// resend_message_id, fetch Resend's current status and update our row if
+// Resend reports a terminal state (bounced/complaint/failed) that differs
+// from what we stored.
+//
+// Also reports "stuck attempts" — rows still status='attempted' after a
+// grace window (we never heard back from the server after the pre-flight log).
+//
+// Accepts both POST (admin button) and GET (cron-job.org). Cron auth via
+// Authorization: Bearer <CRON_SECRET> header.
+const reconcileHandler = async (req: Request, res: Response): Promise<any> => {
+	// Optional auth for cron callers
+	const cronSecret = process.env.CRON_SECRET;
+	const authHeader = req.headers.authorization ?? "";
+	const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+	const hoursBack = Math.min(
+		Math.max(parseInt(String(req.query.hoursBack ?? req.body?.hoursBack ?? "48"), 10) || 48, 1),
+		168 // cap at 7 days
+	);
+	const dryRun = Boolean(req.query.dryRun ?? req.body?.dryRun);
+
+	try {
+		const since = new Date(Date.now() - hoursBack * 60 * 60 * 1000).toISOString();
+
+		// 1. Pull recent rows with a Resend id to reconcile
+		const { data: rows, error: queryError } = await supabase
+			.from("notification_emails_log")
+			.select("id, status, resend_message_id, recipient_email, created_at")
+			.gte("created_at", since)
+			.not("resend_message_id", "is", null)
+			.in("status", ["sent", "dispatched"]);
+
+		if (queryError) {
+			console.error("[Reconcile] query error:", queryError);
+			return res.status(500).json({ error: queryError.message });
+		}
+
+		const candidates = rows ?? [];
+		const updates: Array<{ id: string; old: string; new: string }> = [];
+		const errors: Array<{ id: string; error: string }> = [];
+
+		// 2. Walk each candidate. Resend's free tier rate limit is generous
+		// but we still pace gently to avoid 429s.
+		for (const row of candidates) {
+			try {
+				const { data, error } = await resend.emails.get(row.resend_message_id);
+				if (error || !data) {
+					errors.push({ id: row.id, error: error?.message ?? "no data" });
+					continue;
+				}
+
+				// Resend last_event values we care about
+				const lastEvent = (data as any).last_event as string | undefined;
+				let newStatus: string | null = null;
+				if (lastEvent === "bounced") newStatus = "bounced";
+				else if (lastEvent === "complained") newStatus = "complaint";
+				else if (lastEvent === "failed") newStatus = "failed";
+				// delivered/delivered_to_inbox/sent/opened/clicked → leave as 'sent'
+
+				if (newStatus && newStatus !== row.status) {
+					updates.push({ id: row.id, old: row.status, new: newStatus });
+					if (!dryRun) {
+						await supabase
+							.from("notification_emails_log")
+							.update({ status: newStatus })
+							.eq("id", row.id);
+					}
+				}
+			} catch (err: any) {
+				errors.push({ id: row.id, error: err?.message ?? String(err) });
+			}
+		}
+
+		// 3. Find stuck attempts (status='attempted' beyond a grace window)
+		const stuckGraceMinutes = 5;
+		const stuckCutoff = new Date(
+			Date.now() - stuckGraceMinutes * 60 * 1000
+		).toISOString();
+		const { data: stuck, error: stuckError } = await supabase
+			.from("notification_emails_log")
+			.select("id, attempt_source, email_type, attempted_at, notification_id")
+			.eq("status", "attempted")
+			.lt("attempted_at", stuckCutoff)
+			.gte("created_at", since);
+
+		if (stuckError) {
+			console.error("[Reconcile] stuck query error:", stuckError);
+		}
+
+		console.log(
+			`[Reconcile] window=${hoursBack}h candidates=${candidates.length} updates=${updates.length} errors=${errors.length} stuck=${(stuck ?? []).length}`
+		);
+
+		return res.status(200).json({
+			window_hours: hoursBack,
+			candidates: candidates.length,
+			updated: updates.length,
+			update_summary: updates,
+			errors,
+			stuck_attempts: stuck ?? [],
+			dry_run: dryRun,
+			auth_mode: isCron ? "cron" : "manual",
+		});
+	} catch (error: any) {
+		console.error("[Reconcile] unexpected error:", error);
+		return res.status(500).json({ error: error.message });
+	}
+};
+
+app.post("/reconcile-resend-emails", reconcileHandler);
+app.get("/reconcile-resend-emails", reconcileHandler);
+
+// ============================================================
+// Preview an email from a notification_emails_log row
+// ============================================================
+// Re-renders the email template using the payload stored at send time so an
+// admin can inspect the exact email contents from the Email Health page.
+//
+// Returns { metadata, html, subject } — metadata for the modal header, html
+// rendered into an iframe.
+app.get("/preview-email/:logId", async (req: Request, res: Response): Promise<any> => {
+	const { logId } = req.params;
+	if (!logId) {
+		return res.status(400).json({ error: "logId is required" });
+	}
+
+	try {
+		const { data: row, error } = await supabase
+			.from("notification_emails_log")
+			.select("id, notification_id, email_type, recipient_email, status, attempt_source, attempted_at, sent_at, created_at, error_message, practice_name, campaign_name, payload, subject, resend_message_id")
+			.eq("id", logId)
+			.single();
+
+		if (error || !row) {
+			return res.status(404).json({ error: "Email log row not found" });
+		}
+
+		const payload = (row.payload as any) ?? {};
+		const appUrl = process.env.APP_URL || "https://planner.hakimgroup.co.uk";
+		const practiceName = row.practice_name ?? payload.practice_name ?? "";
+
+		let html: string | null = null;
+		try {
+			switch (row.email_type) {
+				case "assets_requested":
+					html = await render(
+						AssetsRequestedEmail({
+							practiceName,
+							practiceId: payload.practice_id ?? "",
+							campaignName: payload.name ?? "Campaign",
+							campaignCategory: payload.category ?? "Campaign",
+							fromDate: payload.from_date,
+							toDate: payload.to_date,
+							creatives: payload.creatives ?? [],
+							assets: payload.assets ?? null,
+							appUrl,
+							selectionId: row.notification_id ? null : null,
+						} as any)
+					);
+					break;
+				case "assets_requested_bulk":
+					html = await render(
+						AssetsRequestedBulkEmail({
+							practiceName,
+							practiceId: payload.practice_id ?? "",
+							campaigns: payload.all_campaigns ?? payload.campaigns ?? [],
+							appUrl,
+						} as any)
+					);
+					break;
+				case "assets_submitted":
+					html = await render(
+						AssetsSubmittedEmail({
+							practiceName,
+							practiceId: payload.practice_id ?? "",
+							campaignName: payload.name ?? "Campaign",
+							campaignCategory: payload.category ?? "Campaign",
+							fromDate: payload.from_date,
+							toDate: payload.to_date,
+							chosenCreative: payload.chosen_creative,
+							assets: payload.assets ?? null,
+							note: payload.note,
+							appUrl,
+							selectionId: payload.selection_id ?? null,
+						} as any)
+					);
+					break;
+				case "assets_confirmed":
+					html = await render(
+						AssetsConfirmedEmail({
+							practiceName,
+							practiceId: payload.practice_id ?? "",
+							campaignName: payload.name ?? "Campaign",
+							campaignCategory: payload.category ?? "Campaign",
+							fromDate: payload.from_date,
+							toDate: payload.to_date,
+							chosenCreative: payload.chosen_creative,
+							note: payload.note,
+							appUrl,
+							selectionId: payload.selection_id ?? null,
+						} as any)
+					);
+					break;
+				case "feedback_requested":
+					html = await render(
+						FeedbackRequestedEmail({
+							practiceName,
+							practiceId: payload.practice_id ?? "",
+							campaignName: payload.name ?? "Campaign",
+							campaignCategory: payload.category ?? "Campaign",
+							fromDate: payload.from_date,
+							toDate: payload.to_date,
+							feedback: payload.feedback ?? "",
+							appUrl,
+							selectionId: payload.selection_id ?? null,
+						} as any)
+					);
+					break;
+				case "awaiting_approval":
+					html = await render(
+						AwaitingApprovalEmail({
+							practiceName,
+							practiceId: payload.practice_id ?? "",
+							campaignName: payload.name ?? "Campaign",
+							campaignCategory: payload.category ?? "Campaign",
+							fromDate: payload.from_date,
+							toDate: payload.to_date,
+							markupLink: payload.markup_link,
+							assetsLink: payload.assets_link,
+							note: payload.note,
+							appUrl,
+							selectionId: payload.selection_id ?? null,
+						} as any)
+					);
+					break;
+				case "campaign_added":
+				case "bespoke_added":
+				case "bespoke_event_added":
+					html = await render(
+						CampaignAddedEmail({
+							practiceName,
+							practiceId: payload.practice_id ?? "",
+							campaignName: row.campaign_name ?? payload.name ?? "Campaign",
+							campaignCategory: payload.campaignCategory ?? payload.category ?? "Campaign",
+							fromDate: payload.fromDate ?? payload.from_date,
+							toDate: payload.toDate ?? payload.to_date,
+							isBespoke: Boolean(payload.isBespoke ?? payload.is_bespoke),
+							appUrl,
+						} as any)
+					);
+					break;
+				case "campaign_updated":
+					html = await render(
+						CampaignUpdatedEmail({
+							practiceName,
+							practiceId: payload.practice_id ?? "",
+							campaignName: row.campaign_name ?? payload.name ?? "Campaign",
+							appUrl,
+						} as any)
+					);
+					break;
+				case "campaign_deleted":
+					html = await render(
+						CampaignDeletedEmail({
+							practiceName,
+							practiceId: payload.practice_id ?? "",
+							campaignName: row.campaign_name ?? payload.name ?? "Campaign",
+							appUrl,
+						} as any)
+					);
+					break;
+				case "campaign_added_bulk":
+				case "campaigns_copied":
+					html = await render(
+						CampaignAddedEmail({
+							practiceName,
+							practiceId: payload.practice_id ?? "",
+							campaignName: `${payload.campaignsCount ?? "Several"} campaigns`,
+							campaignCategory: "Bulk",
+							fromDate: payload.fromDate ?? payload.from_date,
+							toDate: payload.toDate ?? payload.to_date,
+							isBespoke: false,
+							appUrl,
+						} as any)
+					);
+					break;
+				default:
+					html = `<pre style="font-family:monospace;padding:16px;color:#444;">Preview not supported for email_type: ${row.email_type}\n\nPayload:\n${JSON.stringify(payload, null, 2)}</pre>`;
+			}
+		} catch (renderErr: any) {
+			console.error("[Preview Email] render error:", renderErr);
+			html = `<pre style="color:#b00;padding:16px;">Failed to render preview: ${String(renderErr?.message ?? renderErr)}</pre>`;
+		}
+
+		return res.status(200).json({
+			metadata: {
+				id: row.id,
+				notification_id: row.notification_id,
+				email_type: row.email_type,
+				recipient_email: row.recipient_email,
+				status: row.status,
+				attempt_source: row.attempt_source,
+				attempted_at: row.attempted_at,
+				sent_at: row.sent_at,
+				created_at: row.created_at,
+				error_message: row.error_message,
+				practice_name: row.practice_name,
+				campaign_name: row.campaign_name,
+				subject: row.subject,
+				resend_message_id: row.resend_message_id,
+				payload,
+			},
+			html,
+		});
+	} catch (error: any) {
+		console.error("[Preview Email] unexpected error:", error);
 		return res.status(500).json({ error: error.message });
 	}
 });
