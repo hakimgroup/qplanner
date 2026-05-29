@@ -14,6 +14,8 @@ export enum AppRoutes {
   Notifications = "notifications",
   GodMode = "god-mode",
   SendEmail = "send-email",
+  EmailHealth = "email-health",
+  PracticesOfInterest = "practices-of-interest",
   FAQs = "/faqs",
   NotificationsCenter = "/notifications-center",
 }
@@ -76,6 +78,19 @@ export enum RPCFunctions {
   CreateBespokeEventV2 = "create_bespoke_event_v2",
   CopyPracticeCampaignsV2 = "copy_practice_campaigns_v2",
   SubmitDraftSelection = "submit_draft_selection",
+  LogEmailAttempt = "log_email_attempt",
+  FinaliseEmailAttempt = "finalise_email_attempt",
+  ListPracticesOfInterest = "list_practices_of_interest",
+  AddPracticeOfInterest = "add_practice_of_interest",
+  RemovePracticeOfInterest = "remove_practice_of_interest",
+  AddSelectionComment = "add_selection_comment",
+  EditSelectionComment = "edit_selection_comment",
+  DeleteSelectionComment = "delete_selection_comment",
+  ListSelectionComments = "list_selection_comments",
+  ListMyCommentInbox = "list_my_comment_inbox",
+  MarkCommentRead = "mark_comment_read",
+  MarkAllCommentsRead = "mark_all_comments_read",
+  UnreadCommentCount = "unread_comment_count",
 }
 
 export enum UserRoles {

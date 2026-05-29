@@ -14,6 +14,8 @@ import {
 	IconMail,
 	IconPhone,
 	IconSettings,
+	IconStar,
+	IconStarFilled,
 	IconTrash,
 	IconUsers,
 } from "@tabler/icons-react";
@@ -23,6 +25,8 @@ import DeletePracticeModal from "./DeletePracticeModal";
 import PracticeMembersDrawer from "./PracticeMembersDrawer";
 import { useAuth } from "@/shared/AuthProvider";
 import { UserRoles } from "@/shared/shared.models";
+import { usePracticesOfInterest } from "@/shared/PracticesOfInterestProvider";
+import { Tooltip } from "@mantine/core";
 
 interface Props {
 	loading: boolean;
@@ -32,16 +36,93 @@ interface Props {
 const PracticesTable = ({ practices, loading }: Props) => {
 	const T = useMantineTheme().colors;
 	const { role } = useAuth();
+	const isSuperAdmin = role === UserRoles.SuperAdmin;
+	const {
+		poiPracticeIdSet,
+		addPractice,
+		removePractice,
+		isEnabled: poiEnabled,
+	} = usePracticesOfInterest();
 	const [editRow, setEditRow] = useState<any>(null);
 	const [deleteRow, setDeleteRow] = useState<any>(null);
 	const [membersRow, setMembersRow] = useState<any>(null);
+	const [busyId, setBusyId] = useState<string | null>(null);
 
 	const openEdit = useCallback((data: any) => setEditRow(data), []);
 	const openDelete = useCallback((data: any) => setDeleteRow(data), []);
 	const openMembers = useCallback((data: any) => setMembersRow(data), []);
 
+	const handleToggleStar = useCallback(
+		async (id: string, currentlyStarred: boolean) => {
+			if (!poiEnabled) return;
+			setBusyId(id);
+			if (currentlyStarred) await removePractice(id);
+			else await addPractice(id);
+			setBusyId(null);
+		},
+		[poiEnabled, addPractice, removePractice],
+	);
+
 	const colDefs: ColDef[] = useMemo(
 		() => [
+			// Super-admin only — "Mine" star toggle column. Sorts so starred
+			// practices float to the top by default.
+			...(isSuperAdmin
+				? [
+						{
+							field: "_poiStar",
+							headerName: "",
+							width: 56,
+							minWidth: 56,
+							sortable: true,
+							filter: false,
+							pinned: "left" as const,
+							lockPinned: true,
+							valueGetter: (p: any) =>
+								poiPracticeIdSet.has(p.data?.id) ? 1 : 0,
+							sort: "desc" as const,
+							cellStyle: {
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+							},
+							cellRenderer: ({ data }: any) => {
+								const starred = poiPracticeIdSet.has(data?.id);
+								const busy = busyId === data?.id;
+								return (
+									<Tooltip
+										label={
+											starred
+												? "Remove from Practices of Interest"
+												: "Add to Practices of Interest"
+										}
+										withArrow
+									>
+										<ActionIcon
+											variant="subtle"
+											size="lg"
+											radius={10}
+											color={starred ? "yellow.6" : "gray.4"}
+											disabled={busy}
+											onClick={() =>
+												handleToggleStar(data.id, starred)
+											}
+											aria-label={
+												starred ? "Unstar practice" : "Star practice"
+											}
+										>
+											{starred ? (
+												<IconStarFilled size={18} />
+											) : (
+												<IconStar size={18} />
+											)}
+										</ActionIcon>
+									</Tooltip>
+								);
+							},
+						},
+					]
+				: []),
 			{
 				field: "name",
 				headerName: "Practice Name",
@@ -230,7 +311,19 @@ const PracticesTable = ({ practices, loading }: Props) => {
 				),
 			},
 		],
-		[T.blue, T.teal, T.violet, role, openEdit, openDelete, openMembers]
+		[
+			T.blue,
+			T.teal,
+			T.violet,
+			role,
+			openEdit,
+			openDelete,
+			openMembers,
+			isSuperAdmin,
+			poiPracticeIdSet,
+			busyId,
+			handleToggleStar,
+		]
 	);
 
 	return (

@@ -87,6 +87,7 @@ const toYMD = (d?: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
 async function fetchNotifications({
   type = null,
   practiceId = null,
+  practiceIds = null,
   limit = 25,
   offset = 0,
   category = null,
@@ -98,6 +99,8 @@ async function fetchNotifications({
   const { data, error } = await supabase.rpc(RPCFunctions.ListNotifications, {
     p_type: type,
     p_practice_id: practiceId,
+    p_practice_ids:
+      practiceIds && practiceIds.length > 0 ? practiceIds : null,
     p_limit: limit,
     p_offset: offset,
     p_category: category, // e.g. "Campaign" or null
@@ -115,6 +118,7 @@ export function useNotifications(args: UseNotificationsArgs = {}) {
   const {
     type = null,
     practiceId = null,
+    practiceIds = null,
     limit = 25,
     offset = 0,
     category = null,
@@ -130,6 +134,7 @@ export function useNotifications(args: UseNotificationsArgs = {}) {
       {
         type,
         practiceId,
+        practiceIds,
         limit,
         offset,
         category,
@@ -143,6 +148,7 @@ export function useNotifications(args: UseNotificationsArgs = {}) {
       fetchNotifications({
         type,
         practiceId,
+        practiceIds,
         limit,
         offset,
         category,

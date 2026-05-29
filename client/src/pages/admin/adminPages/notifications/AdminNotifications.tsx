@@ -13,6 +13,11 @@ import {
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { usePractice } from "@/shared/PracticeProvider";
+import {
+  useScopedPractices,
+  usePracticesOfInterest,
+} from "@/shared/PracticesOfInterestProvider";
+import PoiEmptyState from "@/shared/PoiEmptyState";
 import { status as typeOptions, categories } from "@/filters.json";
 import AdminNotificationsTable, {
   NotificationRow,
@@ -23,7 +28,9 @@ import { DatabaseTables } from "@/shared/shared.models";
 
 const AdminNotifications = () => {
   const T = useMantineTheme().colors;
-  const { practices } = usePractice();
+  usePractice();
+  const { practices, isPoiActive, isPoiEmpty } = useScopedPractices();
+  const { poiPracticeIdSet } = usePracticesOfInterest();
 
   // ---- local filter state
   const [query, setQuery] = useState<string>("");
@@ -112,6 +119,13 @@ const AdminNotifications = () => {
 
     return mapped.filter((row) => {
       if (practiceId && row.practice_id !== practiceId) return false;
+      // Hard-scope: in POI mode, drop rows for practices not on the user's list.
+      if (
+        isPoiActive &&
+        row.practice_id &&
+        !poiPracticeIdSet.has(row.practice_id)
+      )
+        return false;
       if (toStatus && (row.to_status ?? "").toLowerCase() !== toStatus) {
         return false;
       }
@@ -131,7 +145,7 @@ const AdminNotifications = () => {
       }
       return true;
     });
-  }, [data, filters.practice, filters.type, query]);
+  }, [data, filters.practice, filters.type, query, isPoiActive, poiPracticeIdSet]);
 
   return (
     <Stack gap={25}>
@@ -141,6 +155,8 @@ const AdminNotifications = () => {
           Log of outbound emails and in-app notices with resend capability
         </Text>
       </Stack>
+
+      {isPoiEmpty && <PoiEmptyState />}
 
       {/* Table Filters */}
       <Card

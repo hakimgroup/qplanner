@@ -13,6 +13,7 @@ import AppProvider from "./shared/AppProvider";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { RequireAuth } from "./shared/RequireAuth";
 import { PracticeProvider } from "./shared/PracticeProvider";
+import { PracticesOfInterestProvider } from "./shared/PracticesOfInterestProvider";
 import Faqs from "./pages/faqs/Faqs";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Plans from "./pages/admin/adminPages/plans/Plans";
@@ -26,7 +27,10 @@ import Practices from "./pages/admin/adminPages/practices/Practices";
 import Settings from "./pages/admin/adminPages/settings/Settings";
 import GodMode from "./pages/admin/adminPages/godMode/GodMode";
 import SendEmail from "./pages/admin/adminPages/sendEmail/SendEmail";
+import EmailHealth from "./pages/admin/adminPages/emailHealth/EmailHealth";
+import PracticesOfInterest from "./pages/admin/adminPages/practicesOfInterest/PracticesOfInterest";
 import RequireSuperAdmin from "./shared/RequireSuperAdmin";
+import CommentDrawerProvider from "./components/comments/CommentDeepLinkDrawer";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
@@ -68,7 +72,9 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <TierProvider>
           <PracticeProvider>
-            <AppProvider>
+            <PracticesOfInterestProvider>
+              <AppProvider>
+              <CommentDrawerProvider>
               <div className="app">
                 {!isPublicPath && <Nav />}
                 <main>
@@ -141,6 +147,22 @@ export default function App() {
                           </RequireSuperAdmin>
                         }
                       />
+                      <Route
+                        path={AppRoutes.EmailHealth}
+                        element={
+                          <RequireSuperAdmin>
+                            <EmailHealth />
+                          </RequireSuperAdmin>
+                        }
+                      />
+                      <Route
+                        path={AppRoutes.PracticesOfInterest}
+                        element={
+                          <RequireSuperAdmin>
+                            <PracticesOfInterest />
+                          </RequireSuperAdmin>
+                        }
+                      />
                     </Route>
 
                     {/* Fallback */}
@@ -151,7 +173,9 @@ export default function App() {
                   </Routes>
                 </main>
               </div>
-            </AppProvider>
+              </CommentDrawerProvider>
+              </AppProvider>
+            </PracticesOfInterestProvider>
           </PracticeProvider>
         </TierProvider>
       </QueryClientProvider>

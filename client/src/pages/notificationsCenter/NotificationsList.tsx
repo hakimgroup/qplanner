@@ -18,6 +18,10 @@ import NotificationsFilters, {
 } from "./NotificationsFilters";
 import EmptyState from "@/components/emptyState/EmptyState";
 import { useAuth } from "@/shared/AuthProvider";
+import {
+	useScopedPractices,
+	usePracticesOfInterest,
+} from "@/shared/PracticesOfInterestProvider";
 
 const PAGE_SIZE = 25;
 
@@ -60,9 +64,14 @@ export default function NotificationsList() {
   const startDate = filters.startDate;
   const endDate = filters.endDate;
 
+  // POI hard-scope for super_admins in POI view mode
+  const { isPoiActive } = useScopedPractices();
+  const { poiPracticeIds } = usePracticesOfInterest();
+
   // 2) server call with pagination
   const { data, isLoading, isError } = useNotifications({
     practiceId,
+    practiceIds: isPoiActive ? poiPracticeIds : null,
     type: notifType,
     category,
     startDate,

@@ -19,6 +19,7 @@ import { PlannerOverviewEmail } from "../emails/PlannerOverviewEmail";
 import CustomSimpleEmail from "../emails/CustomSimpleEmail";
 import CustomActionEmail from "../emails/CustomActionEmail";
 import CustomAnnouncementEmail from "../emails/CustomAnnouncementEmail";
+import { CommentAddedEmail } from "../emails/CommentAddedEmail";
 
 interface EmailBody {
 	to: string;
@@ -1333,6 +1334,199 @@ app.post("/send-actor-email", async (req: Request, res: Response) => {
 		return res.status(200).json({ sent: 1, emailType, recipient: recipientEmail, notificationId: notification?.id });
 	} catch (error: any) {
 		console.error("[Actor Email] Unexpected error:", error);
+		return res.status(500).json({ error: error.message });
+	}
+});
+
+// ============================================================
+// Send Comment Email — notify every comment_target recipient.
+// Called by the client immediately after add_selection_comment RPC succeeds.
+// ============================================================
+app.post("/send-comment-email", async (req: Request, res: Response) => {
+	const { commentId, testEmailOverride } = req.body;
+
+	if (!commentId) {
+		return res.status(400).json({ error: "commentId is required" });
+	}
+
+	const appUrl = process.env.APP_URL || "https://planner.hakimgroup.co.uk";
+
+	try {
+		// 1. Comment + selection + practice + campaign context.
+		const { data: comment, error: commentError } = await supabase
+			.from("selection_comments")
+			.select("id, selection_id, author_user_id, body, created_at")
+			.eq("id", commentId)
+			.single();
+
+		if (commentError || !comment) {
+			console.error("[Comment Email] Comment not found:", commentId);
+			return res.status(404).json({ error: "Comment not found" });
+		}
+
+		const { data: selection, error: selectionError } = await supabase
+			.from("selections")
+			.select("id, practice_id, campaign_id, bespoke_campaign_id, bespoke")
+			.eq("id", comment.selection_id)
+			.single();
+
+		if (selectionError || !selection) {
+			console.error("[Comment Email] Selection not found:", comment.selection_id);
+			return res.status(404).json({ error: "Selection not found" });
+		}
+
+		const { data: practice } = await supabase
+			.from("practices")
+			.select("id, name")
+			.eq("id", selection.practice_id)
+			.single();
+
+		// Campaign name (catalog or bespoke).
+		let campaignName = "Campaign";
+		if (selection.campaign_id) {
+			const { data: cc } = await supabase
+				.from("campaigns_catalog")
+				.select("name")
+				.eq("id", selection.campaign_id)
+				.single();
+			campaignName = cc?.name ?? campaignName;
+		} else if (selection.bespoke_campaign_id) {
+			const { data: bc } = await supabase
+				.from("bespoke_campaigns")
+				.select("name")
+				.eq("id", selection.bespoke_campaign_id)
+				.single();
+			campaignName = bc?.name ?? campaignName;
+		}
+
+		// Author display info.
+		const { data: author } = await supabase
+			.from("allowed_users")
+			.select("first_name, last_name, role")
+			.eq("id", comment.author_user_id)
+			.single();
+		const authorName = [author?.first_name, author?.last_name]
+			.filter(Boolean)
+			.join(" ")
+			.trim() || "A teammate";
+		const authorRole = author?.role ?? null;
+
+		// 2. Recipients via comment_targets → allowed_users.
+		const { data: targets, error: targetsError } = await supabase
+			.from("comment_targets")
+			.select("user_id")
+			.eq("comment_id", commentId);
+
+		if (targetsError || !targets || targets.length === 0) {
+			console.log("[Comment Email] No targets for comment:", commentId);
+			return res.status(200).json({ message: "No recipients", sent: 0 });
+		}
+
+		const userIds = targets.map((t: any) => t.user_id).filter(Boolean);
+		const { data: users } = await supabase
+			.from("allowed_users")
+			.select("id, email, first_name, email_notifications_enabled, role")
+			.in("id", userIds);
+
+		if (!users || users.length === 0) {
+			return res.status(200).json({ message: "No valid recipients", sent: 0 });
+		}
+
+		// Admin-side recipients honour the opt-out flag; practice users always receive.
+		const eligibleUsers = users.filter((u: any) => {
+			const isAdminSide = u.role === "admin" || u.role === "super_admin";
+			return isAdminSide ? u.email_notifications_enabled !== false : true;
+		});
+
+		const recipientEmails = eligibleUsers.map((u: any) => u.email).filter(Boolean);
+
+		if (recipientEmails.length === 0) {
+			return res.status(200).json({ message: "No valid emails", sent: 0 });
+		}
+
+		// 3. Render template.
+		const emailHtml = await render(
+			CommentAddedEmail({
+				authorName,
+				authorRole,
+				campaignName,
+				practiceName: practice?.name ?? "",
+				body: comment.body,
+				appUrl,
+				selectionId: selection.id,
+			})
+		);
+
+		const subjectPrefix =
+			authorRole === "admin" || authorRole === "super_admin"
+				? "Hakim Group team"
+				: practice?.name ?? "Practice";
+		const emailSubject = `${subjectPrefix} commented on ${campaignName}`;
+
+		// 4. Honour test override.
+		const finalRecipients =
+			testEmailOverride || process.env.TEST_EMAIL_OVERRIDE
+				? [testEmailOverride || process.env.TEST_EMAIL_OVERRIDE]
+				: recipientEmails;
+
+		const attemptedAt = new Date().toISOString();
+		const { data: sendData, error: sendError } = await resend.emails.send({
+			from: "HG Planner <noreply@planner.hakimgroup.io>",
+			to: finalRecipients,
+			subject: emailSubject,
+			html: emailHtml,
+		});
+
+		const logRecipients = eligibleUsers.map((u: any) => ({ email: u.email, id: u.id }));
+
+		if (sendError) {
+			console.error("[Comment Email] Send error:", sendError);
+			for (const user of logRecipients) {
+				await supabase.from("notification_emails_log").insert({
+					email_type: "comment_added",
+					recipient_email: user.email,
+					recipient_user_id: user.id,
+					selection_id: selection.id,
+					practice_id: practice?.id,
+					practice_name: practice?.name,
+					campaign_name: campaignName,
+					actor_user_id: comment.author_user_id,
+					status: "failed",
+					error_message: sendError.message,
+					payload: { comment_id: commentId, body: comment.body },
+					attempt_source: "server",
+					attempted_at: attemptedAt,
+					subject: emailSubject,
+				});
+			}
+			return res.status(500).json({ error: sendError.message });
+		}
+
+		const resendMessageId = (sendData as any)?.id ?? null;
+		for (const user of logRecipients) {
+			await supabase.from("notification_emails_log").insert({
+				email_type: "comment_added",
+				recipient_email: user.email,
+				recipient_user_id: user.id,
+				selection_id: selection.id,
+				practice_id: practice?.id,
+				practice_name: practice?.name,
+				campaign_name: campaignName,
+				actor_user_id: comment.author_user_id,
+				status: "sent",
+				payload: { comment_id: commentId, body: comment.body },
+				attempt_source: "server",
+				attempted_at: attemptedAt,
+				sent_at: new Date().toISOString(),
+				resend_message_id: resendMessageId,
+				subject: emailSubject,
+			});
+		}
+
+		console.log(`[Comment Email] Sent to ${recipientEmails.length} recipients (resend_id=${resendMessageId})`);
+		return res.status(200).json({ sent: recipientEmails.length, resend_message_id: resendMessageId });
+	} catch (error: any) {
+		console.error("[Comment Email] Unexpected error:", error);
 		return res.status(500).json({ error: error.message });
 	}
 });

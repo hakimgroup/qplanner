@@ -29,6 +29,8 @@ export type GodModeSearchArgs = {
   search?: string | null;
   status?: string | null;
   practiceId?: string | null;
+  /** Hard scope to this list of practice IDs (used by POI mode). */
+  practiceIds?: string[] | null;
   startDate?: string | null;
   endDate?: string | null;
   limit?: number;
@@ -46,6 +48,10 @@ export function useGodModeSearch(args: GodModeSearchArgs, enabled = true) {
           p_search: args.search ?? null,
           p_status: args.status && args.status !== "all" ? args.status : null,
           p_practice_id: args.practiceId ?? null,
+          p_practice_ids:
+            args.practiceIds && args.practiceIds.length > 0
+              ? args.practiceIds
+              : null,
           p_start_date: args.startDate ?? null,
           p_end_date: args.endDate ?? null,
           p_limit: args.limit ?? 50,

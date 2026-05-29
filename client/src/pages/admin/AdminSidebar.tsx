@@ -2,14 +2,17 @@
 import { NavLink } from "react-router-dom";
 import {
 	ActionIcon,
+	Badge,
 	Box,
 	Flex,
 	MantineTheme,
+	SegmentedControl,
 	Stack,
 	Text,
 	Tooltip,
 	useMantineTheme,
 } from "@mantine/core";
+import { usePracticesOfInterest } from "@/shared/PracticesOfInterestProvider";
 import {
 	IconLayoutSidebarRightExpand,
 	IconFiles,
@@ -24,6 +27,7 @@ import {
 	IconLogs,
 	IconBolt,
 	IconMail,
+	IconStar,
 } from "@tabler/icons-react";
 import { AppRoutes, UserRoles } from "@/shared/shared.models";
 import { useAuth } from "@/shared/AuthProvider";
@@ -147,6 +151,18 @@ export default function AdminSidebar({
 					icon: <IconBolt size={18} color={T.colors.red[6]} />,
 					accent: "red",
 				},
+				{
+					to: `${AppRoutes.Admin}/${AppRoutes.EmailHealth}`,
+					label: "Email Health",
+					icon: <IconMail size={18} color={T.colors.red[6]} />,
+					accent: "red",
+				},
+				{
+					to: `${AppRoutes.Admin}/${AppRoutes.PracticesOfInterest}`,
+					label: "Practices of Interest",
+					icon: <IconStar size={18} color={T.colors.red[6]} />,
+					accent: "red",
+				},
 				// {
 				// 	to: `${AppRoutes.Admin}/${AppRoutes.SendEmail}`,
 				// 	label: "Send Email",
@@ -170,10 +186,59 @@ export default function AdminSidebar({
 	};
 
 	const showExpanded = isMobile || !collapsed;
+	const { isEnabled: poiEnabled, viewMode, setViewMode, poiPracticeIds } =
+		usePracticesOfInterest();
 
 	return (
 		<Box style={base(T)} pt={isMobile ? 0 : 100} className={cl["admin-sidebar"]}>
 			<Flex direction="column" h="100%" p={showExpanded ? "sm" : 6} gap="sm">
+				{/* Practices of Interest toggle — super_admin only.
+				    Lives at the top so it's always in view when navigating admin pages. */}
+				{poiEnabled && showExpanded && (
+					<Box
+						mb={6}
+						p="sm"
+						style={{
+							background: `linear-gradient(135deg, ${T.colors.blue[0]}, ${T.colors.violet[0]})`,
+							border: `1px solid ${T.colors.blue[1]}`,
+							borderRadius: 10,
+						}}
+					>
+						<Stack gap={6}>
+							<Flex align="center" justify="space-between">
+								<Text size="xs" fw={700} c="violet.7" tt="uppercase" lts={0.4}>
+									Practice view
+								</Text>
+								{viewMode === "poi" && (
+									<Badge
+										variant="filled"
+										color="violet.5"
+										size="xs"
+										radius="sm"
+									>
+										{poiPracticeIds.length}
+									</Badge>
+								)}
+							</Flex>
+							<SegmentedControl
+								size="xs"
+								fullWidth
+								color="violet"
+								value={viewMode}
+								onChange={(v) => setViewMode(v as "all" | "poi")}
+								data={[
+									{ value: "all", label: "All" },
+									{ value: "poi", label: "Mine" },
+								]}
+								classNames={{
+									root: cl.poiSegmentedRoot,
+									label: cl.poiSegmentedLabel,
+								}}
+							/>
+						</Stack>
+					</Box>
+				)}
+
 				<Stack gap={30}>
 					{LINKS.map((lk) => (
 						<Stack gap={6} key={lk.title}>

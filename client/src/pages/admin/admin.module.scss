@@ -68,3 +68,21 @@ $transition: 150ms ease;
 		}
 	}
 }
+
+/* Practices-of-Interest SegmentedControl — violet label for the
+   inactive option (more prominent than Mantine's default gray);
+   active option keeps Mantine's white-on-violet thumb styling. */
+.poiSegmentedLabel {
+	color: var(--mantine-color-violet-7);
+	font-weight: 600;
+
+	&[data-active] {
+		color: var(--mantine-color-white);
+	}
+}
+
+/* Brighter track behind the unselected segment — lifts the
+   control off the violet gradient card. */
+.poiSegmentedRoot {
+	background-color: var(--mantine-color-white);
+}

@@ -63,6 +63,7 @@ import { useSelectionNotifications } from "@/hooks/notification.hooks";
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
 import SubmitChoicesModal from "@/components/assets/SubmitChoicesModal";
 import { filterToAdminCuratedAssets } from "@/components/assets/AssetsPicker";
+import CommentsSection from "@/components/comments/CommentsSection";
 import Status from "../status/Status";
 import Edit from "./Edit";
 import { useDisclosure } from "@mantine/hooks";
@@ -77,6 +78,8 @@ interface Props {
 	c: Campaign;
 	opened: boolean;
 	closeDrawer: () => void;
+	/** When true the drawer scrolls its comments section into view on open. */
+	scrollToComments?: boolean;
 }
 
 type DateRange = { from: Date | null; to: Date | null };
@@ -490,7 +493,13 @@ function LifecycleDetails({ campaign: c }: { campaign: Campaign }) {
 	);
 }
 
-const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
+const View = ({
+	c,
+	opened = false,
+	closeDrawer,
+	mode = "add",
+	scrollToComments = false,
+}: Props) => {
 	const navigate = useNavigate();
 	const isAdd = mode === "add";
 	const T = useMantineTheme();
@@ -996,6 +1005,17 @@ const View = ({ c, opened = false, closeDrawer, mode = "add" }: Props) => {
 									))}
 								</Stack>
 							</Stack>
+						</>
+					)}
+
+					{c.selected && c.selection_id && c.status !== SelectionStatus.Draft && (
+						<>
+							<GradientDivider />
+							<CommentsSection
+								selectionId={c.selection_id}
+								status={c.status}
+								scrollIntoView={scrollToComments}
+							/>
 						</>
 					)}
 

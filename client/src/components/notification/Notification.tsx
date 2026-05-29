@@ -33,6 +33,10 @@ import { ActorNotificationType, AppRoutes, SelectionStatus } from "@/shared/shar
 import StyledButton from "../styledButton/StyledButton";
 
 import { useNotifications } from "@/hooks/notification.hooks";
+import {
+	useScopedPractices,
+	usePracticesOfInterest,
+} from "@/shared/PracticesOfInterestProvider";
 import { useNotificationOpen } from "@/pages/notificationsCenter/useNotificationOpen.hook";
 import { useAuth } from "@/shared/AuthProvider";
 
@@ -107,6 +111,10 @@ const Notification = () => {
   // When admin is in user view, fetch practice-audience notifications
   const asPractice = isAdmin && isUserView;
 
+  // POI hard-scope for super_admin in POI view mode
+  const { isPoiActive } = useScopedPractices();
+  const { poiPracticeIds } = usePracticesOfInterest();
+
   // fetch notifications (same hook used in NotificationsList)
   const {
     data: notifications,
@@ -115,7 +123,8 @@ const Notification = () => {
     readStatus: null,
     limit: 10,
     offset: 0,
-    asPractice});
+    asPractice,
+    practiceIds: isPoiActive ? poiPracticeIds : null});
 
   // modal / open flow hook
   const {

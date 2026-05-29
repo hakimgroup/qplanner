@@ -30,6 +30,7 @@ import Logo from "../logo/Logo";
 import PracticeSelector from "../practiceSelector/PracticeSelector";
 import Help from "../help/Help";
 import Notification from "../notification/Notification";
+import CommentBell from "../comments/CommentBell";
 import StyledButton from "../styledButton/StyledButton";
 import { useBreakpoints, useNavPreset } from "@/shared/shared.hooks";
 import { signOutSafe } from "@/api/auth";
@@ -266,6 +267,7 @@ const Nav = () => {
 							{!notDashboard && (
 								<>
 									<Help />
+									<CommentBell />
 									<Notification />
 								</>
 							)}
@@ -304,7 +306,10 @@ const Nav = () => {
 						<Group gap={10}>
 							<AdminNavigate />
 							{pathname !== AppRoutes.NotificationsCenter && (
-								<Notification />
+								<>
+									<CommentBell />
+									<Notification />
+								</>
 							)}
 							<Menu shadow="md" position="bottom-end">
 								<Menu.Target>
@@ -399,6 +404,7 @@ const Nav = () => {
 					{/* ---- Mobile right side ---- */}
 					{isMobile && (
 						<Group gap={8}>
+							<CommentBell />
 							<Notification />
 							<Burger
 								opened={drawerOpen}

@@ -31,6 +31,7 @@ export default defineConfig({
           { text: 'Selection Lifecycle', link: '/workflow/selection-lifecycle' },
           { text: 'Bespoke Campaigns', link: '/workflow/bespoke-campaigns' },
           { text: 'Status Transitions', link: '/workflow/status-transitions' },
+          { text: 'Comments', link: '/workflow/comments' },
         ],
       },
       {
@@ -40,6 +41,7 @@ export default defineConfig({
           { text: 'Campaign Management', link: '/admin/campaign-management' },
           { text: 'Bulk Operations', link: '/admin/bulk-operations' },
           { text: 'God Mode', link: '/admin/god-mode' },
+          { text: 'Practices of Interest', link: '/admin/practices-of-interest' },
         ],
       },
       {

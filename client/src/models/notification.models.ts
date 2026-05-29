@@ -59,6 +59,8 @@ export type NotificationRow = {
 
 export type UseNotificationsArgs = {
 	practiceId?: string;
+	/** Hard scope to this list of practice IDs (used by POI mode). */
+	practiceIds?: string[] | null;
 	type?: string | null;
 	category?: string | null;
 	startDate?: any;

@@ -21,6 +21,11 @@ import {
 import { useContext, useEffect, useRef, useState } from "react";
 import filtersData from "@/filters.json";
 import { usePractice } from "@/shared/PracticeProvider";
+import {
+	useScopedPractices,
+	usePracticesOfInterest,
+} from "@/shared/PracticesOfInterestProvider";
+import PoiEmptyState from "@/shared/PoiEmptyState";
 import StyledButton from "@/components/styledButton/StyledButton";
 import PlansTable, { PlansTableHandle } from "./PlansTable";
 import { usePlans } from "@/hooks/selection.hooks";
@@ -44,7 +49,12 @@ const PAGE_SIZES = [
 const Plans = () => {
   const T = useMantineTheme().colors;
   const { pathname } = useLocation();
-  const { practices } = usePractice();
+  // usePractice() retained for any other side effects; the scoped list drives
+  // the practice filter dropdown so non-POI practices are invisible in POI mode.
+  usePractice();
+  const { practices: scopedPractices, isPoiActive, isPoiEmpty } =
+    useScopedPractices();
+  const { poiPracticeIds } = usePracticesOfInterest();
   const plansRef = useRef<PlansTableHandle>(null);
   const {
     state: { filtersOptions },
@@ -70,10 +80,19 @@ const Plans = () => {
 
   const offset = (page - 1) * pageSize;
 
+  // Hard-scope: when POI view mode is active and the admin hasn't picked
+  // specific practices, auto-fill practiceIds with the POI list so the
+  // underlying RPC scopes the data to those practices.
+  const effectivePracticeIds =
+    isPoiActive && (plansFilters.practiceIds?.length ?? 0) === 0
+      ? poiPracticeIds
+      : plansFilters.practiceIds;
+
   // Server data (filtered + paginated + searched)
   const { data: plansResponse, isFetching } = usePlans(
     normalizeAllToNull({
       ...plansFilters,
+      practiceIds: effectivePracticeIds,
       limit: pageSize,
       offset,
       search: debounced || null,
@@ -110,6 +129,7 @@ const Plans = () => {
       const allData = await fetchPlans(
         normalizeAllToNull({
           ...plansFilters,
+          practiceIds: effectivePracticeIds,
           limit: null,
           offset: 0,
           search: debounced || null,
@@ -160,7 +180,11 @@ const Plans = () => {
         </Text>
       </Stack>
 
-      <PlansMetaSummary meta={meta} />
+      {isPoiEmpty ? (
+        <PoiEmptyState />
+      ) : (
+        <PlansMetaSummary meta={meta} />
+      )}
 
       {/* Table Filters */}
       <Card
@@ -189,7 +213,7 @@ const Plans = () => {
                 searchable
                 radius={10}
                 placeholder="Select Practices"
-                data={practices.map((p) => ({
+                data={scopedPractices.map((p) => ({
                   label: p.name,
                   value: p.id,
                 }))}

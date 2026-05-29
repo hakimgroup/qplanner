@@ -81,6 +81,11 @@ import {
 import GodModeResultsTable from "./GodModeResultsTable";
 import GodModeDetailDrawer from "./GodModeDetailDrawer";
 import type { SortModelEntry } from "@/components/table/Table";
+import {
+	useScopedPractices,
+	usePracticesOfInterest,
+} from "@/shared/PracticesOfInterestProvider";
+import PoiEmptyState from "@/shared/PoiEmptyState";
 
 const PAGE_SIZES = [
 	{ label: "25 / page", value: "25" },
@@ -137,9 +142,13 @@ const GodMode = () => {
 		}
 	};
 
+	const { isPoiActive, isPoiEmpty } = useScopedPractices();
+	const { poiPracticeIds } = usePracticesOfInterest();
+
 	const { data, isFetching } = useGodModeSearch({
 		search: debounced || null,
 		status,
+		practiceIds: isPoiActive ? poiPracticeIds : null,
 		limit: pageSize,
 		offset,
 	});
@@ -176,6 +185,8 @@ const GodMode = () => {
 					at any stage. Every action is logged.
 				</Text>
 			</Stack>
+
+			{isPoiEmpty && <PoiEmptyState />}
 
 			<Card
 				p={25}
