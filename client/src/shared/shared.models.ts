@@ -18,6 +18,7 @@ export enum AppRoutes {
   PracticesOfInterest = "practices-of-interest",
   FAQs = "/faqs",
   NotificationsCenter = "/notifications-center",
+  Landing = "/landing",
 }
 
 export enum DatabaseTables {

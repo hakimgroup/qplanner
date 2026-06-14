@@ -28,6 +28,7 @@ import {
 	IconBolt,
 	IconMail,
 	IconStar,
+	IconWand,
 } from "@tabler/icons-react";
 import { AppRoutes, UserRoles } from "@/shared/shared.models";
 import { useAuth } from "@/shared/AuthProvider";
@@ -161,6 +162,12 @@ export default function AdminSidebar({
 					to: `${AppRoutes.Admin}/${AppRoutes.PracticesOfInterest}`,
 					label: "Practices of Interest",
 					icon: <IconStar size={18} color={T.colors.red[6]} />,
+					accent: "red",
+				},
+				{
+					to: AppRoutes.Landing,
+					label: "Landing Pages",
+					icon: <IconWand size={18} color={T.colors.red[6]} />,
 					accent: "red",
 				},
 				// {

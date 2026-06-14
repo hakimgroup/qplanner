@@ -31,6 +31,8 @@ import EmailHealth from "./pages/admin/adminPages/emailHealth/EmailHealth";
 import PracticesOfInterest from "./pages/admin/adminPages/practicesOfInterest/PracticesOfInterest";
 import RequireSuperAdmin from "./shared/RequireSuperAdmin";
 import CommentDrawerProvider from "./components/comments/CommentDeepLinkDrawer";
+import LandingIndex from "./pages/landing/LandingIndex";
+import LandingPageRoute from "./pages/landing/LandingPageRoute";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
@@ -59,6 +61,8 @@ export default function App() {
         element: <NotificationsCenter />,
       },
       { path: AppRoutes.FAQs, element: <Faqs /> },
+      { path: AppRoutes.Landing, element: <LandingIndex /> },
+      { path: `${AppRoutes.Landing}/:slug`, element: <LandingPageRoute /> },
     ],
     []
   );
@@ -66,6 +70,10 @@ export default function App() {
   const isPublicPath = [AppRoutes.Home, AppRoutes.Login].includes(
     pathname as AppRoutes
   );
+
+  // Individual landing pages render full-canvas without the planner Nav.
+  // The /landing index itself keeps the Nav so super_admins can navigate around.
+  const isStandaloneLandingPage = /^\/landing\/[^/]+/.test(pathname);
 
   return (
     <Suspense fallback={null}>
@@ -76,7 +84,7 @@ export default function App() {
               <AppProvider>
               <CommentDrawerProvider>
               <div className="app">
-                {!isPublicPath && <Nav />}
+                {!isPublicPath && !isStandaloneLandingPage && <Nav />}
                 <main>
                   <Routes>
                     {/* Public */}
