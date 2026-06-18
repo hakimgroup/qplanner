@@ -7,7 +7,6 @@ import {
 	Indicator,
 	Loader,
 	Menu,
-	ScrollArea,
 	Stack,
 	Text,
 	ThemeIcon,
@@ -73,7 +72,7 @@ export default function CommentBell() {
 				</Indicator>
 			</Menu.Target>
 
-			<Menu.Dropdown p={0}>
+			<Menu.Dropdown p={0} style={{ overflowX: "hidden" }}>
 				<Box p={15} pb={10}>
 					<Flex align="center" justify="space-between">
 						<Text fw={700} size="md" c="gray.9">
@@ -101,11 +100,14 @@ export default function CommentBell() {
 
 				<GradientDivider />
 
-				<ScrollArea.Autosize
-					mah={420}
-					type="auto"
-					offsetScrollbars
-					scrollbarSize={6}
+				<Box
+					style={{
+						maxHeight: 420,
+						overflowY: "auto",
+						overflowX: "hidden",
+						scrollbarWidth: "thin",
+						scrollbarColor: `${T.gray[2]} transparent`,
+					}}
 				>
 					{isLoading && (
 						<Flex align="center" justify="center" p={20}>
@@ -141,7 +143,7 @@ export default function CommentBell() {
 								onClick={() => handleRowClick(row)}
 							/>
 						))}
-				</ScrollArea.Autosize>
+				</Box>
 			</Menu.Dropdown>
 		</Menu>
 	);
@@ -198,20 +200,21 @@ function CommentBellRow({ row, onClick }: CommentBellRowProps) {
 				>
 					{initials}
 				</Avatar>
-				<Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-					<Flex gap={6} align="center" wrap="nowrap">
-						<Text size="xs" fw={700} c="gray.9" truncate>
+				<Stack
+					gap={2}
+					style={{ flex: 1, minWidth: 0, maxWidth: "100%", overflow: "hidden" }}
+				>
+					<Flex gap={6} align="center" wrap="nowrap" style={{ minWidth: 0 }}>
+						<Text
+							size="xs"
+							fw={700}
+							c="gray.9"
+							truncate
+							style={{ flex: 1, minWidth: 0 }}
+						>
 							{row.author_name || "Unknown"}
 						</Text>
-						<Badge
-							size="xs"
-							variant="light"
-							color={isAdminSide ? "violet" : "gray"}
-							radius="sm"
-						>
-							{isAdminSide ? "HG" : "Practice"}
-						</Badge>
-						<Text size="xs" c="gray.5" style={{ marginLeft: "auto" }}>
+						<Text size="xs" c="gray.5" style={{ flexShrink: 0 }}>
 							{relativeTime(row.created_at)}
 						</Text>
 					</Flex>
@@ -223,7 +226,10 @@ function CommentBellRow({ row, onClick }: CommentBellRowProps) {
 						size="xs"
 						c="gray.8"
 						lineClamp={2}
-						style={{ whiteSpace: "pre-wrap" }}
+						style={{
+							wordBreak: "break-word",
+							overflowWrap: "anywhere",
+						}}
 					>
 						{excerpt(row.body)}
 					</Text>

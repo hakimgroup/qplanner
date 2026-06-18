@@ -11,13 +11,18 @@
 
 BEGIN;
 
--- 1. Replace the trigger with a narrowed version: INSERT only, type='inProgress' only.
+-- 1. Replace the trigger with a narrowed version: INSERT only.
+--    Allowed types: 'inProgress' (artwork pickup) and 'feedbackRequested'
+--    (Airtable + Trello status update with practice's revision comment).
+--    Other types (confirmed, awaitingApproval, requested, actor types) stay
+--    filtered because n8n's workflow misbehaved on them (defaulted to
+--    status='completed') — see the May 26 investigation.
 DROP TRIGGER IF EXISTS n8n ON public.notifications;
 
 CREATE TRIGGER n8n
 AFTER INSERT ON public.notifications
 FOR EACH ROW
-WHEN (NEW.type = 'inProgress')
+WHEN (NEW.type IN ('inProgress', 'feedbackRequested'))
 EXECUTE FUNCTION supabase_functions.http_request(
   'https://hakimgroup.app.n8n.cloud/webhook/86eed194-4a80-4cf2-821d-f73cd8d9afe8',
   'POST',
