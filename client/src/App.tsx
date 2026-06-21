@@ -33,6 +33,7 @@ import RequireSuperAdmin from "./shared/RequireSuperAdmin";
 import CommentDrawerProvider from "./components/comments/CommentDeepLinkDrawer";
 import LandingIndex from "./pages/landing/LandingIndex";
 import LandingPageRoute from "./pages/landing/LandingPageRoute";
+import StagingBanner from "./components/stagingBanner/StagingBanner";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const queryClient = new QueryClient({
@@ -84,6 +85,7 @@ export default function App() {
               <AppProvider>
               <CommentDrawerProvider>
               <div className="app">
+                <StagingBanner />
                 {!isPublicPath && !isStandaloneLandingPage && <Nav />}
                 <main>
                   <Routes>

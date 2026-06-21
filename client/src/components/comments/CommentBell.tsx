@@ -16,7 +16,7 @@ import {
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { IconMessageCircle2 } from "@tabler/icons-react";
 import { formatDistanceToNow } from "date-fns";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
 	useCommentInbox,
 	useMarkAllCommentsRead,
@@ -42,6 +42,7 @@ function excerpt(s: string, max = 120): string {
 export default function CommentBell() {
 	const T = useMantineTheme().colors;
 	const { open: openCommentDrawer } = useCommentDrawer();
+	const [opened, setOpened] = useState(false);
 
 	const { data: count = 0 } = useUnreadCommentCount();
 	const { data: inbox = [], isLoading } = useCommentInbox(10);
@@ -52,11 +53,19 @@ export default function CommentBell() {
 
 	const handleRowClick = (row: CommentInboxItem) => {
 		if (!row.read_at) markRead(row.comment_id);
+		setOpened(false);
 		openCommentDrawer(row.selection_id);
 	};
 
 	return (
-		<Menu shadow="md" width={380} position="bottom-end" closeOnItemClick={false}>
+		<Menu
+			shadow="md"
+			width={380}
+			position="bottom-end"
+			opened={opened}
+			onChange={setOpened}
+			closeOnItemClick={false}
+		>
 			<Menu.Target>
 				<Indicator
 					inline
