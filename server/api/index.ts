@@ -2368,8 +2368,10 @@ app.get(["/cron-health", "/api/cron-health"], (req, res) => {
 		status: "ok",
 		timestamp: new Date().toISOString(),
 		hasCronSecret: !!process.env.CRON_SECRET,
-		hasTestEmail: !!process.env.ONBOARDING_TEST_EMAIL,
-		testEmail: process.env.ONBOARDING_TEST_EMAIL || null,
+		hasTestEmailOverride: !!process.env.TEST_EMAIL_OVERRIDE,
+		testEmailOverride: process.env.TEST_EMAIL_OVERRIDE || null,
+		hasOnboardingTestEmail: !!process.env.ONBOARDING_TEST_EMAIL,
+		appUrl: process.env.APP_URL || null,
 	});
 });
 
