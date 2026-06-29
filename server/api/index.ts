@@ -1687,26 +1687,30 @@ const feedbackActionHandler = (action: "approve" | "revise") =>
 			}
 
 			// Fire the admin-notification email by calling our own
-			// /send-notification-email endpoint. Vercel's VERCEL_URL points at the
-			// current deploy (preview or prod). SERVER_BASE_URL overrides for local
-			// dev. If neither is set we skip the email — the in-app notification is
-			// already created by the RPC, so the admin will still see it on next bell
-			// refresh.
+			// /send-notification-email endpoint. AWAITED (not fire-and-forget)
+			// because Vercel serverless functions can be terminated as soon as the
+			// HTTP response is sent, killing unawaited promises mid-flight. Cost is
+			// ~500ms-1s extra wait before the thank-you page renders; worth it for
+			// guaranteed delivery. The in-app notification is already created by the
+			// RPC regardless, so worst case the email is missing but the admin sees
+			// the notification on next bell refresh.
 			const notificationId = rpcData?.id ?? rpcData?.notification_id ?? null;
 			const serverBase =
 				process.env.SERVER_BASE_URL ||
 				(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
 			if (notificationId && serverBase) {
-				fetch(`${serverBase}/send-notification-email`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ notificationId }),
-				}).catch((e) =>
+				try {
+					await fetch(`${serverBase}/send-notification-email`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ notificationId }),
+					});
+				} catch (e) {
 					console.warn(
 						"[Feedback Magic Link] notification email send failed:",
 						e,
-					),
-				);
+					);
+				}
 			}
 
 			const heading = action === "approve"
