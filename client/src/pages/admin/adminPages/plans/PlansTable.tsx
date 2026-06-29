@@ -11,9 +11,11 @@ import {
   Badge,
   Flex,
   Text,
+  Tooltip,
   useMantineTheme,
 } from "@mantine/core";
-import { IconEye } from "@tabler/icons-react";
+import { IconEye, IconClockHour4 } from "@tabler/icons-react";
+import { formatDistanceToNowStrict } from "date-fns";
 import { ColDef } from "ag-grid-community";
 import { format } from "date-fns";
 import { isEmpty, startCase, toLower, upperFirst } from "lodash";
@@ -119,19 +121,55 @@ const PlansTable = forwardRef<PlansTableHandle, Props>(
         {
           field: "status",
           headerName: "Status",
-          width: 160,
-          minWidth: 140,
-          cellRenderer: ({ value }) => (
-            <Badge
-              variant="light"
-              color={statusColors[value]}
-              size="sm"
-              fw={700}
-              style={{ border: `1px solid ${T.blue[0]}` }}
-            >
-              {startCase(value)}
-            </Badge>
-          ),
+          width: 180,
+          minWidth: 160,
+          cellRenderer: ({ value, data }) => {
+            const isAwaitingApproval =
+              value === SelectionStatus.AwaitingApproval;
+            const markupViewedAt = data?.markup_opened_at;
+            const showMarkupViewedIndicator =
+              isAwaitingApproval && !!markupViewedAt;
+
+            const tooltipLabel = markupViewedAt
+              ? `Practice viewed the markup ${formatDistanceToNowStrict(new Date(markupViewedAt), { addSuffix: true })}`
+              : "";
+
+            return (
+              <Flex align="center" gap={6}>
+                <Badge
+                  variant="light"
+                  color={statusColors[value]}
+                  size="sm"
+                  fw={700}
+                  style={{ border: `1px solid ${T.blue[0]}` }}
+                >
+                  {startCase(value)}
+                </Badge>
+                {showMarkupViewedIndicator && (
+                  <Tooltip label={tooltipLabel} withArrow>
+                    <Flex
+                      align="center"
+                      justify="center"
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        background: T.orange[0],
+                        border: `1px solid ${T.orange[2]}`,
+                        cursor: "help",
+                      }}
+                    >
+                      <IconClockHour4
+                        size={12}
+                        stroke={2}
+                        color={T.orange[7]}
+                      />
+                    </Flex>
+                  </Tooltip>
+                )}
+              </Flex>
+            );
+          },
         },
 
         // keep raw dates hidden (useful if you filter later)

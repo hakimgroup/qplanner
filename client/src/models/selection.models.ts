@@ -72,6 +72,7 @@ export type PlanRow = {
   creatives: Creatives[];
   markup_link: string | null;
   assets_link: string | null;
+  markup_opened_at: string | null;
 };
 
 export type PlansFilter = {

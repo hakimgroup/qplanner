@@ -358,3 +358,59 @@ export function useSelectionNotifications(selectionId?: string | null) {
     enabled: !!selectionId,
   });
 }
+
+/**
+ * Records that the practice user clicked the "Open markup" link from the
+ * awaiting-approval modal. Fire-and-forget — failures are logged but don't
+ * block the actual link navigation. Server-side the RPC is idempotent
+ * (only writes on first call), so repeated clicks are safe.
+ */
+export function useRecordMarkupOpened() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (selectionId: string) => {
+      const { data, error } = await supabase.rpc(
+        RPCFunctions.RecordMarkupOpened,
+        { p_selection_id: selectionId },
+      );
+      if (error) throw error;
+      if (data && !data.success) {
+        throw new Error(data.error || "Failed to record markup open");
+      }
+      return data;
+    },
+    onSuccess: (_data, selectionId) => {
+      // Refresh the persisted "opened?" signal so the modal badge sticks
+      // across modal close/reopen and across sessions.
+      qc.invalidateQueries({
+        queryKey: ["selection_markup_opened_at", selectionId],
+      });
+    },
+    onError: (err: any) => {
+      // Don't toast — silent telemetry. The link still opened.
+      console.warn("[markup-opened]", err?.message ?? err);
+    },
+  });
+}
+
+/**
+ * Reads the persisted `markup_opened_at` timestamp for a selection so UI can
+ * reflect "has the practice viewed the markup yet?" across sessions.
+ */
+export function useSelectionMarkupOpenedAt(selectionId?: string | null) {
+  return useQuery<string | null>({
+    queryKey: ["selection_markup_opened_at", selectionId],
+    enabled: !!selectionId,
+    queryFn: async () => {
+      if (!selectionId) return null;
+      const { data, error } = await supabase
+        .from(DatabaseTables.Selections)
+        .select("markup_opened_at")
+        .eq("id", selectionId)
+        .single();
+      if (error) throw error;
+      return (data?.markup_opened_at as string | null) ?? null;
+    },
+    staleTime: 30_000,
+  });
+}

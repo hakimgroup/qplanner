@@ -92,6 +92,7 @@ export enum RPCFunctions {
   MarkCommentRead = "mark_comment_read",
   MarkAllCommentsRead = "mark_all_comments_read",
   UnreadCommentCount = "unread_comment_count",
+  RecordMarkupOpened = "record_markup_opened",
 }
 
 export enum UserRoles {

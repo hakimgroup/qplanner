@@ -20,6 +20,12 @@ import CustomSimpleEmail from "../emails/CustomSimpleEmail";
 import CustomActionEmail from "../emails/CustomActionEmail";
 import CustomAnnouncementEmail from "../emails/CustomAnnouncementEmail";
 import { CommentAddedEmail } from "../emails/CommentAddedEmail";
+import { FeedbackReminderEmail } from "../emails/FeedbackReminderEmail";
+import { FeedbackEscalationEmail } from "../emails/FeedbackEscalationEmail";
+import {
+	signFeedbackToken,
+	verifyFeedbackToken,
+} from "../lib/feedbackToken";
 
 interface EmailBody {
 	to: string;
@@ -1532,6 +1538,205 @@ app.post("/send-comment-email", async (req: Request, res: Response) => {
 });
 
 // ============================================================
+// Magic-link feedback actions — the practice can approve or request revision
+// directly from a reminder email without logging back into the planner.
+// Tokens are signed with FEEDBACK_TOKEN_SECRET (HMAC-SHA256) and carry
+// (selection_id, action, recipient_user_id, exp). Replay safety is enforced
+// by checking the selection is still at awaitingApproval before acting.
+// ============================================================
+function renderFeedbackResponsePage(opts: {
+	heading: string;
+	subheading: string;
+	tone: "success" | "info" | "error";
+	appUrl: string;
+}): string {
+	const colors = {
+		success: { bg: "#ecfdf5", border: "#6ee7b7", accent: "#059669", icon: "✓" },
+		info:    { bg: "#fef3c7", border: "#fcd34d", accent: "#b45309", icon: "ℹ" },
+		error:   { bg: "#fee2e2", border: "#fecaca", accent: "#b91c1c", icon: "✗" },
+	}[opts.tone];
+
+	return `<!doctype html><html><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>${opts.heading}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+    background: #faf8fd; color: #1f2937; margin: 0; padding: 32px 16px; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; }
+  .card { max-width: 480px; width: 100%; background: #fff; border-radius: 16px;
+    padding: 36px 28px; box-shadow: 0 10px 40px rgba(45, 25, 95, 0.10);
+    border: 1px solid #e5d5f8; text-align: center; }
+  .icon { display: inline-flex; align-items: center; justify-content: center;
+    width: 64px; height: 64px; border-radius: 50%;
+    background: ${colors.bg}; border: 2px solid ${colors.border};
+    color: ${colors.accent}; font-size: 30px; font-weight: 700; margin-bottom: 16px; }
+  h1 { font-size: 22px; margin: 0 0 8px 0; color: #111827; }
+  p  { font-size: 14px; color: #6b7280; line-height: 1.55; margin: 0 0 24px 0; }
+  a.cta { display: inline-block; background: linear-gradient(135deg, #7264e9, #d64ca8);
+    color: #fff; padding: 12px 22px; border-radius: 10px; font-weight: 600;
+    text-decoration: none; font-size: 14px; }
+  .brand { margin-top: 28px; font-size: 11px; color: #9ca3af; letter-spacing: 0.6px;
+    text-transform: uppercase; font-weight: 600; }
+</style></head><body>
+<div class="card">
+  <div class="icon">${colors.icon}</div>
+  <h1>${opts.heading}</h1>
+  <p>${opts.subheading}</p>
+  <a class="cta" href="${opts.appUrl}/dashboard">Open the planner</a>
+  <div class="brand">Hakim Group · Planner</div>
+</div></body></html>`;
+}
+
+const feedbackActionHandler = (action: "approve" | "revise") =>
+	async (req: Request, res: Response): Promise<any> => {
+		const appUrl = process.env.APP_URL || "https://planner.hakimgroup.co.uk";
+		const token = req.params.token;
+
+		if (!token) {
+			return res
+				.status(400)
+				.send(renderFeedbackResponsePage({
+					heading: "Link is missing",
+					subheading: "We couldn't find a token on this link. Open the planner to action the campaign there.",
+					tone: "error",
+					appUrl,
+				}));
+		}
+
+		const verified = verifyFeedbackToken(token);
+		if (!verified.ok) {
+			const msg = verified.reason === "expired"
+				? "This link has expired. The 14-day window is up — please open the planner to action the campaign."
+				: "This link is no longer valid. If you typed it manually, double-check the URL.";
+			return res
+				.status(verified.reason === "expired" ? 410 : 400)
+				.send(renderFeedbackResponsePage({
+					heading: verified.reason === "expired" ? "Link expired" : "Invalid link",
+					subheading: msg,
+					tone: "error",
+					appUrl,
+				}));
+		}
+
+		const { sub: selectionId, uid: actorUserId } = verified.payload;
+		if (verified.payload.action !== action) {
+			return res.status(400).send(renderFeedbackResponsePage({
+				heading: "Link mismatch",
+				subheading: "This link's action doesn't match the URL. Try the original email button again.",
+				tone: "error",
+				appUrl,
+			}));
+		}
+
+		try {
+			// Confirm the selection is still in a state where the action applies.
+			const { data: sel, error: selErr } = await supabase
+				.from("selections")
+				.select("id, status, practice_id")
+				.eq("id", selectionId)
+				.single();
+
+			if (selErr || !sel) {
+				return res.status(404).send(renderFeedbackResponsePage({
+					heading: "Campaign not found",
+					subheading: "We couldn't find the campaign this link refers to. It may have been removed.",
+					tone: "error",
+					appUrl,
+				}));
+			}
+
+			if (sel.status !== "awaitingApproval") {
+				return res.status(200).send(renderFeedbackResponsePage({
+					heading: "Already actioned",
+					subheading: `This campaign is currently at "${sel.status}" — someone has already moved it on. No further action needed.`,
+					tone: "info",
+					appUrl,
+				}));
+			}
+
+			// Call the existing RPC with the actor override.
+			const REVISION_NOTE =
+				"Decision made via reminder email — practice indicated changes were left on the markup file. See markup for details.";
+
+			const rpcArgs = action === "approve"
+				? {
+					p_selection_id: selectionId,
+					p_note: null,
+					p_self_print: false,
+					p_actor_user_id: actorUserId,
+				}
+				: {
+					p_selection_id: selectionId,
+					p_feedback: REVISION_NOTE,
+					p_actor_user_id: actorUserId,
+				};
+
+			const { data: rpcData, error: rpcErr } = await supabase.rpc(
+				action === "approve" ? "confirm_assets" : "request_revision",
+				rpcArgs,
+			);
+
+			if (rpcErr || (rpcData && rpcData.success === false)) {
+				console.error("[Feedback Magic Link] RPC error:", rpcErr ?? rpcData);
+				return res.status(500).send(renderFeedbackResponsePage({
+					heading: "Something went wrong",
+					subheading: "We hit a snag recording your decision. Please open the planner to action it directly.",
+					tone: "error",
+					appUrl,
+				}));
+			}
+
+			// Fire the admin-notification email by calling our own
+			// /send-notification-email endpoint. Vercel's VERCEL_URL points at the
+			// current deploy (preview or prod). SERVER_BASE_URL overrides for local
+			// dev. If neither is set we skip the email — the in-app notification is
+			// already created by the RPC, so the admin will still see it on next bell
+			// refresh.
+			const notificationId = rpcData?.id ?? rpcData?.notification_id ?? null;
+			const serverBase =
+				process.env.SERVER_BASE_URL ||
+				(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+			if (notificationId && serverBase) {
+				fetch(`${serverBase}/send-notification-email`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ notificationId }),
+				}).catch((e) =>
+					console.warn(
+						"[Feedback Magic Link] notification email send failed:",
+						e,
+					),
+				);
+			}
+
+			const heading = action === "approve"
+				? "Thanks — campaign approved"
+				: "Got it — changes requested";
+			const subheading = action === "approve"
+				? "We've moved the campaign to confirmed and notified the design team. The artwork will go live on the start date you originally set."
+				: "We've moved the campaign back to in-progress and notified the design team. They'll work on the changes you've left on the markup file.";
+
+			return res.status(200).send(renderFeedbackResponsePage({
+				heading,
+				subheading,
+				tone: "success",
+				appUrl,
+			}));
+		} catch (err: any) {
+			console.error("[Feedback Magic Link] unexpected:", err);
+			return res.status(500).send(renderFeedbackResponsePage({
+				heading: "Unexpected error",
+				subheading: "Something went wrong on our end. Please open the planner to action the campaign there.",
+				tone: "error",
+				appUrl,
+			}));
+		}
+	};
+
+app.get("/feedback/approve/:token", feedbackActionHandler("approve"));
+app.get("/feedback/revise/:token", feedbackActionHandler("revise"));
+
+// ============================================================
 // Send Planner Overview Emails (batch send to all users with selections)
 // Called by admin to send overview emails to all practices with selections
 // Uses Resend batch API for efficient sending
@@ -2363,6 +2568,334 @@ app.all(["/activate-live-campaigns", "/api/activate-live-campaigns"], async (req
 });
 
 // Health check endpoint for cron debugging
+// ============================================================
+// Feedback Reminder + Admin Escalation Cron
+//
+// Runs daily. Two passes:
+//   1. Reminder pass — selections at awaitingApproval with markup_opened_at
+//      between 3 and 10 days old AND no reminder yet. Sends the magic-link
+//      reminder email to the practice's user-role members.
+//   2. Escalation pass — selections still at awaitingApproval where the
+//      reminder was sent 7+ days ago AND no escalation yet. Sends the
+//      escalation email to the practice's admin-role members + super admins.
+//
+// Auth: same Bearer CRON_SECRET pattern as /activate-live-campaigns.
+// ============================================================
+const feedbackRemindersHandler = async (
+	req: Request,
+	res: Response,
+): Promise<any> => {
+	const startTime = Date.now();
+	const authHeader = req.headers.authorization;
+	const cronSecretHeader = req.headers["x-cron-secret"];
+	const expectedSecret = process.env.CRON_SECRET;
+	const providedSecret =
+		authHeader?.replace("Bearer ", "") || cronSecretHeader;
+
+	if (expectedSecret && providedSecret !== expectedSecret) {
+		return res.status(401).json({ error: "Unauthorized" });
+	}
+
+	const appUrl = process.env.APP_URL || "https://planner.hakimgroup.co.uk";
+	const serverBase =
+		process.env.SERVER_BASE_URL ||
+		(process.env.VERCEL_URL
+			? `https://${process.env.VERCEL_URL}`
+			: null);
+
+	const results = {
+		reminders_sent: 0,
+		escalations_sent: 0,
+		errors: [] as string[],
+	};
+
+	try {
+		// =================
+		// 1. Reminder pass
+		// =================
+		const { data: reminderCandidates, error: reminderQueryError } =
+			await supabase
+				.from("selections")
+				.select(
+					"id, practice_id, campaign_id, bespoke_campaign_id, markup_opened_at, markup_link, from_date, to_date",
+				)
+				.eq("status", "awaitingApproval")
+				.not("markup_opened_at", "is", null)
+				.is("feedback_reminder_sent_at", null)
+				.lt(
+					"markup_opened_at",
+					new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+				);
+
+		if (reminderQueryError) {
+			results.errors.push(`reminder query: ${reminderQueryError.message}`);
+		}
+
+		for (const sel of reminderCandidates ?? []) {
+			try {
+				// Look up practice + campaign + recipients
+				const { data: practice } = await supabase
+					.from("practices")
+					.select("id, name")
+					.eq("id", sel.practice_id)
+					.single();
+				if (!practice) continue;
+
+				let campaignName = "Campaign";
+				if (sel.campaign_id) {
+					const { data: cc } = await supabase
+						.from("campaigns_catalog")
+						.select("name")
+						.eq("id", sel.campaign_id)
+						.single();
+					campaignName = cc?.name ?? campaignName;
+				} else if (sel.bespoke_campaign_id) {
+					const { data: bc } = await supabase
+						.from("bespoke_campaigns")
+						.select("name")
+						.eq("id", sel.bespoke_campaign_id)
+						.single();
+					campaignName = bc?.name ?? campaignName;
+				}
+
+				// Recipients: user-role practice members
+				const { data: members } = await supabase
+					.from("practice_members")
+					.select("user_id, email, role")
+					.eq("practice_id", sel.practice_id)
+					.eq("role", "user");
+
+				const recipients = (members ?? []).filter(
+					(m: any) => m.user_id && m.email,
+				);
+				if (recipients.length === 0) {
+					console.log(
+						`[Feedback Reminder] skipping ${sel.id} — no user-role members`,
+					);
+					continue;
+				}
+
+				// Build per-recipient magic links + send
+				const finalRecipientList: string[] = process.env
+					.TEST_EMAIL_OVERRIDE
+					? [process.env.TEST_EMAIL_OVERRIDE]
+					: recipients.map((r: any) => r.email);
+
+				const firstRecipient = recipients[0];
+				const approveToken = signFeedbackToken(
+					sel.id,
+					"approve",
+					firstRecipient.user_id,
+				);
+				const reviseToken = signFeedbackToken(
+					sel.id,
+					"revise",
+					firstRecipient.user_id,
+				);
+				const serverForLinks = serverBase ?? appUrl;
+				const approveUrl = `${serverForLinks}/feedback/approve/${approveToken}`;
+				const reviseUrl = `${serverForLinks}/feedback/revise/${reviseToken}`;
+				const markupUrl = sel.markup_link ?? `${appUrl}/dashboard`;
+
+				const html = await render(
+					FeedbackReminderEmail({
+						practiceName: practice.name,
+						campaignName,
+						markupOpenedAt: sel.markup_opened_at!,
+						approveUrl,
+						reviseUrl,
+						markupUrl,
+					}),
+				);
+
+				const { data: sendData, error: sendErr } =
+					await resend.emails.send({
+						from: "HG Planner <noreply@planner.hakimgroup.io>",
+						to: finalRecipientList,
+						subject: `Quick yes/no on the ${campaignName} artwork`,
+						html,
+					});
+
+				if (sendErr) {
+					results.errors.push(`reminder ${sel.id}: ${sendErr.message}`);
+					continue;
+				}
+
+				// Mark sent
+				await supabase
+					.from("selections")
+					.update({
+						feedback_reminder_sent_at: new Date().toISOString(),
+					})
+					.eq("id", sel.id);
+
+				// Log the send
+				await supabase.from("notification_emails_log").insert({
+					email_type: "feedback_reminder",
+					recipient_email: finalRecipientList[0],
+					selection_id: sel.id,
+					practice_id: practice.id,
+					practice_name: practice.name,
+					campaign_name: campaignName,
+					status: "sent",
+					attempt_source: "cron",
+					attempted_at: new Date().toISOString(),
+					sent_at: new Date().toISOString(),
+					resend_message_id: (sendData as any)?.id ?? null,
+					subject: `Quick yes/no on the ${campaignName} artwork`,
+				});
+
+				results.reminders_sent++;
+			} catch (e: any) {
+				results.errors.push(
+					`reminder ${sel.id}: ${e?.message ?? String(e)}`,
+				);
+			}
+		}
+
+		// =================
+		// 2. Escalation pass
+		// =================
+		const { data: escalationCandidates } = await supabase
+			.from("selections")
+			.select(
+				"id, practice_id, campaign_id, bespoke_campaign_id, markup_opened_at, feedback_reminder_sent_at",
+			)
+			.eq("status", "awaitingApproval")
+			.not("feedback_reminder_sent_at", "is", null)
+			.is("feedback_admin_escalated_at", null)
+			.lt(
+				"feedback_reminder_sent_at",
+				new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+			);
+
+		for (const sel of escalationCandidates ?? []) {
+			try {
+				const { data: practice } = await supabase
+					.from("practices")
+					.select("id, name")
+					.eq("id", sel.practice_id)
+					.single();
+				if (!practice) continue;
+
+				let campaignName = "Campaign";
+				if (sel.campaign_id) {
+					const { data: cc } = await supabase
+						.from("campaigns_catalog")
+						.select("name")
+						.eq("id", sel.campaign_id)
+						.single();
+					campaignName = cc?.name ?? campaignName;
+				} else if (sel.bespoke_campaign_id) {
+					const { data: bc } = await supabase
+						.from("bespoke_campaigns")
+						.select("name")
+						.eq("id", sel.bespoke_campaign_id)
+						.single();
+					campaignName = bc?.name ?? campaignName;
+				}
+
+				// Recipients: admin-role members of this practice + global super_admins
+				const { data: practiceAdmins } = await supabase
+					.from("practice_members")
+					.select("user_id, email, role")
+					.eq("practice_id", sel.practice_id)
+					.eq("role", "admin");
+
+				const { data: superAdmins } = await supabase
+					.from("allowed_users")
+					.select("id, email, role, email_notifications_enabled")
+					.eq("role", "super_admin");
+
+				const adminEmails = [
+					...(practiceAdmins ?? []).map((m: any) => m.email),
+					...(superAdmins ?? [])
+						.filter(
+							(u: any) => u.email_notifications_enabled !== false,
+						)
+						.map((u: any) => u.email),
+				].filter(Boolean);
+
+				if (adminEmails.length === 0) continue;
+
+				const finalRecipientList: string[] = process.env
+					.TEST_EMAIL_OVERRIDE
+					? [process.env.TEST_EMAIL_OVERRIDE]
+					: Array.from(new Set(adminEmails));
+
+				const html = await render(
+					FeedbackEscalationEmail({
+						practiceName: practice.name,
+						campaignName,
+						markupOpenedAt: sel.markup_opened_at!,
+						reminderSentAt: sel.feedback_reminder_sent_at!,
+						appUrl,
+						selectionId: sel.id,
+					}),
+				);
+
+				const { data: sendData, error: sendErr } =
+					await resend.emails.send({
+						from: "HG Planner <noreply@planner.hakimgroup.io>",
+						to: finalRecipientList,
+						subject: `${practice.name} unresponsive on ${campaignName} artwork`,
+						html,
+					});
+
+				if (sendErr) {
+					results.errors.push(
+						`escalation ${sel.id}: ${sendErr.message}`,
+					);
+					continue;
+				}
+
+				await supabase
+					.from("selections")
+					.update({
+						feedback_admin_escalated_at: new Date().toISOString(),
+					})
+					.eq("id", sel.id);
+
+				await supabase.from("notification_emails_log").insert({
+					email_type: "feedback_escalation",
+					recipient_email: finalRecipientList[0],
+					selection_id: sel.id,
+					practice_id: practice.id,
+					practice_name: practice.name,
+					campaign_name: campaignName,
+					status: "sent",
+					attempt_source: "cron",
+					attempted_at: new Date().toISOString(),
+					sent_at: new Date().toISOString(),
+					resend_message_id: (sendData as any)?.id ?? null,
+					subject: `${practice.name} unresponsive on ${campaignName} artwork`,
+				});
+
+				results.escalations_sent++;
+			} catch (e: any) {
+				results.errors.push(
+					`escalation ${sel.id}: ${e?.message ?? String(e)}`,
+				);
+			}
+		}
+
+		const durationMs = Date.now() - startTime;
+		console.log(
+			`[Feedback Reminders] Done - reminders=${results.reminders_sent}, escalations=${results.escalations_sent}, errors=${results.errors.length}, ${durationMs}ms`,
+		);
+
+		return res.status(200).json({ ...results, durationMs });
+	} catch (err: any) {
+		console.error("[Feedback Reminders] unexpected:", err);
+		return res.status(500).json({ error: err.message, partial: results });
+	}
+};
+
+app.all(
+	["/send-feedback-reminders", "/api/send-feedback-reminders"],
+	feedbackRemindersHandler,
+);
+
 app.get(["/cron-health", "/api/cron-health"], (req, res) => {
 	res.json({
 		status: "ok",

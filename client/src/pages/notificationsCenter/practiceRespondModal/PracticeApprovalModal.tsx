@@ -1,7 +1,9 @@
 import StyledButton from "@/components/styledButton/StyledButton";
 import {
 	useConfirmAssets,
-	useRequestRevision} from "@/hooks/notification.hooks";
+	useRequestRevision,
+	useRecordMarkupOpened,
+	useSelectionMarkupOpenedAt} from "@/hooks/notification.hooks";
 import { NotificationRow } from "@/models/notification.models";
 import {
 	Modal,
@@ -28,7 +30,8 @@ import {
 	IconThumbUpFilled,
 	IconClipboard,
 	IconArrowLeft,
-	IconSend} from "@tabler/icons-react";
+	IconSend,
+	IconEye} from "@tabler/icons-react";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
 import { useIsMobile } from "@/shared/shared.hooks";
@@ -55,6 +58,23 @@ export default function PracticeApprovalModal({
 		useConfirmAssets();
 	const { mutate: requestRevision, isPending: isSubmittingFeedback } =
 		useRequestRevision();
+	const { mutate: recordMarkupOpened } = useRecordMarkupOpened();
+	const { data: persistedOpenedAt } = useSelectionMarkupOpenedAt(
+		ntf?.selection_id ?? null,
+	);
+
+	// Tracks whether the practice has clicked through in THIS session.
+	// Combined with the DB-persisted timestamp so the "Opened" badge survives
+	// modal close/reopen and cross-session reloads.
+	const [openedThisSession, setOpenedThisSession] = useState(false);
+	const hasOpenedMarkup = openedThisSession || !!persistedOpenedAt;
+
+	const handleMarkupOpen = () => {
+		if (!ntf?.selection_id) return;
+		// Fire-and-forget telemetry; the link itself still opens via the Anchor.
+		recordMarkupOpened(ntf.selection_id);
+		setOpenedThisSession(true);
+	};
 
 	const handleConfirmAssets = () => {
 		if (!ntf?.selection_id) return;
@@ -84,6 +104,7 @@ export default function PracticeApprovalModal({
 		setFeedback("");
 		setShowFeedbackForm(false);
 		setSelfPrint(false);
+		setOpenedThisSession(false);
 		onClose();
 	};
 
@@ -366,7 +387,7 @@ export default function PracticeApprovalModal({
 							</>
 						)}
 
-						{/* ===== MARKUP VERSION UI (existing) ===== */}
+						{/* ===== MARKUP VERSION UI — two-step layout ===== */}
 						{showMarkupVersion && (
 							<>
 								{/* Campaign / name */}
@@ -374,86 +395,122 @@ export default function PracticeApprovalModal({
 									{ntf?.payload?.name}
 								</Text>
 
-								{/* Descriptive copy */}
-								<Text c="gray.7">
-									Updated artwork for {ntf?.payload?.name}{" "}
-									incorporating your feedback is ready for
-									final approval.
+								<Text c="gray.7" size="sm">
+									Updated artwork for{" "}
+									<Text span fw={600} c="gray.9">
+										{ntf?.payload?.name}
+									</Text>{" "}
+									is ready for your final approval.
 								</Text>
 
-								{/* Artwork Preview — hidden for now */}
-								{false && (
-								<Stack gap={6}>
-									<Text fw={700} size="sm" c="blue.3">
-										Artwork Preview
-									</Text>
-
-									<Paper
-										radius="lg"
-										style={{
-											backgroundColor: "white"}}
-									>
-										{ntf?.payload?.chosen_creative ? (
-											<Image
-												src={
-													ntf.payload.chosen_creative
-												}
-												alt="Campaign artwork"
-												radius="md"
-												fit="contain"
-												h={180}
-											/>
-										) : (
-											<Box
-												style={{
-													height: 80,
-													borderRadius: 10,
-													backgroundColor: T.gray[0],
-													display: "flex",
-													alignItems: "center",
-													justifyContent: "center"}}
-											>
-												<Text size="sm" c="gray.5">
-													No preview available
-												</Text>
-											</Box>
-										)}
-									</Paper>
-								</Stack>
-								)}
-
-								{/* Instruction text */}
-								<Text size="sm" c="gray.6">
-									Please click through on the link below to go
-									to the markup file to do feedback on the
-									artwork directly.
-								</Text>
-
-								{/* Markup link */}
-								<Anchor
-									href={
-										ntf?.payload?.markup_link ?? undefined
-									}
-									target="_blank"
-									rel="noopener noreferrer"
-									underline="never"
+								{/* ----- Step 1 — Review ----- */}
+								<Paper
+									p="md"
+									radius="md"
 									style={{
-										pointerEvents: ntf?.payload?.markup_link
-											? "auto"
-											: "none"}}
+										backgroundColor: T.gray[0],
+										border: `1px solid ${T.gray[2]}`}}
 								>
-									<StyledButton
-										fullWidth
-										variant="default"
-										radius="md"
-										leftSection={
-											<IconExternalLink size={18} />
-										}
-										disabled={!ntf?.payload?.markup_link}
-									>
-										Open Markup File for Feedback
-									</StyledButton>
-								</Anchor>
+									<Stack gap="sm">
+										<Group gap={8} align="center">
+											<Badge
+												size="sm"
+												variant="filled"
+												color="violet"
+												radius="sm"
+											>
+												Step 1
+											</Badge>
+											<Text fw={600} size="sm" c="gray.9">
+												Review the artwork
+											</Text>
+											{hasOpenedMarkup && (
+												<Badge
+													size="xs"
+													variant="light"
+													color="teal"
+													radius="sm"
+												>
+													Opened
+												</Badge>
+											)}
+										</Group>
+										<Text size="xs" c="gray.6">
+											Open the markup file in a new tab.
+											Leave any comments directly on the
+											artwork — the design team can see
+											them there.
+										</Text>
+										<Anchor
+											href={
+												ntf?.payload?.markup_link ??
+												undefined
+											}
+											target="_blank"
+											rel="noopener noreferrer"
+											underline="never"
+											onClick={handleMarkupOpen}
+											style={{
+												pointerEvents: ntf?.payload
+													?.markup_link
+													? "auto"
+													: "none"}}
+										>
+											<StyledButton
+												fullWidth
+												variant="default"
+												radius="md"
+												leftSection={
+													<IconEye size={18} />
+												}
+												rightSection={
+													<IconExternalLink
+														size={16}
+													/>
+												}
+												disabled={
+													!ntf?.payload?.markup_link
+												}
+											>
+												Open markup file
+											</StyledButton>
+										</Anchor>
+									</Stack>
+								</Paper>
+
+								{/* ----- Step 2 — Decision ----- */}
+								<Paper
+									p="md"
+									radius="md"
+									style={{
+										background: `linear-gradient(135deg, ${T.violet[0]} 0%, ${T.blue[0]} 100%)`,
+										border: `1px solid ${T.violet[2]}`}}
+								>
+									<Stack gap="sm">
+										<Group gap={8} align="center">
+											<Badge
+												size="sm"
+												variant="filled"
+												color="violet"
+												radius="sm"
+											>
+												Step 2
+											</Badge>
+											<Text fw={600} size="sm" c="gray.9">
+												Tell us what you think
+											</Text>
+										</Group>
+										<Text size="xs" c="gray.7">
+											Once you've reviewed,{" "}
+											<Text span fw={600} c="gray.9">
+												come back here
+											</Text>{" "}
+											and let us know whether to proceed
+											or revise. The campaign stays parked
+											until you choose.
+										</Text>
+									</Stack>
+								</Paper>
 							</>
 						)}
 
@@ -470,36 +527,48 @@ export default function PracticeApprovalModal({
 							</StyledButton>
 						)}
 
-						{/* Self-print checkbox */}
+						{/* Self-print checkbox (only relevant for the approve path) */}
 						<Checkbox
 							label="We will print our own assets"
-							description="Check this box if your practice will handle printing independently"
+							description="Check this if your practice will handle printing independently"
 							checked={selfPrint}
 							onChange={(e) => setSelfPrint(e.currentTarget.checked)}
 							disabled={isLoading}
 							color="violet"
 							radius="sm"
+							size="sm"
 						/>
 
-						{/* Actions */}
-						<Flex align={"center"} justify={"space-between"}>
+						{/* Decision buttons — Approve is primary, Request changes secondary */}
+						<Flex
+							align="center"
+							justify="space-between"
+							gap="sm"
+							direction={{ base: "column-reverse", sm: "row" }}
+						>
+							<Button
+								variant="light"
+								color="orange"
+								size="md"
+								radius="md"
+								leftSection={<IconClipboard size={16} />}
+								onClick={() => setShowFeedbackForm(true)}
+								disabled={!ntf?.selection_id || isLoading}
+								fullWidth={isMobile}
+							>
+								Request changes
+							</Button>
 							<Button
 								color="teal.7"
-								rightSection={<IconThumbUpFilled size={14} />}
+								size="md"
+								radius="md"
+								rightSection={<IconThumbUpFilled size={16} />}
 								onClick={handleConfirmAssets}
 								loading={isConfirming}
 								disabled={!ntf?.selection_id || isLoading}
+								fullWidth={isMobile}
 							>
-								Confirm Assets
-							</Button>
-							<Button
-								variant="light"
-								color="orange.9"
-								rightSection={<IconClipboard size={14} />}
-								onClick={() => setShowFeedbackForm(true)}
-								disabled={!ntf?.selection_id || isLoading}
-							>
-								Leave Feedback
+								Looks good — approve
 							</Button>
 						</Flex>
 					</>
