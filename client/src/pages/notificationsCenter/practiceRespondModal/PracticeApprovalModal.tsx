@@ -20,7 +20,8 @@ import {
 	Flex,
 	ThemeIcon,
 	Textarea,
-	Checkbox} from "@mantine/core";
+	Checkbox,
+	Title} from "@mantine/core";
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
 	IconExternalLink,
@@ -31,7 +32,9 @@ import {
 	IconClipboard,
 	IconArrowLeft,
 	IconSend,
-	IconEye} from "@tabler/icons-react";
+	IconEye,
+	IconCheck,
+	IconPencil} from "@tabler/icons-react";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
 import { useIsMobile } from "@/shared/shared.hooks";
@@ -97,6 +100,21 @@ export default function PracticeApprovalModal({
 					setShowFeedbackForm(false);
 					onClose();
 				}},
+		);
+	};
+
+	// One-click revise for the markup path — matches the email UX. The design
+	// team already has the practice's feedback on the markup file itself, so
+	// the planner only needs to record the DECISION with a generic note.
+	const handleRequestChangesDirect = () => {
+		if (!ntf?.selection_id) return;
+		requestRevision(
+			{
+				selectionId: ntf.selection_id,
+				feedback:
+					"Practice indicated changes were left on the markup file — see markup for details.",
+			},
+			{ onSuccess: () => onClose() },
 		);
 	};
 
@@ -387,130 +405,182 @@ export default function PracticeApprovalModal({
 							</>
 						)}
 
-						{/* ===== MARKUP VERSION UI — two-step layout ===== */}
+						{/* ===== MARKUP VERSION UI — matches the reminder email's design ===== */}
 						{showMarkupVersion && (
 							<>
-								{/* Campaign / name */}
-								<Text fz={"h4"} fw={600}>
-									{ntf?.payload?.name}
+								{/* "Quick check-in" pill — same violet-light styling as the email badge */}
+								<Group justify="center" mt={4}>
+									<Badge
+										variant="light"
+										color="violet"
+										size="lg"
+										fw={700}
+										radius="xl"
+										tt="uppercase"
+										styles={{
+											label: {
+												letterSpacing: 0.6,
+												fontSize: 11,
+											},
+										}}
+									>
+										Quick check-in
+									</Badge>
+								</Group>
+
+								{/* Big centered heading */}
+								<Title
+									order={2}
+									ta="center"
+									fz={22}
+									fw={700}
+									c="gray.9"
+									style={{ lineHeight: 1.3 }}
+								>
+									What did you think of the{" "}
+									{ntf?.payload?.name} artwork?
+								</Title>
+
+								{/* Contextual body paragraph */}
+								<Text
+									ta="center"
+									size="sm"
+									c="gray.7"
+									style={{ lineHeight: 1.6 }}
+								>
+									Take a look at the markup file, then let us
+									know whether the artwork's good to go — or if
+									you've left changes for the design team.
 								</Text>
 
-								<Text c="gray.7" size="sm">
-									Updated artwork for{" "}
-									<Text span fw={600} c="gray.9">
-										{ntf?.payload?.name}
-									</Text>{" "}
-									is ready for your final approval.
-								</Text>
-
-								{/* ----- Step 1 — Review ----- */}
+								{/* Question box — violet-tinted with purple left border, mirrors email quote box */}
 								<Paper
 									p="md"
 									radius="md"
 									style={{
 										backgroundColor: T.gray[0],
-										border: `1px solid ${T.gray[2]}`}}
+										border: `1px solid ${T.violet[2]}`,
+										borderLeft: `4px solid ${T.violet[7]}`,
+									}}
 								>
-									<Stack gap="sm">
-										<Group gap={8} align="center">
-											<Badge
-												size="sm"
-												variant="filled"
-												color="violet"
-												radius="sm"
-											>
-												Step 1
-											</Badge>
-											<Text fw={600} size="sm" c="gray.9">
-												Review the artwork
-											</Text>
-											{hasOpenedMarkup && (
-												<Badge
-													size="xs"
-													variant="light"
-													color="teal"
-													radius="sm"
-												>
-													Opened
-												</Badge>
-											)}
-										</Group>
-										<Text size="xs" c="gray.6">
-											Open the markup file in a new tab.
-											Leave any comments directly on the
-											artwork — the design team can see
-											them there.
-										</Text>
-										<Anchor
-											href={
-												ntf?.payload?.markup_link ??
-												undefined
-											}
-											target="_blank"
-											rel="noopener noreferrer"
-											underline="never"
-											onClick={handleMarkupOpen}
-											style={{
-												pointerEvents: ntf?.payload
-													?.markup_link
-													? "auto"
-													: "none"}}
-										>
-											<StyledButton
-												fullWidth
-												variant="default"
-												radius="md"
-												leftSection={
-													<IconEye size={18} />
-												}
-												rightSection={
-													<IconExternalLink
-														size={16}
-													/>
-												}
-												disabled={
-													!ntf?.payload?.markup_link
-												}
-											>
-												Open markup file
-											</StyledButton>
-										</Anchor>
-									</Stack>
+									<Text
+										size="md"
+										fw={600}
+										c="gray.9"
+										style={{ lineHeight: 1.55 }}
+									>
+										Did you leave changes on the markup, or
+										are you happy with it as-is?
+									</Text>
 								</Paper>
 
-								{/* ----- Step 2 — Decision ----- */}
-								<Paper
-									p="md"
-									radius="md"
-									style={{
-										background: `linear-gradient(135deg, ${T.violet[0]} 0%, ${T.blue[0]} 100%)`,
-										border: `1px solid ${T.violet[2]}`}}
+								{/* Self-print checkbox — placed here (above the buttons) to
+								    match the original modal layout. Only affects the
+								    Approve path (passed as p_self_print to confirm_assets). */}
+								<Checkbox
+									label="We will print our own assets"
+									description="Check this if your practice will handle printing independently"
+									checked={selfPrint}
+									onChange={(e) =>
+										setSelfPrint(e.currentTarget.checked)
+									}
+									disabled={isLoading}
+									color="violet"
+									radius="sm"
+									size="sm"
+								/>
+
+								{/* Stacked decision buttons — same green + amber as the email */}
+								<Stack gap="sm">
+									<Button
+										size="lg"
+										fullWidth
+										radius="md"
+										leftSection={<IconCheck size={18} />}
+										onClick={handleConfirmAssets}
+										loading={isConfirming}
+										disabled={
+											!ntf?.selection_id || isLoading
+										}
+										fw={700}
+										styles={{
+											root: { backgroundColor: "#0f9466" },
+										}}
+									>
+										Looks good — approve
+									</Button>
+									<Button
+										size="lg"
+										fullWidth
+										radius="md"
+										leftSection={<IconPencil size={18} />}
+										onClick={handleRequestChangesDirect}
+										loading={isSubmittingFeedback}
+										disabled={
+											!ntf?.selection_id || isLoading
+										}
+										fw={700}
+										styles={{
+											root: { backgroundColor: "#f59e0b" },
+										}}
+									>
+										I've left changes on the markup
+									</Button>
+								</Stack>
+
+								{/* Helper text under the buttons */}
+								<Text
+									ta="center"
+									size="xs"
+									c="gray.5"
+									mt={-8}
 								>
-									<Stack gap="sm">
-										<Group gap={8} align="center">
-											<Badge
-												size="sm"
-												variant="filled"
-												color="violet"
-												radius="sm"
-											>
-												Step 2
-											</Badge>
-											<Text fw={600} size="sm" c="gray.9">
-												Tell us what you think
-											</Text>
-										</Group>
-										<Text size="xs" c="gray.7">
-											Once you've reviewed,{" "}
-											<Text span fw={600} c="gray.9">
-												come back here
-											</Text>{" "}
-											and let us know whether to proceed
-											or revise. The campaign stays parked
-											until you choose.
-										</Text>
-									</Stack>
-								</Paper>
+									One click sends this straight to the design team.
+								</Text>
+
+								<GradientDivider />
+
+								{/* Tertiary — Open markup file (again if already opened) */}
+								<Stack gap={8}>
+									<Text size="sm" c="gray.7">
+										{hasOpenedMarkup
+											? "Want another look at the markup?"
+											: "Take a look at the markup first:"}
+									</Text>
+									<Anchor
+										href={
+											ntf?.payload?.markup_link ??
+											undefined
+										}
+										target="_blank"
+										rel="noopener noreferrer"
+										underline="never"
+										onClick={handleMarkupOpen}
+										style={{
+											pointerEvents: ntf?.payload
+												?.markup_link
+												? "auto"
+												: "none",
+										}}
+									>
+										<StyledButton
+											fullWidth
+											variant="default"
+											radius="md"
+											leftSection={
+												<IconExternalLink size={18} />
+											}
+											disabled={
+												!ntf?.payload?.markup_link
+											}
+										>
+											{hasOpenedMarkup
+												? "Open markup file again"
+												: "Open markup file"}
+										</StyledButton>
+									</Anchor>
+								</Stack>
+
 							</>
 						)}
 
@@ -527,50 +597,69 @@ export default function PracticeApprovalModal({
 							</StyledButton>
 						)}
 
-						{/* Self-print checkbox (only relevant for the approve path) */}
-						<Checkbox
-							label="We will print our own assets"
-							description="Check this if your practice will handle printing independently"
-							checked={selfPrint}
-							onChange={(e) => setSelfPrint(e.currentTarget.checked)}
-							disabled={isLoading}
-							color="violet"
-							radius="sm"
-							size="sm"
-						/>
+						{/* Assets-only footer — self-print + Confirm/Leave Feedback.
+						    The markup version has its own equivalents inline above. */}
+						{!showMarkupVersion && (
+							<>
+								<Checkbox
+									label="We will print our own assets"
+									description="Check this if your practice will handle printing independently"
+									checked={selfPrint}
+									onChange={(e) =>
+										setSelfPrint(e.currentTarget.checked)
+									}
+									disabled={isLoading}
+									color="violet"
+									radius="sm"
+									size="sm"
+								/>
 
-						{/* Decision buttons — Approve is primary, Request changes secondary */}
-						<Flex
-							align="center"
-							justify="space-between"
-							gap="sm"
-							direction={{ base: "column-reverse", sm: "row" }}
-						>
-							<Button
-								variant="light"
-								color="orange"
-								size="md"
-								radius="md"
-								leftSection={<IconClipboard size={16} />}
-								onClick={() => setShowFeedbackForm(true)}
-								disabled={!ntf?.selection_id || isLoading}
-								fullWidth={isMobile}
-							>
-								Request changes
-							</Button>
-							<Button
-								color="teal.7"
-								size="md"
-								radius="md"
-								rightSection={<IconThumbUpFilled size={16} />}
-								onClick={handleConfirmAssets}
-								loading={isConfirming}
-								disabled={!ntf?.selection_id || isLoading}
-								fullWidth={isMobile}
-							>
-								Looks good — approve
-							</Button>
-						</Flex>
+								<Flex
+									align="center"
+									justify="space-between"
+									gap="sm"
+									direction={{
+										base: "column-reverse",
+										sm: "row",
+									}}
+								>
+									<Button
+										variant="light"
+										color="orange"
+										size="md"
+										radius="md"
+										leftSection={
+											<IconClipboard size={16} />
+										}
+										onClick={() =>
+											setShowFeedbackForm(true)
+										}
+										disabled={
+											!ntf?.selection_id || isLoading
+										}
+										fullWidth={isMobile}
+									>
+										Request changes
+									</Button>
+									<Button
+										color="teal.7"
+										size="md"
+										radius="md"
+										rightSection={
+											<IconThumbUpFilled size={16} />
+										}
+										onClick={handleConfirmAssets}
+										loading={isConfirming}
+										disabled={
+											!ntf?.selection_id || isLoading
+										}
+										fullWidth={isMobile}
+									>
+										Looks good — approve
+									</Button>
+								</Flex>
+							</>
+						)}
 					</>
 				)}
 			</Stack>
