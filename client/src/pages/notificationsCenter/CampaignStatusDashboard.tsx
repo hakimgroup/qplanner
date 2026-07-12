@@ -138,9 +138,9 @@ const CampaignStatusDashboard = () => {
 
 		{
 			field: "markup_link",
-			headerName: "Markup",
-			width: 130,
-			minWidth: 110,
+			headerName: "Review Document",
+			width: 160,
+			minWidth: 140,
 			sortable: false,
 			filter: false,
 			pinned: "right",
@@ -155,7 +155,7 @@ const CampaignStatusDashboard = () => {
 						color="violet"
 						rightSection={<IconExternalLink size={14} />}
 					>
-						Markup
+						Review Document
 					</Button>
 				) : (
 					<Text size="sm" c="gray.4">

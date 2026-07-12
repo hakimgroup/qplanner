@@ -16,6 +16,7 @@ export enum AppRoutes {
   SendEmail = "send-email",
   EmailHealth = "email-health",
   PracticesOfInterest = "practices-of-interest",
+  BugReports = "bug-reports",
   FAQs = "/faqs",
   NotificationsCenter = "/notifications-center",
   Landing = "/landing",
@@ -93,6 +94,11 @@ export enum RPCFunctions {
   MarkAllCommentsRead = "mark_all_comments_read",
   UnreadCommentCount = "unread_comment_count",
   RecordMarkupOpened = "record_markup_opened",
+  CreateBugReport = "create_bug_report",
+  ListBugReports = "list_bug_reports",
+  CloseBugReport = "close_bug_report",
+  ReopenBugReport = "reopen_bug_report",
+  DeleteBugReport = "delete_bug_report",
 }
 
 export enum UserRoles {

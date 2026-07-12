@@ -85,8 +85,8 @@ export const FeedbackEscalationEmail = ({
 
 						<Section>
 							<Text style={paragraph}>
-								<strong>{practiceName}</strong> reviewed the markup
-								for <strong>{campaignName}</strong> but hasn't
+								<strong>{practiceName}</strong> reviewed the review
+								document for <strong>{campaignName}</strong> but hasn't
 								confirmed or requested changes. We sent them a
 								reminder email a week ago and they still haven't
 								acted.
@@ -105,7 +105,7 @@ export const FeedbackEscalationEmail = ({
 								<strong>{campaignName}</strong>
 							</Text>
 							<Text style={detailRow}>
-								<span style={detailLabel}>Reviewed markup</span>
+								<span style={detailLabel}>Review document viewed</span>
 								<br />
 								{fmt(markupOpenedAt)}
 							</Text>
@@ -120,8 +120,8 @@ export const FeedbackEscalationEmail = ({
 							<Text style={paragraph}>
 								Worth a quick personal follow-up — either pick up
 								the phone or check whether their feedback on the
-								markup file just needs to be acted on by the design
-								team.
+								review document just needs to be acted on by the
+								design team.
 							</Text>
 						</Section>
 

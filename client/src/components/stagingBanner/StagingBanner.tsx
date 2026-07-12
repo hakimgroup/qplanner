@@ -33,7 +33,9 @@ export default function StagingBanner() {
 			style={{
 				position: "sticky",
 				top: 0,
-				zIndex: 1000,
+				// Above the nav (z-index 10) but below Mantine modals/drawers
+				// (default z-index 200) so overlays render on top of the banner.
+				zIndex: 100,
 				background:
 					"linear-gradient(90deg, #7264e9 0%, #a155d5 50%, #d64ca8 100%)",
 				borderBottom: "1px solid rgba(0, 0, 0, 0.18)",

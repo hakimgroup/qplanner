@@ -29,6 +29,7 @@ import {
 	IconMail,
 	IconStar,
 	IconWand,
+	IconBug,
 } from "@tabler/icons-react";
 import { AppRoutes, UserRoles } from "@/shared/shared.models";
 import { useAuth } from "@/shared/AuthProvider";
@@ -117,11 +118,11 @@ export default function AdminSidebar({
 					label: "People and Access",
 					icon: <IconUsers size={18} />,
 				},
-				{
-					to: `${AppRoutes.Admin}/${AppRoutes.AuditLogs}`,
-					label: "Audit Logs",
-					icon: <IconLogs size={18} />,
-				},
+				// {
+				// 	to: `${AppRoutes.Admin}/${AppRoutes.AuditLogs}`,
+				// 	label: "Audit Logs",
+				// 	icon: <IconLogs size={18} />,
+				// },
 			],
 		},
 
@@ -134,10 +135,15 @@ export default function AdminSidebar({
 					icon: <IconSettings size={18} color={T.colors.gray[9]} />,
 				},
 				{
-					to: `${AppRoutes.Admin}/${AppRoutes.Help}`,
-					label: "Help & Support",
-					icon: <IconHelpCircle size={18} color={T.colors.gray[9]} />,
+					to: `${AppRoutes.Admin}/${AppRoutes.BugReports}`,
+					label: "Bug Reports",
+					icon: <IconBug size={18} color={T.colors.gray[9]} />,
 				},
+				// {
+				// 	to: `${AppRoutes.Admin}/${AppRoutes.Help}`,
+				// 	label: "Help & Support",
+				// 	icon: <IconHelpCircle size={18} color={T.colors.gray[9]} />,
+				// },
 			],
 		},
 	];

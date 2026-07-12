@@ -3,7 +3,8 @@ import {
 	useConfirmAssets,
 	useRequestRevision,
 	useRecordMarkupOpened,
-	useSelectionMarkupOpenedAt} from "@/hooks/notification.hooks";
+	useSelectionMarkupOpenedAt,
+} from "@/hooks/notification.hooks";
 import { NotificationRow } from "@/models/notification.models";
 import {
 	Modal,
@@ -21,7 +22,8 @@ import {
 	ThemeIcon,
 	Textarea,
 	Checkbox,
-	Radio} from "@mantine/core";
+	Radio,
+} from "@mantine/core";
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
 	IconExternalLink,
@@ -32,7 +34,8 @@ import {
 	IconClipboard,
 	IconArrowLeft,
 	IconSend,
-	IconEye} from "@tabler/icons-react";
+	IconEye,
+} from "@tabler/icons-react";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
 import { useIsMobile } from "@/shared/shared.hooks";
@@ -46,7 +49,8 @@ export type PracticeApprovalModalProps = {
 export default function PracticeApprovalModal({
 	opened,
 	onClose,
-	notification: ntf}: PracticeApprovalModalProps) {
+	notification: ntf,
+}: PracticeApprovalModalProps) {
 	const T = useMantineTheme().colors;
 	const isMobile = useIsMobile();
 
@@ -88,7 +92,8 @@ export default function PracticeApprovalModal({
 			{
 				onSuccess: () => {
 					onClose();
-				}},
+				},
+			},
 		);
 	};
 
@@ -101,7 +106,8 @@ export default function PracticeApprovalModal({
 					setFeedback("");
 					setShowFeedbackForm(false);
 					onClose();
-				}},
+				},
+			},
 		);
 	};
 
@@ -121,7 +127,7 @@ export default function PracticeApprovalModal({
 				{
 					selectionId: ntf.selection_id,
 					feedback:
-						"Practice indicated changes were left on the review document — see markup for details.",
+						"Practice indicated changes were left on the review document.",
 				},
 				{ onSuccess: () => handleClose() },
 			);
@@ -221,7 +227,9 @@ export default function PracticeApprovalModal({
 							required
 							styles={{
 								input: {
-									backgroundColor: T.gray[0]}}}
+									backgroundColor: T.gray[0],
+								},
+							}}
 						/>
 
 						{/* Info text */}
@@ -230,7 +238,8 @@ export default function PracticeApprovalModal({
 							radius="md"
 							style={{
 								backgroundColor: T.orange[0],
-								border: `1px solid ${T.orange[2]}`}}
+								border: `1px solid ${T.orange[2]}`,
+							}}
 						>
 							<Text size="sm" c="orange.9">
 								Your feedback will be sent to the team and the
@@ -293,7 +302,8 @@ export default function PracticeApprovalModal({
 									p="md"
 									radius="md"
 									style={{
-										backgroundColor: T.gray[0]}}
+										backgroundColor: T.gray[0],
+									}}
 								>
 									<Stack gap="md">
 										{/* Category & Tier Badges */}
@@ -363,7 +373,8 @@ export default function PracticeApprovalModal({
 									radius="md"
 									style={{
 										background: `linear-gradient(135deg, ${T.teal[0]} 0%, ${T.cyan[0]} 100%)`,
-										border: `1px solid ${T.teal[2]}`}}
+										border: `1px solid ${T.teal[2]}`,
+									}}
 								>
 									<Stack gap="md" align="center">
 										<ThemeIcon
@@ -444,31 +455,46 @@ export default function PracticeApprovalModal({
 								>
 									<Stack gap="sm">
 										<Group gap={8} align="center">
-											<Badge size="sm" variant="filled" color="violet" radius="sm">
+											<Badge
+												size="sm"
+												variant="filled"
+												color="violet"
+												radius="sm"
+											>
 												Step 1
 											</Badge>
 											<Text fw={600} size="sm" c="gray.9">
 												Review the artwork
 											</Text>
 											{hasOpenedMarkup && (
-												<Badge size="xs" variant="light" color="teal" radius="sm">
+												<Badge
+													size="xs"
+													variant="light"
+													color="teal"
+													radius="sm"
+												>
 													Opened
 												</Badge>
 											)}
 										</Group>
 										<Text size="xs" c="gray.6">
-											Open the markup file in a new tab. Leave any comments
-											directly on the artwork — the design team can see them
-											there.
+											Open the review document in a new
+											tab. Leave any comments directly on
+											the artwork — the design team can
+											see them there.
 										</Text>
 										<Anchor
-											href={ntf?.payload?.markup_link ?? undefined}
+											href={
+												ntf?.payload?.markup_link ??
+												undefined
+											}
 											target="_blank"
 											rel="noopener noreferrer"
 											underline="never"
 											onClick={handleMarkupOpen}
 											style={{
-												pointerEvents: ntf?.payload?.markup_link
+												pointerEvents: ntf?.payload
+													?.markup_link
 													? "auto"
 													: "none",
 											}}
@@ -477,11 +503,19 @@ export default function PracticeApprovalModal({
 												fullWidth
 												variant="default"
 												radius="md"
-												leftSection={<IconEye size={18} />}
-												rightSection={<IconExternalLink size={16} />}
-												disabled={!ntf?.payload?.markup_link}
+												leftSection={
+													<IconEye size={18} />
+												}
+												rightSection={
+													<IconExternalLink
+														size={16}
+													/>
+												}
+												disabled={
+													!ntf?.payload?.markup_link
+												}
 											>
-												Open markup file
+												Open review document
 											</StyledButton>
 										</Anchor>
 									</Stack>
@@ -499,10 +533,19 @@ export default function PracticeApprovalModal({
 									<Stack gap="md">
 										<Stack gap="xs">
 											<Group gap={8} align="center">
-												<Badge size="sm" variant="filled" color="violet" radius="sm">
+												<Badge
+													size="sm"
+													variant="filled"
+													color="violet"
+													radius="sm"
+												>
 													Step 2
 												</Badge>
-												<Text fw={600} size="sm" c="gray.9">
+												<Text
+													fw={600}
+													size="sm"
+													c="gray.9"
+												>
 													Tell us what you think
 												</Text>
 											</Group>
@@ -511,15 +554,18 @@ export default function PracticeApprovalModal({
 												<Text span fw={600} c="gray.9">
 													come back here
 												</Text>{" "}
-												and let us know whether to proceed or revise. The
-												campaign stays parked until you choose.
+												and let us know whether to
+												proceed or revise. The campaign
+												stays parked until you choose.
 											</Text>
 										</Stack>
 
 										<Radio.Group
 											value={selectedAction ?? ""}
 											onChange={(v) =>
-												setSelectedAction(v as "approve" | "revise")
+												setSelectedAction(
+													v as "approve" | "revise",
+												)
 											}
 										>
 											<Stack gap="sm">
@@ -528,31 +574,51 @@ export default function PracticeApprovalModal({
 													radius="md"
 													p="md"
 													style={{
-														backgroundColor: "white",
+														backgroundColor:
+															"white",
 														borderColor:
-															selectedAction === "revise"
+															selectedAction ===
+															"revise"
 																? T.violet[5]
 																: T.gray[3],
 													}}
 												>
-													<Group align="flex-start" wrap="nowrap" gap="sm">
+													<Group
+														align="flex-start"
+														wrap="nowrap"
+														gap="sm"
+													>
 														<Radio.Indicator
 															color="violet"
-															style={{ marginTop: 2 }}
+															style={{
+																marginTop: 2,
+															}}
 														/>
 														<Stack gap={4}>
-															<Text fw={700} size="sm" c="gray.9">
-																I have left changes on the review
-																document
+															<Text
+																fw={700}
+																size="sm"
+																c="gray.9"
+															>
+																I have left
+																changes on the
+																review document
 															</Text>
 															<Text
 																size="xs"
 																c="gray.6"
-																style={{ lineHeight: 1.5 }}
+																style={{
+																	lineHeight: 1.5,
+																}}
 															>
-																We will implement the changes you have
-																requested on the review document and
-																send you a notification when this is
+																We will
+																implement the
+																changes you have
+																requested on the
+																review document
+																and send you a
+																notification
+																when this is
 																complete.
 															</Text>
 														</Stack>
@@ -564,31 +630,52 @@ export default function PracticeApprovalModal({
 													radius="md"
 													p="md"
 													style={{
-														backgroundColor: "white",
+														backgroundColor:
+															"white",
 														borderColor:
-															selectedAction === "approve"
+															selectedAction ===
+															"approve"
 																? T.violet[5]
 																: T.gray[3],
 													}}
 												>
-													<Group align="flex-start" wrap="nowrap" gap="sm">
+													<Group
+														align="flex-start"
+														wrap="nowrap"
+														gap="sm"
+													>
 														<Radio.Indicator
 															color="violet"
-															style={{ marginTop: 2 }}
+															style={{
+																marginTop: 2,
+															}}
 														/>
 														<Stack gap={4}>
-															<Text fw={700} size="sm" c="gray.9">
-																Looks good - approve
+															<Text
+																fw={700}
+																size="sm"
+																c="gray.9"
+															>
+																Looks good -
+																approve
 															</Text>
 															<Text
 																size="xs"
 																c="gray.6"
-																style={{ lineHeight: 1.5 }}
+																style={{
+																	lineHeight: 1.5,
+																}}
 															>
-																Once approved, the design team will
-																create the final files and they'll be
-																made available on the planner. We'll
-																send you a notification when this is
+																Once approved,
+																the design team
+																will create the
+																final files and
+																they'll be made
+																available on the
+																planner. We'll
+																send you a
+																notification
+																when this is
 																complete.
 															</Text>
 														</Stack>
@@ -604,7 +691,9 @@ export default function PracticeApprovalModal({
 									label="We will print our own assets"
 									description="Check this if your practice will handle printing independently"
 									checked={selfPrint}
-									onChange={(e) => setSelfPrint(e.currentTarget.checked)}
+									onChange={(e) =>
+										setSelfPrint(e.currentTarget.checked)
+									}
 									disabled={isLoading}
 									color="violet"
 									radius="sm"
@@ -619,9 +708,12 @@ export default function PracticeApprovalModal({
 										radius="md"
 										onClick={handleContinue}
 										loading={isLoading}
-										disabled={!selectedAction || !ntf?.selection_id}
+										disabled={
+											!selectedAction ||
+											!ntf?.selection_id
+										}
 									>
-										Continue
+										Done
 									</Button>
 									<Button
 										variant="default"

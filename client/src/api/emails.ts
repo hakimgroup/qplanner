@@ -250,3 +250,18 @@ export async function sendPlannerOverviewEmails(
 	});
 	return response.data;
 }
+
+/**
+ * Notify the dev inbox that a new bug report was created. The server fetches
+ * the report, mints signed URLs for any attachments, renders the email and
+ * sends it (honouring TEST_EMAIL_OVERRIDE on staging). Fire-and-forget.
+ */
+export async function sendBugReportEmail(params: {
+	bugReportId: string;
+}): Promise<void> {
+	try {
+		await api.post("/send-bug-report-email", params);
+	} catch (error) {
+		console.error("[Email API] Failed to send bug report email:", error);
+	}
+}

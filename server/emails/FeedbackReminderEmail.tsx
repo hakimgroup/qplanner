@@ -82,8 +82,9 @@ export const FeedbackReminderEmail = ({
 
 						<Section>
 							<Text style={paragraph}>
-								Hi {practiceName} team — you reviewed the markup
-								for <strong>{campaignName}</strong> {reviewedPhrase}. We
+								Hi {practiceName} team — you reviewed the review
+								document for <strong>{campaignName}</strong>{" "}
+								{reviewedPhrase}. We
 								noticed the campaign hasn't been moved on yet, so a
 								gentle nudge:
 							</Text>
@@ -91,8 +92,8 @@ export const FeedbackReminderEmail = ({
 
 						<Section style={questionBox}>
 							<Text style={questionText}>
-								Did you leave changes on the markup, or are you happy
-								with it as-is?
+								Did you leave changes on the review document, or are
+								you happy with it as-is?
 							</Text>
 						</Section>
 
@@ -115,7 +116,7 @@ export const FeedbackReminderEmail = ({
 											href={reviseUrl}
 											style={secondaryButton}
 										>
-											✎&nbsp; I've left changes on the markup
+											✎&nbsp; I've left changes on the review document
 										</Button>
 									</td>
 								</tr>
@@ -132,8 +133,8 @@ export const FeedbackReminderEmail = ({
 
 						<Section>
 							<Text style={paragraph}>
-								If you'd like to take another look at the markup
-								first:
+								If you'd like to take another look at the review
+								document first:
 							</Text>
 							<table style={{ width: "100%" }}>
 								<tr>
@@ -142,7 +143,7 @@ export const FeedbackReminderEmail = ({
 											href={markupUrl}
 											style={tertiaryButton}
 										>
-											Open markup file again
+											Open review document again
 										</Button>
 									</td>
 								</tr>

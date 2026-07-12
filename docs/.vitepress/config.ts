@@ -42,6 +42,7 @@ export default defineConfig({
           { text: 'Bulk Operations', link: '/admin/bulk-operations' },
           { text: 'God Mode', link: '/admin/god-mode' },
           { text: 'Practices of Interest', link: '/admin/practices-of-interest' },
+          { text: 'Bug Reports', link: '/admin/bug-reports' },
         ],
       },
       {

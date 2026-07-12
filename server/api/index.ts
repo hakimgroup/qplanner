@@ -22,6 +22,7 @@ import CustomAnnouncementEmail from "../emails/CustomAnnouncementEmail";
 import { CommentAddedEmail } from "../emails/CommentAddedEmail";
 import { FeedbackReminderEmail } from "../emails/FeedbackReminderEmail";
 import { FeedbackEscalationEmail } from "../emails/FeedbackEscalationEmail";
+import { BugReportEmail } from "../emails/BugReportEmail";
 import {
 	signFeedbackToken,
 	verifyFeedbackToken,
@@ -70,6 +71,10 @@ interface CsvRow {
 }
 
 dotenv.config();
+// Local-dev override: lets the local server target a different Supabase (e.g.
+// the staging branch) without editing the prod-config .env. No-op on Vercel,
+// where no .env.local file exists (env comes from project settings).
+dotenv.config({ path: ".env.local", override: true });
 
 const app: Express = express();
 app.use(cors());
@@ -1656,7 +1661,7 @@ const feedbackActionHandler = (action: "approve" | "revise") =>
 
 			// Call the existing RPC with the actor override.
 			const REVISION_NOTE =
-				"Decision made via reminder email — practice indicated changes were left on the markup file. See markup for details.";
+				"Decision made via reminder email — practice indicated changes were left on the review document.";
 
 			const rpcArgs = action === "approve"
 				? {
@@ -1718,7 +1723,7 @@ const feedbackActionHandler = (action: "approve" | "revise") =>
 				: "Got it — changes requested";
 			const subheading = action === "approve"
 				? "We've moved the campaign to confirmed and notified the design team. The artwork will go live on the start date you originally set."
-				: "We've moved the campaign back to in-progress and notified the design team. They'll work on the changes you've left on the markup file.";
+				: "We've moved the campaign back to in-progress and notified the design team. They'll work on the changes you've left on the review document.";
 
 			return res.status(200).send(renderFeedbackResponsePage({
 				heading,
@@ -1739,6 +1744,112 @@ const feedbackActionHandler = (action: "approve" | "revise") =>
 
 app.get("/feedback/approve/:token", feedbackActionHandler("approve"));
 app.get("/feedback/revise/:token", feedbackActionHandler("revise"));
+
+// ============================================================
+// Send Bug Report Email — notify the dev inbox when an admin files a bug.
+// Called by the client right after the create_bug_report RPC succeeds.
+// Generates signed URLs (service role) for any private-bucket attachments.
+// ============================================================
+app.post("/send-bug-report-email", async (req: Request, res: Response) => {
+	const { bugReportId } = req.body;
+	if (!bugReportId) {
+		return res.status(400).json({ error: "bugReportId is required" });
+	}
+
+	const appUrl = process.env.APP_URL || "https://planner.hakimgroup.co.uk";
+
+	try {
+		// 1. Fetch the bug report.
+		const { data: bug, error: bugError } = await supabase
+			.from("bug_reports")
+			.select("id, title, description, severity, attachments, created_by, created_at")
+			.eq("id", bugReportId)
+			.single();
+
+		if (bugError || !bug) {
+			console.error("[Bug Email] Bug report not found:", bugReportId);
+			return res.status(404).json({ error: "Bug report not found" });
+		}
+
+		// 2. Reporter name.
+		let createdByName = "an admin";
+		if (bug.created_by) {
+			const { data: u } = await supabase
+				.from("allowed_users")
+				.select("first_name, last_name")
+				.eq("id", bug.created_by)
+				.single();
+			createdByName =
+				[u?.first_name, u?.last_name].filter(Boolean).join(" ").trim() ||
+				createdByName;
+		}
+
+		// 3. Signed URLs (30 days) for each attachment.
+		const SIGNED_TTL = 60 * 60 * 24 * 30;
+		const rawAttachments: Array<{
+			path: string;
+			name: string;
+			type: string;
+			size: number;
+		}> = Array.isArray(bug.attachments) ? bug.attachments : [];
+
+		const attachments = await Promise.all(
+			rawAttachments.map(async (a) => {
+				let url: string | null = null;
+				try {
+					const { data } = await supabase.storage
+						.from("bug-attachments")
+						.createSignedUrl(a.path, SIGNED_TTL);
+					url = data?.signedUrl ?? null;
+				} catch (e) {
+					console.warn("[Bug Email] sign failed for", a.path, e);
+				}
+				return { name: a.name, type: a.type, size: a.size, url };
+			}),
+		);
+
+		// 4. Render + send. Recipient honours TEST_EMAIL_OVERRIDE (staging).
+		const baseRecipient =
+			process.env.BUG_REPORT_EMAIL || "wetinna@gmail.com";
+		const recipient = process.env.TEST_EMAIL_OVERRIDE || baseRecipient;
+
+		const html = await render(
+			BugReportEmail({
+				title: bug.title,
+				description: bug.description,
+				severity: bug.severity,
+				createdByName,
+				createdAt: bug.created_at,
+				attachments,
+				appUrl,
+			}),
+		);
+
+		const subject = `[${String(bug.severity).toUpperCase()}] Bug report: ${bug.title}`;
+
+		const { data: sendData, error: sendError } = await resend.emails.send({
+			from: "HG Planner <noreply@planner.hakimgroup.io>",
+			to: [recipient],
+			subject,
+			html,
+		});
+
+		if (sendError) {
+			console.error("[Bug Email] Send error:", sendError);
+			return res.status(500).json({ error: sendError.message });
+		}
+
+		console.log(
+			`[Bug Email] Sent bug report ${bugReportId} to ${recipient} (resend_id=${(sendData as any)?.id})`,
+		);
+		return res
+			.status(200)
+			.json({ sent: 1, recipient, resend_message_id: (sendData as any)?.id ?? null });
+	} catch (error: any) {
+		console.error("[Bug Email] Unexpected error:", error);
+		return res.status(500).json({ error: error.message });
+	}
+});
 
 // ============================================================
 // Send Planner Overview Emails (batch send to all users with selections)
