@@ -21,7 +21,7 @@ import {
 	ThemeIcon,
 	Textarea,
 	Checkbox,
-	Title} from "@mantine/core";
+	Radio} from "@mantine/core";
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
 	IconExternalLink,
@@ -32,9 +32,7 @@ import {
 	IconClipboard,
 	IconArrowLeft,
 	IconSend,
-	IconEye,
-	IconCheck,
-	IconPencil} from "@tabler/icons-react";
+	IconEye} from "@tabler/icons-react";
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
 import { useIsMobile } from "@/shared/shared.hooks";
@@ -56,6 +54,10 @@ export default function PracticeApprovalModal({
 	const [showFeedbackForm, setShowFeedbackForm] = useState(false);
 	const [feedback, setFeedback] = useState("");
 	const [selfPrint, setSelfPrint] = useState(false);
+	// Which decision the practice selected in Step 2 (markup version).
+	const [selectedAction, setSelectedAction] = useState<
+		"approve" | "revise" | null
+	>(null);
 
 	const { mutate: confirmAssets, isPending: isConfirming } =
 		useConfirmAssets();
@@ -103,19 +105,27 @@ export default function PracticeApprovalModal({
 		);
 	};
 
-	// One-click revise for the markup path — matches the email UX. The design
-	// team already has the practice's feedback on the markup file itself, so
-	// the planner only needs to record the DECISION with a generic note.
-	const handleRequestChangesDirect = () => {
-		if (!ntf?.selection_id) return;
-		requestRevision(
-			{
-				selectionId: ntf.selection_id,
-				feedback:
-					"Practice indicated changes were left on the markup file — see markup for details.",
-			},
-			{ onSuccess: () => onClose() },
-		);
+	// Commit the Step 2 decision (markup version). Approve calls
+	// confirm_assets (honours the self-print checkbox). Revise calls
+	// request_revision with a generic note; the design team reads the
+	// practice's real comments off the markup file itself.
+	const handleContinue = () => {
+		if (!ntf?.selection_id || !selectedAction) return;
+		if (selectedAction === "approve") {
+			confirmAssets(
+				{ selectionId: ntf.selection_id, selfPrint },
+				{ onSuccess: () => handleClose() },
+			);
+		} else {
+			requestRevision(
+				{
+					selectionId: ntf.selection_id,
+					feedback:
+						"Practice indicated changes were left on the review document — see markup for details.",
+				},
+				{ onSuccess: () => handleClose() },
+			);
+		}
 	};
 
 	const handleClose = () => {
@@ -123,6 +133,7 @@ export default function PracticeApprovalModal({
 		setShowFeedbackForm(false);
 		setSelfPrint(false);
 		setOpenedThisSession(false);
+		setSelectedAction(null);
 		onClose();
 	};
 
@@ -405,182 +416,223 @@ export default function PracticeApprovalModal({
 							</>
 						)}
 
-						{/* ===== MARKUP VERSION UI — matches the reminder email's design ===== */}
+						{/* ===== MARKUP VERSION UI — two-step review + radio decision ===== */}
 						{showMarkupVersion && (
 							<>
-								{/* "Quick check-in" pill — same violet-light styling as the email badge */}
-								<Group justify="center" mt={4}>
-									<Badge
-										variant="light"
-										color="violet"
-										size="lg"
-										fw={700}
-										radius="xl"
-										tt="uppercase"
-										styles={{
-											label: {
-												letterSpacing: 0.6,
-												fontSize: 11,
-											},
-										}}
-									>
-										Quick check-in
-									</Badge>
-								</Group>
-
-								{/* Big centered heading */}
-								<Title
-									order={2}
-									ta="center"
-									fz={22}
-									fw={700}
-									c="gray.9"
-									style={{ lineHeight: 1.3 }}
-								>
-									What did you think of the{" "}
-									{ntf?.payload?.name} artwork?
-								</Title>
-
-								{/* Contextual body paragraph */}
-								<Text
-									ta="center"
-									size="sm"
-									c="gray.7"
-									style={{ lineHeight: 1.6 }}
-								>
-									Take a look at the markup file, then let us
-									know whether the artwork's good to go — or if
-									you've left changes for the design team.
+								{/* Campaign name */}
+								<Text fz={"h4"} fw={600}>
+									{ntf?.payload?.name}
 								</Text>
 
-								{/* Question box — violet-tinted with purple left border, mirrors email quote box */}
+								{/* Intro line */}
+								<Text c="gray.7" size="sm">
+									Updated artwork for{" "}
+									<Text span fw={600} c="gray.9">
+										{ntf?.payload?.name}
+									</Text>{" "}
+									is ready for your final approval.
+								</Text>
+
+								{/* ----- Step 1 — Review the artwork ----- */}
 								<Paper
 									p="md"
 									radius="md"
 									style={{
 										backgroundColor: T.gray[0],
-										border: `1px solid ${T.violet[2]}`,
-										borderLeft: `4px solid ${T.violet[7]}`,
+										border: `1px solid ${T.gray[2]}`,
 									}}
 								>
-									<Text
-										size="md"
-										fw={600}
-										c="gray.9"
-										style={{ lineHeight: 1.55 }}
-									>
-										Did you leave changes on the markup, or
-										are you happy with it as-is?
-									</Text>
+									<Stack gap="sm">
+										<Group gap={8} align="center">
+											<Badge size="sm" variant="filled" color="violet" radius="sm">
+												Step 1
+											</Badge>
+											<Text fw={600} size="sm" c="gray.9">
+												Review the artwork
+											</Text>
+											{hasOpenedMarkup && (
+												<Badge size="xs" variant="light" color="teal" radius="sm">
+													Opened
+												</Badge>
+											)}
+										</Group>
+										<Text size="xs" c="gray.6">
+											Open the markup file in a new tab. Leave any comments
+											directly on the artwork — the design team can see them
+											there.
+										</Text>
+										<Anchor
+											href={ntf?.payload?.markup_link ?? undefined}
+											target="_blank"
+											rel="noopener noreferrer"
+											underline="never"
+											onClick={handleMarkupOpen}
+											style={{
+												pointerEvents: ntf?.payload?.markup_link
+													? "auto"
+													: "none",
+											}}
+										>
+											<StyledButton
+												fullWidth
+												variant="default"
+												radius="md"
+												leftSection={<IconEye size={18} />}
+												rightSection={<IconExternalLink size={16} />}
+												disabled={!ntf?.payload?.markup_link}
+											>
+												Open markup file
+											</StyledButton>
+										</Anchor>
+									</Stack>
 								</Paper>
 
-								{/* Self-print checkbox — placed here (above the buttons) to
-								    match the original modal layout. Only affects the
-								    Approve path (passed as p_self_print to confirm_assets). */}
+								{/* ----- Step 2 — Tell us what you think ----- */}
+								<Paper
+									p="md"
+									radius="md"
+									style={{
+										background: `linear-gradient(135deg, ${T.violet[0]} 0%, ${T.blue[0]} 100%)`,
+										border: `1px solid ${T.violet[2]}`,
+									}}
+								>
+									<Stack gap="md">
+										<Stack gap="xs">
+											<Group gap={8} align="center">
+												<Badge size="sm" variant="filled" color="violet" radius="sm">
+													Step 2
+												</Badge>
+												<Text fw={600} size="sm" c="gray.9">
+													Tell us what you think
+												</Text>
+											</Group>
+											<Text size="xs" c="gray.7">
+												Once you've reviewed,{" "}
+												<Text span fw={600} c="gray.9">
+													come back here
+												</Text>{" "}
+												and let us know whether to proceed or revise. The
+												campaign stays parked until you choose.
+											</Text>
+										</Stack>
+
+										<Radio.Group
+											value={selectedAction ?? ""}
+											onChange={(v) =>
+												setSelectedAction(v as "approve" | "revise")
+											}
+										>
+											<Stack gap="sm">
+												<Radio.Card
+													value="revise"
+													radius="md"
+													p="md"
+													style={{
+														backgroundColor: "white",
+														borderColor:
+															selectedAction === "revise"
+																? T.violet[5]
+																: T.gray[3],
+													}}
+												>
+													<Group align="flex-start" wrap="nowrap" gap="sm">
+														<Radio.Indicator
+															color="violet"
+															style={{ marginTop: 2 }}
+														/>
+														<Stack gap={4}>
+															<Text fw={700} size="sm" c="gray.9">
+																I have left changes on the review
+																document
+															</Text>
+															<Text
+																size="xs"
+																c="gray.6"
+																style={{ lineHeight: 1.5 }}
+															>
+																We will implement the changes you have
+																requested on the review document and
+																send you a notification when this is
+																complete.
+															</Text>
+														</Stack>
+													</Group>
+												</Radio.Card>
+
+												<Radio.Card
+													value="approve"
+													radius="md"
+													p="md"
+													style={{
+														backgroundColor: "white",
+														borderColor:
+															selectedAction === "approve"
+																? T.violet[5]
+																: T.gray[3],
+													}}
+												>
+													<Group align="flex-start" wrap="nowrap" gap="sm">
+														<Radio.Indicator
+															color="violet"
+															style={{ marginTop: 2 }}
+														/>
+														<Stack gap={4}>
+															<Text fw={700} size="sm" c="gray.9">
+																Looks good - approve
+															</Text>
+															<Text
+																size="xs"
+																c="gray.6"
+																style={{ lineHeight: 1.5 }}
+															>
+																Once approved, the design team will
+																create the final files and they'll be
+																made available on the planner. We'll
+																send you a notification when this is
+																complete.
+															</Text>
+														</Stack>
+													</Group>
+												</Radio.Card>
+											</Stack>
+										</Radio.Group>
+									</Stack>
+								</Paper>
+
+								{/* Self-print — only affects the approve path */}
 								<Checkbox
 									label="We will print our own assets"
 									description="Check this if your practice will handle printing independently"
 									checked={selfPrint}
-									onChange={(e) =>
-										setSelfPrint(e.currentTarget.checked)
-									}
+									onChange={(e) => setSelfPrint(e.currentTarget.checked)}
 									disabled={isLoading}
 									color="violet"
 									radius="sm"
 									size="sm"
 								/>
 
-								{/* Stacked decision buttons — same green + amber as the email */}
-								<Stack gap="sm">
+								{/* Continue / Cancel */}
+								<Group grow>
 									<Button
-										size="lg"
-										fullWidth
+										color="dark"
+										size="md"
 										radius="md"
-										leftSection={<IconCheck size={18} />}
-										onClick={handleConfirmAssets}
-										loading={isConfirming}
-										disabled={
-											!ntf?.selection_id || isLoading
-										}
-										fw={700}
-										styles={{
-											root: { backgroundColor: "#0f9466" },
-										}}
+										onClick={handleContinue}
+										loading={isLoading}
+										disabled={!selectedAction || !ntf?.selection_id}
 									>
-										Looks good — approve
+										Continue
 									</Button>
 									<Button
-										size="lg"
-										fullWidth
+										variant="default"
+										size="md"
 										radius="md"
-										leftSection={<IconPencil size={18} />}
-										onClick={handleRequestChangesDirect}
-										loading={isSubmittingFeedback}
-										disabled={
-											!ntf?.selection_id || isLoading
-										}
-										fw={700}
-										styles={{
-											root: { backgroundColor: "#f59e0b" },
-										}}
+										onClick={handleClose}
+										disabled={isLoading}
 									>
-										I've left changes on the markup
+										Cancel
 									</Button>
-								</Stack>
-
-								{/* Helper text under the buttons */}
-								<Text
-									ta="center"
-									size="xs"
-									c="gray.5"
-									mt={-8}
-								>
-									One click sends this straight to the design team.
-								</Text>
-
-								<GradientDivider />
-
-								{/* Tertiary — Open markup file (again if already opened) */}
-								<Stack gap={8}>
-									<Text size="sm" c="gray.7">
-										{hasOpenedMarkup
-											? "Want another look at the markup?"
-											: "Take a look at the markup first:"}
-									</Text>
-									<Anchor
-										href={
-											ntf?.payload?.markup_link ??
-											undefined
-										}
-										target="_blank"
-										rel="noopener noreferrer"
-										underline="never"
-										onClick={handleMarkupOpen}
-										style={{
-											pointerEvents: ntf?.payload
-												?.markup_link
-												? "auto"
-												: "none",
-										}}
-									>
-										<StyledButton
-											fullWidth
-											variant="default"
-											radius="md"
-											leftSection={
-												<IconExternalLink size={18} />
-											}
-											disabled={
-												!ntf?.payload?.markup_link
-											}
-										>
-											{hasOpenedMarkup
-												? "Open markup file again"
-												: "Open markup file"}
-										</StyledButton>
-									</Anchor>
-								</Stack>
-
+								</Group>
 							</>
 						)}
 
