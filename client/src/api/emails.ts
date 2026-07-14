@@ -252,9 +252,10 @@ export async function sendPlannerOverviewEmails(
 }
 
 /**
- * Notify the dev inbox that a new bug report was created. The server fetches
- * the report, mints signed URLs for any attachments, renders the email and
- * sends it (honouring TEST_EMAIL_OVERRIDE on staging). Fire-and-forget.
+ * Notify the digital team inbox that a new bug report was created. The server
+ * fetches the report, mints signed URLs for any attachments, renders the email
+ * and sends it to the dedicated BUG_REPORT_EMAIL recipient (independent of
+ * TEST_EMAIL_OVERRIDE). Fire-and-forget.
  */
 export async function sendBugReportEmail(params: {
 	bugReportId: string;

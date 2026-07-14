@@ -25,7 +25,8 @@ Never commit actual secret values to the repository or this documentation. The v
 | `SUPABASE_SERVICE_ROLE_KEY`| Supabase service role key (full DB access)      |
 | `CRON_SECRET`             | Secret for authenticating cron job requests       |
 | `APP_URL`                 | Client app URL (used in email templates for links)|
-| `TEST_EMAIL_OVERRIDE`     | (Optional) Redirect **all** server emails to this address |
+| `TEST_EMAIL_OVERRIDE`     | (Optional) Redirect **all** server emails (except bug reports) to this address |
+| `BUG_REPORT_EMAIL`        | (Optional) Dedicated recipient for bug-report emails, **independent of `TEST_EMAIL_OVERRIDE`**. Defaults to `digital@hakimgroup.co.uk`; set to a test inbox on staging |
 
 ## Where to Find Values
 
@@ -36,9 +37,11 @@ Never commit actual secret values to the repository or this documentation. The v
 ## Test Email Override
 
 Both client and server support a `TEST_EMAIL_OVERRIDE` variable. When set:
-- **All emails** are sent to this single address instead of the actual recipients
+- **All workflow/notification emails** are sent to this single address instead of the actual recipients
 - Useful for testing email flows without spamming real users
 - **Remove this variable in production**
+
+**Exception — bug reports.** Bug-report emails are deliberately *not* routed through `TEST_EMAIL_OVERRIDE`. They use their own dedicated `BUG_REPORT_EMAIL` variable (default `digital@hakimgroup.co.uk`). Set `BUG_REPORT_EMAIL` to a test inbox on **staging** so test bug reports don't reach the real digital team.
 
 ## Vercel Environment Variables
 

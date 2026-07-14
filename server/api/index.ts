@@ -1808,10 +1808,13 @@ app.post("/send-bug-report-email", async (req: Request, res: Response) => {
 			}),
 		);
 
-		// 4. Render + send. Recipient honours TEST_EMAIL_OVERRIDE (staging).
-		const baseRecipient =
-			process.env.BUG_REPORT_EMAIL || "wetinna@gmail.com";
-		const recipient = process.env.TEST_EMAIL_OVERRIDE || baseRecipient;
+		// 4. Render + send. Bug reports use a DEDICATED recipient env var,
+		// BUG_REPORT_EMAIL, deliberately independent of TEST_EMAIL_OVERRIDE so
+		// the general staging email redirect never diverts them. Set
+		// BUG_REPORT_EMAIL per environment: a test inbox on staging, the
+		// digital team inbox on prod (falls back to the official inbox here).
+		const recipient =
+			process.env.BUG_REPORT_EMAIL || "digital@hakimgroup.co.uk";
 
 		const html = await render(
 			BugReportEmail({
