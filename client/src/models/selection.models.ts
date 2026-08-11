@@ -1,6 +1,7 @@
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
 import { Assets } from "./general.models";
 import { Creatives } from "./campaign.models";
+import { BespokeBrief } from "./bespokeBrief.models";
 
 // types/db.ts
 export type Selection = {
@@ -69,6 +70,7 @@ export type PlanRow = {
   topics: string[];
   practiceid: string;
   bespoke_id: string;
+  brief: BespokeBrief | null;
   creatives: Creatives[];
   markup_link: string | null;
   assets_link: string | null;

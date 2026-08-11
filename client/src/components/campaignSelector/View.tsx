@@ -72,6 +72,9 @@ import { startCase } from "lodash";
 import { UserTabModes } from "@/models/general.models";
 import AppContext from "@/shared/AppContext";
 import { useIsMobile } from "@/shared/shared.hooks";
+import BespokeBriefView, {
+	hasBriefContent,
+} from "@/components/assets/BespokeBriefView";
 
 interface Props {
 	mode: "add" | "view";
@@ -924,12 +927,18 @@ const View = ({
 					<Topics />
 					<GradientDivider />
 
-					<Text fw={500} size="sm">
-						Description
-					</Text>
-					<Text c="gray.7" size="sm">
-						{c.description}
-					</Text>
+					{hasBriefContent(c.brief) ? (
+						<BespokeBriefView brief={c.brief} />
+					) : (
+						<>
+							<Text fw={500} size="sm">
+								Description
+							</Text>
+							<Text c="gray.7" size="sm">
+								{c.description}
+							</Text>
+						</>
+					)}
 
 					{/* Lifecycle Details — only for selected campaigns beyond onPlan */}
 					{c.selected && c.status && c.status !== SelectionStatus.OnPlan && (

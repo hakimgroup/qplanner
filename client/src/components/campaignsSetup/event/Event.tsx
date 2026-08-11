@@ -1,621 +1,622 @@
 import StyledButton from "@/components/styledButton/StyledButton";
 import {
-  Flex,
-  Modal,
-  Stack,
-  useMantineTheme,
-  Text,
-  Checkbox,
-  SimpleGrid,
-  Textarea,
-  TextInput,
-  Chip,
-  Group,
-  ActionIcon,
-  Box,
-  Grid,
-  Button,
-  Radio,
-  Loader} from "@mantine/core";
+	Alert,
+	Box,
+	Button,
+	Checkbox,
+	Chip,
+	Collapse,
+	Flex,
+	Group,
+	Loader,
+	Modal,
+	NumberInput,
+	SegmentedControl,
+	Stack,
+	Text,
+	Textarea,
+	TextInput,
+	ThemeIcon,
+	useMantineTheme,
+} from "@mantine/core";
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useDisclosure } from "@mantine/hooks";
-import {
-  IconCalendar,
-  IconPlus,
-  IconTrash,
-  IconAsterisk} from "@tabler/icons-react";
-import { useState, useMemo, useContext } from "react";
 import { useForm } from "@mantine/form";
+import {
+	IconPlus,
+	IconCalendar,
+	IconAsterisk,
+	IconSparkles,
+	IconBuildingStore,
+	IconDiscount2,
+	IconConfetti,
+	IconBox,
+	IconSpeakerphone,
+	IconNotes,
+} from "@tabler/icons-react";
+import { useCallback, useContext, useMemo, useState } from "react";
+import { isValid as isValidDate } from "date-fns";
 import { toast } from "sonner";
-import { useCreateBespokeEvent } from "@/hooks/campaign.hooks";
-import CampaignDates from "@/components/campaignDates/CampaignDates";
-import { UserTabModes, GetAssetsResponse } from "@/models/general.models";
-import SubmitChoicesModal, {
-  SubmitChoicesResult,
-} from "@/components/assets/SubmitChoicesModal";
-import { DEFAULT_BESPOKE_CREATIVE } from "@/shared/shared.const";
+import { startCase } from "lodash";
+import { useCreateBespokeEventV3 } from "@/hooks/campaign.hooks";
+import { useEventDeliverables } from "@/hooks/bespoke.hooks";
+import { UserTabModes } from "@/models/general.models";
+import {
+	BespokeBrief,
+	ChosenEventDeliverable,
+	DateSlot,
+} from "@/models/bespokeBrief.models";
+import EventDateSlots from "./EventDateSlots";
+import EventDeliverablesPicker from "./EventDeliverablesPicker";
 import AppContext from "@/shared/AppContext";
 import { updateState } from "@/shared/shared.utilities";
-import { startCase } from "lodash";
-import { useAssets } from "@/hooks/general.hooks";
-import { eventTypes } from "@/filters.json";
 import { useIsMobile } from "@/shared/shared.hooks";
 
-type FormValues = {
-  eventType: string;
-  title: string;
-  description: string;
-  dateRange: { from: Date | null; to: Date | null };
-  objectives: string[];
-  topics: string[];
-  selectedAssets: string[];
-  requirements: string;
-  notes: string;
+const emptyNarrative = {
+	theme: "",
+	brands: "",
+	discounts: "",
+	on_the_day: "",
+	requirements: "",
+	notes: "",
 };
 
-const initialValues: FormValues = {
-  eventType: "",
-  title: "",
-  description: "",
-  dateRange: { from: null, to: null },
-  objectives: [],
-  topics: [],
-  selectedAssets: [],
-  requirements: "",
-  notes: ""};
+/** Compose a readable description from the event brief for back-compat. */
+function composeDescription(n: typeof emptyNarrative, pr: boolean | null): string {
+	const parts: [string, string][] = [
+		["Theme", n.theme],
+		["Brands", n.brands],
+		["Exclusive discounts", n.discounts],
+		["On the day", n.on_the_day],
+		["PR", pr === null ? "" : pr ? "Yes" : "No"],
+	];
+	return parts
+		.filter(([, v]) => v.trim())
+		.map(([label, v]) => `${label}\n${v.trim()}`)
+		.join("\n\n");
+}
 
-const urlish = (s: string) =>
-  /^https?:\/\/[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,10}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$/.test(
-    s.trim()
-  );
+function buildEventAssets(
+	chosen: Record<string, ChosenEventDeliverable>,
+	other: { on: boolean; text: string; qty: number },
+) {
+	// Tick items (digital / direct comms) carry quantity 1 so the existing
+	// quantity-based renderers (admin review, email, plan detail) show them.
+	// The `group` field is preserved for richer future rendering.
+	const mk = (c: ChosenEventDeliverable) => ({
+		name: c.name,
+		group: c.group,
+		quantity: c.input_mode === "quantity" ? (c.quantity ?? 1) : 1,
+		suffix: null,
+		type: "default",
+		userSelected: true,
+	});
+	const vals = Object.values(chosen);
+	const printed = vals.filter((c) => c.channel === "print").map(mk);
+	if (other.on && other.text.trim()) {
+		printed.push({
+			name: "Other",
+			group: "Other",
+			quantity: other.qty,
+			suffix: null,
+			type: "default",
+			userSelected: true,
+			note: other.text.trim(),
+		} as any);
+	}
+	// Digital + Direct Communications both render under Digital Assets.
+	const digital = vals
+		.filter((c) => c.channel === "digital" || c.channel === "direct_comms")
+		.map(mk);
+	return {
+		printedAssets: printed,
+		digitalAssets: digital,
+		externalPlacements: [],
+	};
+}
 
-const Event = ({ buttonText = "Bespoke Event" }) => {
-  const {
-    state: { filtersOptions },
-    setState} = useContext(AppContext);
-  const [opened, { open, close }] = useDisclosure(false);
-  const T = useMantineTheme();
+function SectionHeader({
+	icon,
+	title,
+	color,
+	required,
+}: {
+	icon: React.ReactNode;
+	title: string;
+	color: string;
+	required?: boolean;
+}) {
+	return (
+		<Group gap={8} align="center">
+			<ThemeIcon size="sm" radius="xl" variant="light" color={color}>
+				{icon}
+			</ThemeIcon>
+			<Text fw={700} size="sm" c="gray.8">
+				{title}
+			</Text>
+			{required && <IconAsterisk size={8} color="red" />}
+		</Group>
+	);
+}
+
+const Event = ({ buttonText = "Event" }) => {
+	const {
+		state: { filtersOptions },
+		setState,
+	} = useContext(AppContext);
+	const [opened, { open, close }] = useDisclosure(false);
+	const T = useMantineTheme();
 	const isMobile = useIsMobile();
-  const [links, setLinks] = useState<string[]>([""]);
-  const [submitModalOpen, setSubmitModalOpen] = useState(false);
-  const [pendingPayload, setPendingPayload] = useState<{
-    eventType: string;
-    title: string;
-    description: string;
-    eventFromDate: Date;
-    eventToDate: Date;
-    objectives: string[];
-    topics: string[];
-    requirements: string | null;
-    notes: string;
-    cleanedLinks: string[];
-    filteredAssets: any;
-  } | null>(null);
 
-  const {
-    data: assetsData,
-    isLoading: loadingAssets,
-    error: assetsError} = useAssets();
+	const { data: catalog, isLoading: loadingCatalog } = useEventDeliverables();
+	const { mutate: createEvent, isPending: creating } =
+		useCreateBespokeEventV3();
 
-  const form = useForm<FormValues>({
-    initialValues,
-    validateInputOnBlur: true,
-    validate: {
-      eventType: (v) => (!!v?.trim() ? null : "Event type is required"),
-      title: (v) => (!!v?.trim() ? null : "Event title is required"),
-      description: (v) =>
-        !!v?.trim() ? null : "Event description is required",
-      dateRange: ({ from, to }) =>
-        from instanceof Date &&
-        !isNaN(+from) &&
-        to instanceof Date &&
-        !isNaN(+to) &&
-        +from <= +to
-          ? null
-          : "Valid start and end dates are required",
-      objectives: (arr) =>
-        Array.isArray(arr) && arr.length > 0
-          ? null
-          : "Select at least one objective",
-      topics: (arr) =>
-        Array.isArray(arr) && arr.length > 0
-          ? null
-          : "Select at least one category",
-      selectedAssets: (arr) =>
-        Array.isArray(arr) && arr.length > 0
-          ? null
-          : "Select at least one asset"}});
+	const [narrative, setNarrative] = useState({ ...emptyNarrative });
+	const setField = (k: keyof typeof emptyNarrative, v: string) =>
+		setNarrative((prev) => ({ ...prev, [k]: v }));
 
-  const { mutate: createEvent, isPending: creating } = useCreateBespokeEvent();
+	const [slots, setSlots] = useState<DateSlot[]>([{ date: "", start: "", end: "" }]);
+	const [chosen, setChosen] = useState<Record<string, ChosenEventDeliverable>>({});
+	const [showOther, setShowOther] = useState(false);
+	const [otherText, setOtherText] = useState("");
+	const [otherQty, setOtherQty] = useState<number>(1);
+	const [pr, setPr] = useState<boolean | null>(null);
 
-  const handleReset = () => {
-    form.reset();
-    setLinks([""]);
-  };
+	const form = useForm<{
+		title: string;
+		objectives: string[];
+		topics: string[];
+	}>({
+		initialValues: { title: "", objectives: [], topics: [] },
+		validate: {
+			title: (v) => (!v.trim() ? "Event name is required" : null),
+			objectives: (a) => (a.length === 0 ? "Select at least one objective" : null),
+			topics: (a) => (a.length === 0 ? "Select at least one category" : null),
+		},
+	});
 
-  const handleChangeLink = (index: number, value: string) => {
-    const updated = [...links];
-    updated[index] = value;
-    setLinks(updated);
-  };
-  const handleAddLink = () => setLinks((l) => [...l, ""]);
-  const handleRemoveLink = (index: number) =>
-    setLinks((l) => l.filter((_, i) => i !== index));
+	const validSlots = useMemo(
+		() =>
+			slots.filter(
+				(s) => s.date && s.start && s.end && isValidDate(new Date(s.date)),
+			),
+		[slots],
+	);
+	const { fromDate, toDate } = useMemo(() => {
+		const times = validSlots.map((s) => +new Date(s.date));
+		if (!times.length) return { fromDate: null as Date | null, toDate: null as Date | null };
+		return { fromDate: new Date(Math.min(...times)), toDate: new Date(Math.max(...times)) };
+	}, [validSlots]);
 
-  const handleCancel = () => {
-    handleReset();
-    close();
-  };
+	const deliverableCount = Object.keys(chosen).length;
+	const hasDeliverable =
+		deliverableCount > 0 || (showOther && otherText.trim().length > 0);
 
-  const cleanedLinks = useMemo(
-    () => links.map((l) => l.trim()).filter(Boolean),
-    [links]
-  );
+	const canSubmit =
+		form.isValid() && validSlots.length > 0 && hasDeliverable && !creating;
 
-  const invalidLink = useMemo(() => {
-    const bad = cleanedLinks.find((l) => !urlish(l));
-    return !!bad ? "One or more links are invalid" : null;
-  }, [cleanedLinks]);
+	const resetForm = useCallback(() => {
+		form.reset();
+		setNarrative({ ...emptyNarrative });
+		setSlots([{ date: "", start: "", end: "" }]);
+		setChosen({});
+		setShowOther(false);
+		setOtherText("");
+		setOtherQty(1);
+		setPr(null);
+	}, [form]);
 
-  const handleSubmit = form.onSubmit((values) => {
-    if (invalidLink) {
-      toast.error(invalidLink);
-      return;
-    }
+	const handleCancel = () => {
+		resetForm();
+		close();
+	};
 
-    // Build FILTERED assets — only items the user picked in step 1
-    const buildFiltered = <K extends keyof GetAssetsResponse>(key: K) => {
-      const section = assetsData?.[key]?.content ?? [];
-      return section
-        .filter((a) => values.selectedAssets.includes(a.name))
-        .map((a) => ({ ...a, userSelected: true }));
-    };
+	const minDate = (() => {
+		const d = new Date();
+		d.setDate(d.getDate() + 30);
+		return d;
+	})();
+	const maxDate = new Date(new Date().getFullYear() + 2, 11, 31);
 
-    const filteredAssets = {
-      printedAssets: buildFiltered("printedAssets"),
-      digitalAssets: buildFiltered("digitalAssets"),
-      externalPlacements: buildFiltered("externalPlacements"),
-    };
+	const handleSubmit = () => {
+		const { hasErrors } = form.validate();
+		if (hasErrors) return;
+		if (validSlots.length === 0) {
+			toast.error("Add at least one date with a start and end time.");
+			return;
+		}
+		if (!hasDeliverable) {
+			toast.error("Pick at least one deliverable (or describe one under Other).");
+			return;
+		}
+		if (!fromDate || !toDate) return;
 
-    const extra: string[] = [];
-    if (cleanedLinks.length) extra.push(`Links:\n${cleanedLinks.join("\n")}`);
-    const composedNotes = [values.notes.trim(), ...extra]
-      .filter(Boolean)
-      .join("\n\n");
+		const brief: BespokeBrief = {
+			theme: narrative.theme.trim() || undefined,
+			brands: narrative.brands.trim() || undefined,
+			discounts: narrative.discounts.trim() || undefined,
+			on_the_day: narrative.on_the_day.trim() || undefined,
+			date_slots: validSlots,
+			pr: pr ?? undefined,
+			other_deliverable:
+				showOther && otherText.trim() ? otherText.trim() : undefined,
+		};
+		const assets = buildEventAssets(chosen, {
+			on: showOther,
+			text: otherText,
+			qty: otherQty,
+		});
 
-    setPendingPayload({
-      eventType: values.eventType,
-      title: values.title,
-      description: values.description,
-      eventFromDate: values.dateRange.from as Date,
-      eventToDate: values.dateRange.to as Date,
-      objectives: values.objectives,
-      topics: values.topics,
-      requirements: values.requirements || null,
-      notes: composedNotes,
-      cleanedLinks,
-      filteredAssets,
-    });
-    setSubmitModalOpen(true);
-  });
+		createEvent(
+			{
+				eventType: narrative.theme.trim(),
+				title: form.values.title.trim(),
+				description: composeDescription(narrative, pr),
+				eventFromDate: fromDate,
+				eventToDate: toDate,
+				objectives: form.values.objectives,
+				topics: form.values.topics,
+				assets,
+				selectedAssets: assets,
+				requirements: narrative.requirements.trim() || null,
+				notes: narrative.notes.trim() || null,
+				links: [],
+				brief,
+			},
+			{
+				onSuccess: () => {
+					resetForm();
+					close();
+					updateState(setState, "filters.userSelectedTab", UserTabModes.Selected);
+				},
+				onError: (e: any) => {
+					toast.error(e?.message ?? "Failed to create event");
+				},
+			},
+		);
+	};
 
-  const handleModalSubmit = (result: SubmitChoicesResult) => {
-    if (!pendingPayload) return;
+	return (
+		<>
+			<StyledButton fw={500} leftSection={<IconPlus size={14} />} onClick={open}>
+				{buttonText}
+			</StyledButton>
 
-    const composedNotes = [pendingPayload.notes, result.note]
-      .filter(Boolean)
-      .join("\n\n");
+			<Modal
+				fullScreen={isMobile}
+				opened={opened}
+				onClose={close}
+				title={
+					<Stack gap={0}>
+						<Flex align="center" gap={10}>
+							<IconCalendar color={T.colors.blue[3]} size={21} />
+							<Text fz="h4" fw={600}>
+								Create Event
+							</Text>
+						</Flex>
+						<Text size="sm" c="gray.6">
+							Submit an event brief — our design team picks it up straight away.
+						</Text>
+					</Stack>
+				}
+				centered
+				radius={10}
+				size="44rem"
+				overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
+			>
+				<Stack gap={22}>
+					{/* Event name */}
+					<TextInput
+						withAsterisk
+						radius={10}
+						size="md"
+						label="What is the name of this event?"
+						placeholder="e.g. 20th Anniversary Celebration"
+						{...form.getInputProps("title")}
+					/>
 
-    createEvent(
-      {
-        eventType: pendingPayload.eventType,
-        title: pendingPayload.title,
-        description: pendingPayload.description,
-        eventFromDate: pendingPayload.eventFromDate,
-        eventToDate: pendingPayload.eventToDate,
-        objectives: pendingPayload.objectives,
-        topics: pendingPayload.topics,
-        assets: pendingPayload.filteredAssets,
-        requirements: pendingPayload.requirements,
-        notes: composedNotes,
-        links: pendingPayload.cleanedLinks,
-        chosenCreative: result.chosenCreative,
-        selectedAssets: result.finalAssets,
-      },
-      {
-        onSuccess: () => {
-          setSubmitModalOpen(false);
-          setPendingPayload(null);
-          handleReset();
-          close();
-          updateState(
-            setState,
-            "filters.userSelectedTab",
-            UserTabModes.Selected
-          );
-        },
-        onError: (e) => {
-          toast.error(e?.message ?? "Failed to create event");
-        },
-      }
-    );
-  };
+					{/* Dates & times */}
+					<EventDateSlots
+						slots={slots}
+						onChange={setSlots}
+						minDate={minDate}
+						maxDate={maxDate}
+						disabled={creating}
+					/>
 
-  const canSubmit =
-    !!form.values.eventType?.trim() &&
-    !!form.values.title?.trim() &&
-    !!form.values.description?.trim() &&
-    form.values.dateRange.from instanceof Date &&
-    !isNaN(+form.values.dateRange.from!) &&
-    form.values.dateRange.to instanceof Date &&
-    !isNaN(+form.values.dateRange.to!) &&
-    +form.values.dateRange.from! <= +form.values.dateRange.to! &&
-    form.values.objectives.length > 0 &&
-    form.values.topics.length > 0 &&
-    form.values.selectedAssets.length > 0 &&
-    !creating;
+					<GradientDivider />
 
-  return (
-    <>
-      <StyledButton
-        fw={500}
-        leftSection={<IconPlus size={14} />}
-        onClick={open}
-      >
-        {buttonText}
-      </StyledButton>
+					{/* Theme */}
+					<Stack gap={10}>
+						<SectionHeader
+							icon={<IconSparkles size={14} />}
+							title="Do you have a theme?"
+							color="violet"
+						/>
+						<TextInput
+							radius={10}
+							placeholder="e.g. anniversary, practice milestone, brand showcase, Clinical, Other"
+							value={narrative.theme}
+							onChange={(e) => setField("theme", e.currentTarget.value)}
+						/>
+					</Stack>
 
-      <Modal
-			fullScreen={isMobile}
-			opened={opened}
-        onClose={close}
-        title={
-          <Stack gap={0}>
-            <Flex align={"center"} gap={10}>
-              <IconCalendar color={T.colors.blue[3]} size={21} />
-              <Text fz={"h4"} fw={600}>
-                Create Bespoke Event
-              </Text>
-            </Flex>
-            <Text size="sm" c="gray.6">
-              Submit an event brief — our design team picks it up straight away.
-            </Text>
-          </Stack>
-        }
-        centered
-        radius={10}
-        size="42rem"
-        overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
-      >
-        <form onSubmit={handleSubmit}>
-          <Stack gap={25}>
-            {/* Event Type */}
-            <Stack gap={0}>
-              <Group align="flex-start" gap={3}>
-                <Text size="md" c="gray.9" fw={500}>
-                  Event Type
-                </Text>
-                <IconAsterisk size={9} color="red" />
-              </Group>
+					{/* Brands */}
+					<Stack gap={10}>
+						<SectionHeader
+							icon={<IconBuildingStore size={14} />}
+							title="If you are working with brands, let us know which ones!"
+							color="teal"
+						/>
+						<Text size="xs" c="gray.5" mt={-6}>
+							Please ensure that this is confirmed with your brand rep.
+						</Text>
+						<TextInput
+							radius={10}
+							placeholder="e.g. Maui Jim, Oakley, Tom Ford"
+							value={narrative.brands}
+							onChange={(e) => setField("brands", e.currentTarget.value)}
+						/>
+					</Stack>
 
-              <Radio.Group
-                withAsterisk
-                {...form.getInputProps("eventType")}
-                value={form.values.eventType}
-                onChange={(v) => form.setFieldValue("eventType", v)}
-              >
-                <SimpleGrid cols={2} spacing={9} mt="xs">
-                  {eventTypes.map((ev: string) => (
-                    <Radio
-                      size="xs"
-                      color="blue.3"
-                      key={ev}
-                      value={ev}
-                      label={
-                        <Text size="sm" fw={500} ml={-5} mt={-2}>
-                          {ev}
-                        </Text>
-                      }
-                    />
-                  ))}
-                </SimpleGrid>
-              </Radio.Group>
-              {form.errors.eventType && (
-                <Text size="xs" c="red.6" mt={6}>
-                  {form.errors.eventType}
-                </Text>
-              )}
-            </Stack>
+					{/* Discounts */}
+					<Stack gap={10}>
+						<SectionHeader
+							icon={<IconDiscount2 size={14} />}
+							title="Will there be any exclusive discounts?"
+							color="grape"
+						/>
+						<Text size="xs" c="gray.5" mt={-6}>
+							If you're unsure, write what you think it will be.
+						</Text>
+						<TextInput
+							radius={10}
+							placeholder="e.g. 20% off prescription sunglasses"
+							value={narrative.discounts}
+							onChange={(e) => setField("discounts", e.currentTarget.value)}
+						/>
+					</Stack>
 
-            <TextInput
-              withAsterisk
-              radius={10}
-              label="Event Title"
-              placeholder="Enter event title"
-              {...form.getInputProps("title")}
-            />
+					{/* On the day */}
+					<Stack gap={10}>
+						<SectionHeader
+							icon={<IconConfetti size={14} />}
+							title="What will you be doing on the day?"
+							color="orange"
+						/>
+						<Textarea
+							radius={10}
+							autosize
+							minRows={2}
+							placeholder="e.g. refreshments, raffle, balloons, goody bags, snacks"
+							value={narrative.on_the_day}
+							onChange={(e) => setField("on_the_day", e.currentTarget.value)}
+						/>
+						<Alert color="gray" variant="light" radius="md" p="sm">
+							<Text size="xs" c="gray.7">
+								We're unfortunately unable to help with sourcing things such as
+								balloons, merchandise, or partnerships with local
+								businesses/charities. We'll support you the best we can, but
+								setting these up is the practice's responsibility.
+							</Text>
+						</Alert>
+					</Stack>
 
-            <Textarea
-              withAsterisk
-              resize="vertical"
-              radius={10}
-              label="Event Description"
-              placeholder="Describe your event goals and requirements"
-              minRows={3}
-              autosize
-              {...form.getInputProps("description")}
-            />
+					<GradientDivider />
 
-            {/* Date Range */}
-            <Stack gap={10}>
-              <Text size="md" c="gray.9" fw={500}>
-                Event Dates
-              </Text>
+					{/* Objectives + Categories (kept) */}
+					<Stack gap={14}>
+						<Stack gap={8}>
+							<Group gap={3}>
+								<Text size="sm" fw={500} c="gray.8">
+									Objectives
+								</Text>
+								<IconAsterisk size={8} color="red" />
+							</Group>
+							<Chip.Group
+								multiple
+								value={form.values.objectives}
+								onChange={(v) => form.setFieldValue("objectives", v)}
+							>
+								<Group gap={5}>
+									{filtersOptions?.objectives.map((c: string) => (
+										<Chip
+											value={c}
+											key={c}
+											color="blue.3"
+											size="xs"
+											fw={600}
+											variant={
+												form.values.objectives.includes(c) ? "filled" : "outline"
+											}
+										>
+											{startCase(c)}
+										</Chip>
+									))}
+								</Group>
+							</Chip.Group>
+							{form.errors.objectives && (
+								<Text size="xs" c="red.6">
+									{form.errors.objectives}
+								</Text>
+							)}
+						</Stack>
 
-              <CampaignDates
-                minDate={(() => { const d = new Date(); d.setDate(d.getDate() + 30); return d; })()}
-                maxDate={new Date(2026, 11, 31)}
-                icon={<IconCalendar size={16} />}
-                dateRange={form.values.dateRange}
-                onChange={(range) => form.setFieldValue("dateRange", range)}
-                startLabel="Start Date"
-                endLabel="End Date"
-                inputSize="md"
-                labelSize="sm"
-                titleLabelSize="sm"
-                hideTitleIcon
-              />
-              {form.errors.dateRange && (
-                <Text size="xs" c="red.6" mt={6}>
-                  {form.errors.dateRange as any}
-                </Text>
-              )}
-            </Stack>
+						<Stack gap={8}>
+							<Group gap={3}>
+								<Text size="sm" fw={500} c="gray.8">
+									Categories
+								</Text>
+								<IconAsterisk size={8} color="red" />
+							</Group>
+							<Chip.Group
+								multiple
+								value={form.values.topics}
+								onChange={(v) => form.setFieldValue("topics", v)}
+							>
+								<Group gap={5}>
+									{filtersOptions?.topics.map((c: string) => (
+										<Chip
+											value={c}
+											key={c}
+											color="blue.3"
+											size="xs"
+											fw={600}
+											variant={
+												form.values.topics.includes(c) ? "filled" : "outline"
+											}
+										>
+											{startCase(c)}
+										</Chip>
+									))}
+								</Group>
+							</Chip.Group>
+							{form.errors.topics && (
+								<Text size="xs" c="red.6">
+									{form.errors.topics}
+								</Text>
+							)}
+						</Stack>
+					</Stack>
 
-            {/* Objectives */}
-            <Stack gap={10}>
-              <Group align="flex-start" gap={3}>
-                <Text size="md" c="gray.9" fw={500}>
-                  Objectives
-                </Text>
-                <IconAsterisk size={9} color="red" />
-              </Group>
-              <Chip.Group
-                multiple
-                value={form.values.objectives}
-                onChange={(v) => form.setFieldValue("objectives", v)}
-              >
-                <Group align="center" gap={5}>
-                  {filtersOptions?.objectives.map((c: string) => (
-                    <Chip
-                      value={c}
-                      key={c}
-                      color={"blue.3"}
-                      size="xs"
-                      fw={600}
-                      variant={
-                        form.values.objectives.includes(c)
-                          ? "filled"
-                          : "outline"
-                      }
-                    >
-                      {startCase(c)}
-                    </Chip>
-                  ))}
-                </Group>
-              </Chip.Group>
-              {form.errors.objectives && (
-                <Text size="xs" c="red.6" mt={6}>
-                  {form.errors.objectives}
-                </Text>
-              )}
-            </Stack>
+					<GradientDivider />
 
-            {/* Topics */}
-            <Stack gap={10}>
-              <Group align="flex-start" gap={3}>
-                <Text size="md" c="gray.9" fw={500}>
-                  Categories
-                </Text>
-                <IconAsterisk size={9} color="red" />
-              </Group>
-              <Chip.Group
-                multiple
-                value={form.values.topics}
-                onChange={(v) => form.setFieldValue("topics", v)}
-              >
-                <Group align="center" gap={5}>
-                  {filtersOptions?.topics.map((c: string) => (
-                    <Chip
-                      value={c}
-                      key={c}
-                      color={"blue.3"}
-                      size="xs"
-                      fw={600}
-                      variant={
-                        form.values.topics.includes(c) ? "filled" : "outline"
-                      }
-                    >
-                      {startCase(c)}
-                    </Chip>
-                  ))}
-                </Group>
-              </Chip.Group>
-              {form.errors.topics && (
-                <Text size="xs" c="red.6" mt={6}>
-                  {form.errors.topics}
-                </Text>
-              )}
-            </Stack>
+					{/* Deliverables */}
+					<Stack gap={12}>
+						<SectionHeader
+							icon={<IconBox size={14} />}
+							title="Deliverables"
+							color="indigo"
+							required
+						/>
+						{loadingCatalog ? (
+							<Loader size="sm" color="blue" />
+						) : (
+							<EventDeliverablesPicker
+								catalog={catalog ?? []}
+								value={chosen}
+								onChange={setChosen}
+								disabled={creating}
+							/>
+						)}
 
-            {/* ✅ Required Assets (Dynamic from useAssets) */}
-            <Stack gap={15}>
-              <Group align="flex-start" gap={3}>
-                <Text size="md" c="gray.9" fw={500}>
-                  Required Assets
-                </Text>
-                <IconAsterisk size={9} color="red" />
-              </Group>
+						{/* Printed "Other" */}
+						<Box>
+							<Checkbox
+								size="xs"
+								radius="sm"
+								color="blue.5"
+								disabled={creating}
+								checked={showOther}
+								onChange={(e) => {
+									const on = e.currentTarget.checked;
+									setShowOther(on);
+									if (!on) {
+										setOtherText("");
+										setOtherQty(1);
+									}
+								}}
+								label={
+									<Text size="sm" fw={500} c="gray.7">
+										Other (printed)
+									</Text>
+								}
+							/>
+							<Collapse in={showOther}>
+								<Group align="flex-end" gap={8} mt={8}>
+									<TextInput
+										flex={1}
+										radius={10}
+										label="Please specify"
+										placeholder="e.g. A6 flyer, table talkers…"
+										value={otherText}
+										onChange={(e) => setOtherText(e.currentTarget.value)}
+									/>
+									<NumberInput
+										radius={10}
+										w={100}
+										min={1}
+										label="Qty"
+										value={otherQty}
+										onChange={(v) => setOtherQty(typeof v === "number" ? v : 1)}
+									/>
+								</Group>
+							</Collapse>
+						</Box>
+					</Stack>
 
-              {loadingAssets && <Loader size="sm" color="blue" />}
-              {assetsError && (
-                <Text size="sm" c="red">
-                  Failed to load assets.
-                </Text>
-              )}
+					<GradientDivider />
 
-              {!loadingAssets && assetsData && (
-                <>
-                  {(
-                    [
-                      { key: "printedAssets", label: "Printed Assets" },
-                      { key: "digitalAssets", label: "Digital Assets" },
-                      // {
-                      //   key: "externalPlacements",
-                      //   label: "External Placements",
-                      // },
-                    ] as const
-                  ).map(({ key, label }) => (
-                    <Box key={key}>
-                      <Text fw={600} size="sm" mb={6} c="blue.3">
-                        {label}
-                      </Text>
-                      <Checkbox.Group
-                        value={form.values.selectedAssets}
-                        onChange={(v) =>
-                          form.setFieldValue("selectedAssets", v)
-                        }
-                      >
-                        <SimpleGrid cols={2} spacing={6} mt={4}>
-                          {assetsData?.[key]?.content?.map((a) => (
-                            <Checkbox
-                              key={a.name}
-                              radius={50}
-                              size="xs"
-                              color="blue.3"
-                              value={a.name}
-                              label={
-                                <Text size="sm" fw={500}>
-                                  {a.name}
-                                </Text>
-                              }
-                            />
-                          ))}
-                        </SimpleGrid>
-                      </Checkbox.Group>
-                      <GradientDivider my={12} />
-                    </Box>
-                  ))}
-                </>
-              )}
+					{/* PR */}
+					<Stack gap={8}>
+						<SectionHeader
+							icon={<IconSpeakerphone size={14} />}
+							title="Would you like some PR surrounding your event?"
+							color="pink"
+						/>
+						<Text size="xs" c="gray.5" mt={-4}>
+							This typically only applies to practice milestone events.
+						</Text>
+						<SegmentedControl
+							w={140}
+							size="xs"
+							value={pr === null ? "" : pr ? "yes" : "no"}
+							onChange={(v) => setPr(v === "yes")}
+							data={[
+								{ label: "Yes", value: "yes" },
+								{ label: "No", value: "no" },
+							]}
+						/>
+					</Stack>
 
-              {form.errors.selectedAssets && (
-                <Text size="xs" c="red.6">
-                  {form.errors.selectedAssets}
-                </Text>
-              )}
-            </Stack>
+					{/* Special Requirements */}
+					<Textarea
+						radius={10}
+						autosize
+						minRows={2}
+						label="Special Requirements"
+						placeholder="Any special requirements for this event"
+						value={narrative.requirements}
+						onChange={(e) => setField("requirements", e.currentTarget.value)}
+					/>
 
-            <Textarea
-              resize="vertical"
-              radius={10}
-              label="Special Requirements"
-              placeholder="Any special requirements for this event (venue considerations, timing, audience, etc.)"
-              minRows={3}
-              autosize
-              {...form.getInputProps("requirements")}
-            />
+					{/* Additional Notes */}
+					<Stack gap={10}>
+						<SectionHeader
+							icon={<IconNotes size={14} />}
+							title="Additional Notes"
+							color="gray"
+						/>
+						<Textarea
+							radius={10}
+							autosize
+							minRows={2}
+							placeholder="Any additional requirements or context"
+							value={narrative.notes}
+							onChange={(e) => setField("notes", e.currentTarget.value)}
+						/>
+					</Stack>
 
-            {/* Reference Links */}
-            <Stack gap={10}>
-              <Flex align={"center"} justify={"space-between"}>
-                <Text size="md" c="gray.9" fw={500}>
-                  Reference Links
-                </Text>
-                <StyledButton
-                  leftSection={<IconPlus size={14} />}
-                  onClick={handleAddLink}
-                >
-                  Add Link
-                </StyledButton>
-              </Flex>
-
-              {links.map((link, index) => (
-                <Grid key={index} gutter="xs">
-                  <Grid.Col span={links.length > 1 ? 11 : 12}>
-                    <TextInput
-                      w={"100%"}
-                      radius={10}
-                      placeholder="https://example.com"
-                      value={link}
-                      onChange={({ target: { value } }) =>
-                        handleChangeLink(index, value)
-                      }
-                      error={
-                        invalidLink && link.trim() && !urlish(link)
-                          ? "Invalid URL"
-                          : null
-                      }
-                    />
-                  </Grid.Col>
-                  {links.length > 1 && (
-                    <Grid.Col span={1}>
-                      <ActionIcon
-                        color="red"
-                        variant="subtle"
-                        onClick={() => handleRemoveLink(index)}
-                      >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Grid.Col>
-                  )}
-                </Grid>
-              ))}
-            </Stack>
-
-            <Textarea
-              resize="vertical"
-              radius={10}
-              label="Additional Notes"
-              placeholder="Any additional requirements or context"
-              minRows={3}
-              autosize
-              {...form.getInputProps("notes")}
-            />
-
-            <Flex justify={"flex-end"} gap={8}>
-              <StyledButton onClick={handleCancel}>Cancel</StyledButton>
-              <Button
-                type="submit"
-                radius={10}
-                color="blue.3"
-                disabled={!canSubmit}
-                leftSection={<IconPlus size={14} />}
-              >
-                Continue
-              </Button>
-            </Flex>
-          </Stack>
-        </form>
-      </Modal>
-
-      <SubmitChoicesModal
-        opened={submitModalOpen}
-        onClose={() => setSubmitModalOpen(false)}
-        title={`Submit ${pendingPayload?.title ?? "Event"}`}
-        category="Event"
-        description={pendingPayload?.description ?? null}
-        fromDate={pendingPayload?.eventFromDate ?? null}
-        toDate={pendingPayload?.eventToDate ?? null}
-        assets={pendingPayload?.filteredAssets}
-        defaultCreative={DEFAULT_BESPOKE_CREATIVE}
-        preselectAssets
-        loading={creating}
-        submitLabel="Submit Event"
-        onSubmit={handleModalSubmit}
-      />
-    </>
-  );
+					<Flex justify="flex-end" gap={8}>
+						<StyledButton onClick={handleCancel} disabled={creating}>
+							Cancel
+						</StyledButton>
+						<Button
+							radius={10}
+							color="blue.5"
+							loading={creating}
+							disabled={!canSubmit}
+							leftSection={<IconPlus size={14} />}
+							onClick={handleSubmit}
+						>
+							Submit Event
+						</Button>
+					</Flex>
+				</Stack>
+			</Modal>
+		</>
+	);
 };
 
 export default Event;

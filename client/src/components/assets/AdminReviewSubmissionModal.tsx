@@ -29,6 +29,7 @@ import {
 	NotificationPayload,
 	NotificationRow} from "@/models/notification.models";
 import { useIsMobile } from "@/shared/shared.hooks";
+import BespokeBriefView from "./BespokeBriefView";
 
 /**
  * Types the shape of each asset line in payload.assets as submitted by the practice
@@ -79,6 +80,7 @@ export default function AdminReviewSubmissionModal({
 
 	const chosenCreativeUrl = payload?.chosen_creative ?? null;
 	const practiceNote = payload?.note ?? null;
+	const brief = payload?.brief ?? null;
 
 	const assets: SubmittedAssetsGroup | any = payload?.assets ?? {
 		printedAssets: [],
@@ -424,6 +426,9 @@ export default function AdminReviewSubmissionModal({
 
 				{/* Chosen creative by practice */}
 				<CreativeBlock />
+
+				{/* Bespoke brief (narrative + uploaded files) */}
+				<BespokeBriefView brief={brief} />
 
 				{/* Section header */}
 				<Stack gap={8}>

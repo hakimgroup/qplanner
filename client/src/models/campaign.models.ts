@@ -1,5 +1,6 @@
 import { SelectionsSource, SelectionStatus } from "@/shared/shared.models";
 import { AssetItem, Assets as MainAssets } from "./general.models";
+import { BespokeBrief } from "./bespokeBrief.models";
 
 export interface BulkDeletePayload {
   ids: string[];
@@ -75,6 +76,7 @@ export interface Campaign {
   markup_link?: string | null;
   assets_link?: string | null;
   self_print?: boolean;
+  brief?: BespokeBrief | null;
   focus?: string;
   duration?: string;
   bespoke_campaign_id?: string;

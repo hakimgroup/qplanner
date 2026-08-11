@@ -27,6 +27,7 @@ import { startCase } from "lodash";
 import { statusColors } from "@/shared/shared.const";
 import GodModeEditSelectionModal from "../modals/GodModeEditSelectionModal";
 import GodModeEditBespokeModal from "../modals/GodModeEditBespokeModal";
+import BespokeBriefView from "@/components/assets/BespokeBriefView";
 
 interface Props {
 	data: GodModeSelectionDetails;
@@ -375,6 +376,11 @@ export default function GodModeOverviewTab({ data }: Props) {
 				{camp?.description && (
 					<Box mt="md">
 						<Field label="Description" value={camp.description} />
+					</Box>
+				)}
+				{camp?.brief && (
+					<Box mt="md">
+						<BespokeBriefView brief={camp.brief} />
 					</Box>
 				)}
 				{camp?.requirements && (

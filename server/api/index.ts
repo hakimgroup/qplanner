@@ -675,6 +675,7 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 					chosenCreative: payload.chosen_creative,
 					assets: payload.assets || {},
 					note: payload.note,
+					brief: payload.brief || null,
 					appUrl,
 					selectionId: notification.selection_id,
 				})
@@ -3285,6 +3286,7 @@ app.get("/preview-email/:logId", async (req: Request, res: Response): Promise<an
 							chosenCreative: payload.chosen_creative,
 							assets: payload.assets ?? null,
 							note: payload.note,
+							brief: payload.brief ?? null,
 							appUrl,
 							selectionId: payload.selection_id ?? null,
 						} as any)

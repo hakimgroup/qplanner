@@ -175,7 +175,7 @@ const CampaignSelectorCards = () => {
 
 							<Group gap={10} wrap="wrap" justify="center">
 								<Bespoke buttonText="Add bespoke campaign" />
-								<Event buttonText="Create bespoke event" />
+								<Event buttonText="Create event" />
 							</Group>
 						</Stack>
 					</Card>
