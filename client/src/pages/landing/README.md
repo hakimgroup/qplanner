@@ -99,6 +99,38 @@ External links open in a new tab automatically:
 <CTA href="https://hakimgroup.co.uk" external>Visit our site</CTA>
 ```
 
+### Linking to a specific campaign (opens its details drawer)
+
+To point a button or link at one campaign — so that clicking it lands on the
+dashboard **and pops that campaign's details drawer open automatically** — link
+to `/dashboard?campaign=<campaign-id>` instead of plain `/dashboard`.
+
+You don't build this URL by hand. In the planner, open the campaigns dashboard,
+find the campaign, and click its **share button** (the share icon on the card —
+tooltip "Share campaign"). It copies the full link to your clipboard, e.g.:
+
+```
+https://planner.hakimgroup.co.uk/dashboard?campaign=8f14c3a2-…
+```
+
+Use the path part (`/dashboard?campaign=…`) as any internal `CTA`/`Link` href —
+the `?campaign=…` is what triggers the drawer:
+
+```tsx
+<CTA href="/dashboard?campaign=8f14c3a2-…">View this campaign</CTA>
+<Link to="/dashboard?campaign=8f14c3a2-…">See the details</Link>
+```
+
+Pasting the whole `https://…` link works too (it just opens in a new tab and
+reloads the dashboard); the `/dashboard?campaign=…` form keeps it in-app.
+
+Two limits:
+
+- Works for **standard catalog campaigns only** — bespoke campaigns and events
+  don't have a share button, so they can't be linked this way.
+- The dashboard is behind Microsoft sign-in, so whoever clicks must be **signed
+  in to the planner**.
+
 ## Thumbnails on the index card
 
 The `/landing` index card automatically uses the **first image URL** it finds in your page source as the card thumbnail. It scans for `image="…"` (Hero/Split props), then `<Image src="…">`, then raw `<img src="…">`. Video URLs are ignored.
