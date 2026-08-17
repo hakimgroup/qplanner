@@ -1,675 +1,684 @@
 import StyledButton from "@/components/styledButton/StyledButton";
 import {
-  ActionIcon,
-  Box,
-  Button,
-  Checkbox,
-  Chip,
-  Flex,
-  Grid,
-  Group,
-  Loader,
-  Modal,
-  SimpleGrid,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-  useMantineTheme,
-  ThemeIcon,
-  Collapse,
-  Progress,
-  Paper} from "@mantine/core";
-import GradientDivider from "@/components/gradientDivider/GradientDivider";
+	Box,
+	Button,
+	Checkbox,
+	Chip,
+	Collapse,
+	Flex,
+	Group,
+	Loader,
+	Modal,
+	Stack,
+	Text,
+	Textarea,
+	TextInput,
+	ThemeIcon,
+	useMantineTheme,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import {
-  IconAsterisk,
-  IconCalendar,
-  IconPlus,
-  IconTrash,
-  IconChevronDown,
-  IconChevronRight,
-  IconCircleCheck,
-  IconCircle,
-  IconBulb,
-  IconTarget,
-  IconUsers,
-  IconMessage,
-  IconHeart,
-  IconStar,
-  IconBox,
-  IconChartBar,
-  IconAlertTriangle,
-  IconRocket} from "@tabler/icons-react";
+	IconPlus,
+	IconCalendar,
+	IconAsterisk,
+	IconBulb,
+	IconUsers,
+	IconPhoto,
+	IconGift,
+	IconPalette,
+	IconBox,
+	IconNotes,
+} from "@tabler/icons-react";
+import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useCallback, useContext, useMemo, useState } from "react";
 import CampaignDates from "@/components/campaignDates/CampaignDates";
 import { isValid as isValidDate } from "date-fns";
 import { toast } from "sonner";
-import { useCreateBespokeSelection } from "@/hooks/campaign.hooks";
-import { GetAssetsResponse, UserTabModes } from "@/models/general.models";
-import SubmitChoicesModal, {
-  SubmitChoicesResult,
-} from "@/components/assets/SubmitChoicesModal";
-import { DEFAULT_BESPOKE_CREATIVE } from "@/shared/shared.const";
+import { startCase } from "lodash";
+import { useCreateBespokeSelectionV3 } from "@/hooks/campaign.hooks";
+import {
+	useBespokeDeliverables,
+	uploadBespokeBriefFiles,
+} from "@/hooks/bespoke.hooks";
+import { UserTabModes } from "@/models/general.models";
+import { BespokeBrief, ChosenDeliverable } from "@/models/bespokeBrief.models";
+import BespokeDeliverablesPicker from "./BespokeDeliverablesPicker";
+import BriefFileUpload from "./BriefFileUpload";
 import AppContext from "@/shared/AppContext";
 import { updateState } from "@/shared/shared.utilities";
-import { useAssets } from "@/hooks/general.hooks";
-import { startCase } from "lodash";
 import { useIsMobile } from "@/shared/shared.hooks";
 
 type DateRange = { from: Date | null; to: Date | null };
 
-const BRIEF_QUESTIONS = [
-  { key: "background", label: "Background", sub: "What triggered the brief?", icon: IconBulb, color: "blue" },
-  { key: "opportunity", label: "The Opportunity", sub: "Insight or reason for acting now? What's not currently working?", icon: IconTarget, color: "orange" },
-  { key: "audience", label: "Audience", sub: "Who are we talking to?", icon: IconUsers, color: "teal" },
-  { key: "keyMessage", label: "Key Message", sub: "What is the most important thing we need to communicate?", icon: IconMessage, color: "violet" },
-  { key: "emotionalResponse", label: "Emotional Response", sub: "How should this make people feel?", icon: IconHeart, color: "pink" },
-  { key: "usp", label: "Unique Selling Point", sub: "What is the offer or benefit?", icon: IconStar, color: "yellow" },
-  { key: "deliverables", label: "Deliverables", sub: "Assets needed", icon: IconBox, color: "indigo" },
-  { key: "measurement", label: "Measurement", sub: "How will we measure if this is successful? (if possible)", icon: IconChartBar, color: "cyan" },
-  { key: "avoid", label: "What Should Be Avoided?", sub: "Things to steer clear of", icon: IconAlertTriangle, color: "red" },
-  { key: "leanInto", label: "What Should We Lean Into?", sub: "Strengths or themes to embrace", icon: IconRocket, color: "green" },
-] as const;
+const emptyNarrative = {
+	purpose: "",
+	audience_notes: "",
+	offers_cta: "",
+	look_and_feel: "",
+	what_to_avoid: "",
+	other_deliverable: "",
+};
 
-type BriefAnswers = Record<string, string>;
-
-function formatBriefToDescription(answers: BriefAnswers): string {
-  return BRIEF_QUESTIONS
-    .filter((q) => answers[q.key]?.trim())
-    .map((q) => `${q.label}\n${answers[q.key].trim()}`)
-    .join("\n\n");
+/** Compose a readable description from the brief for back-compat surfaces. */
+function composeDescription(n: typeof emptyNarrative): string {
+	const parts: [string, string][] = [
+		["Purpose", n.purpose],
+		["About the audience", n.audience_notes],
+		["Offers / Promotions / CTA", n.offers_cta],
+		["Look & feel", n.look_and_feel],
+		["What to avoid", n.what_to_avoid],
+		["Other deliverable", n.other_deliverable],
+	];
+	return parts
+		.filter(([, v]) => v.trim())
+		.map(([label, v]) => `${label}\n${v.trim()}`)
+		.join("\n\n");
 }
 
-function BriefGuide({
-  answers,
-  onChange}: {
-  answers: BriefAnswers;
-  onChange: (answers: BriefAnswers) => void;
+/** Build the existing {printedAssets, digitalAssets} assets shape from picks. */
+function buildFinalAssets(chosen: Record<string, ChosenDeliverable>) {
+	const toItem = (c: ChosenDeliverable) => ({
+		name: c.name,
+		group: c.group,
+		price: c.price ?? null,
+		quantity: c.quantity ?? null,
+		suffix: null,
+		type: c.price != null ? "card" : "default",
+		userSelected: true,
+		optionLabel: c.optionLabel ?? null,
+	});
+	const vals = Object.values(chosen);
+	return {
+		printedAssets: vals.filter((c) => c.channel === "print").map(toItem),
+		digitalAssets: vals.filter((c) => c.channel === "digital").map(toItem),
+		externalPlacements: [],
+	};
+}
+
+function SectionHeader({
+	icon,
+	title,
+	color,
+}: {
+	icon: React.ReactNode;
+	title: string;
+	color: string;
 }) {
-  const T = useMantineTheme();
-	const isMobile = useIsMobile();
-  const [expandedKey, setExpandedKey] = useState<string | null>(BRIEF_QUESTIONS[0].key);
-
-  const answeredCount = BRIEF_QUESTIONS.filter((q) => answers[q.key]?.trim()).length;
-  const progress = (answeredCount / BRIEF_QUESTIONS.length) * 100;
-
-  const toggle = (key: string) => {
-    setExpandedKey((prev) => (prev === key ? null : key));
-  };
-
-  return (
-    <Stack gap={12}>
-      <Group justify="space-between" align="center">
-        <Group gap={6}>
-          <Text size="md" fw={500} c="gray.9">Campaign Brief</Text>
-          <IconAsterisk size={9} color="red" />
-        </Group>
-        <Text size="xs" fw={600} c="blue.5">
-          {answeredCount}/{BRIEF_QUESTIONS.length} answered
-        </Text>
-      </Group>
-
-      <Progress value={progress} size="xs" radius="xl" color="blue.3" />
-
-      <Stack gap={6}>
-        {BRIEF_QUESTIONS.map((q, idx) => {
-          const isOpen = expandedKey === q.key;
-          const hasAnswer = !!answers[q.key]?.trim();
-          const Icon = q.icon;
-
-          return (
-            <Paper
-              key={q.key}
-              radius="md"
-              bg={hasAnswer ? `${q.color}.0` : "#fafafa"}
-              style={{
-                borderLeft: `3px solid ${T.colors[q.color][hasAnswer ? 5 : 1]}`,
-                transition: "all 0.2s"}}
-            >
-              <Group
-                gap="sm"
-                px="md"
-                py="sm"
-                style={{ cursor: "pointer" }}
-                onClick={() => toggle(q.key)}
-                wrap="nowrap"
-              >
-                <ThemeIcon
-                  size="sm"
-                  radius="xl"
-                  variant="light"
-                  color={hasAnswer ? q.color : "gray"}
-                >
-                  <Icon size={14} />
-                </ThemeIcon>
-
-                <Stack gap={0} style={{ flex: 1 }}>
-                  <Text size="sm" fw={600} c={hasAnswer ? "gray.9" : "gray.7"}>
-                    {q.label}
-                  </Text>
-                  {!isOpen && hasAnswer && (
-                    <Text size="xs" c="gray.5" lineClamp={1}>
-                      {answers[q.key]}
-                    </Text>
-                  )}
-                </Stack>
-
-                <Group gap={6}>
-                  {hasAnswer ? (
-                    <IconCircleCheck size={16} color={T.colors[q.color][5]} />
-                  ) : (
-                    <IconCircle size={16} color={T.colors.gray[3]} />
-                  )}
-                  {isOpen ? (
-                    <IconChevronDown size={14} color={T.colors.gray[5]} />
-                  ) : (
-                    <IconChevronRight size={14} color={T.colors.gray[4]} />
-                  )}
-                </Group>
-              </Group>
-
-              <Collapse in={isOpen}>
-                <Box px="md" pb="sm">
-                  <Text size="xs" c="gray.5" mb={6}>
-                    {q.sub}
-                  </Text>
-                  <Textarea
-                    placeholder={`${q.sub}...`}
-                    value={answers[q.key] || ""}
-                    onChange={(e) =>
-                      onChange({ ...answers, [q.key]: e.currentTarget.value })
-                    }
-                    minRows={2}
-                    autosize
-                    radius="md"
-                    size="sm"
-                    styles={{
-                      input: {
-                        backgroundColor: T.colors.gray[0],
-                        borderColor: T.colors[q.color][1],
-                        "&:focus": {
-                          borderColor: T.colors[q.color][4]}}}}
-                  />
-                </Box>
-              </Collapse>
-            </Paper>
-          );
-        })}
-      </Stack>
-    </Stack>
-  );
+	return (
+		<Group gap={8} align="center">
+			<ThemeIcon size="sm" radius="xl" variant="light" color={color}>
+				{icon}
+			</ThemeIcon>
+			<Text fw={700} size="sm" c="gray.8">
+				{title}
+			</Text>
+		</Group>
+	);
 }
 
 const Bespoke = ({
-  buttonText = "Bespoke Campaign"}: {
-  buttonText?: string;
+	buttonText = "Bespoke Campaign",
+}: {
+	buttonText?: string;
 }) => {
-  const [opened, { open, close }] = useDisclosure(false);
-  const T = useMantineTheme();
-  const isMobile = useIsMobile();
-  const {
-    state: { filtersOptions },
-    setState} = useContext(AppContext);
+	const [opened, { open, close }] = useDisclosure(false);
+	const T = useMantineTheme();
+	const isMobile = useIsMobile();
+	const {
+		state: { filtersOptions },
+		setState,
+	} = useContext(AppContext);
 
-  const [links, setLinks] = useState<string[]>([""]);
-  const [briefAnswers, setBriefAnswers] = useState<BriefAnswers>({});
-  const [submitModalOpen, setSubmitModalOpen] = useState(false);
-  const [pendingPayload, setPendingPayload] = useState<{
-    title: string;
-    description: string;
-    from: Date;
-    to: Date;
-    notes: string;
-    objectives: string[];
-    topics: string[];
-    cleanedLinks: string[];
-    filteredAssets: any;
-  } | null>(null);
-  const {
-    data: assetsData,
-    isLoading: loadingAssets,
-    error: assetsError} = useAssets();
-  const { mutate: createBespoke, isPending: creating } =
-    useCreateBespokeSelection();
+	const { data: catalog, isLoading: loadingCatalog } = useBespokeDeliverables();
+	const { mutate: createBespoke, isPending: creating } =
+		useCreateBespokeSelectionV3();
 
-  const form = useForm<{
-    title: string;
-    notes: string;
-    dateRange: DateRange;
-    objectives: string[];
-    topics: string[];
-    selectedAssets: string[];
-  }>({
-    initialValues: {
-      title: "",
-      notes: "",
-      dateRange: { from: null, to: null },
-      objectives: [],
-      topics: [],
-      selectedAssets: []},
-    validate: {
-      title: (v) => (!v.trim() ? "Title is required" : null),
-      dateRange: ({ from, to }) => {
-        if (!from || !to) return "Start and end dates are required";
-        if (!isValidDate(from) || !isValidDate(to)) return "Invalid dates";
-        if (from > to) return "Start date cannot be after end date";
-        return null;
-      },
-      objectives: (arr) =>
-        arr.length === 0 ? "Select at least one objective" : null,
-      topics: (arr) => (arr.length === 0 ? "Select at least one topic" : null),
-      selectedAssets: (arr) =>
-        arr.length === 0 ? "Select at least one asset" : null}});
+	// Narrative (brief) text fields
+	const [narrative, setNarrative] = useState({ ...emptyNarrative });
+	const setField = (k: keyof typeof emptyNarrative, v: string) =>
+		setNarrative((prev) => ({ ...prev, [k]: v }));
 
-  const handleChangeLink = (index: number, value: string) => {
-    const updated = [...links];
-    updated[index] = value;
-    setLinks(updated);
-  };
-  const handleAddLink = () => setLinks((l) => [...l, ""]);
-  const handleRemoveLink = (index: number) =>
-    setLinks((l) => l.filter((_, i) => i !== index));
+	// Content & Assets / Design examples — Yes/No + files
+	const [hasContent, setHasContent] = useState<boolean | null>(null);
+	const [contentFiles, setContentFiles] = useState<File[]>([]);
+	const [hasImagery, setHasImagery] = useState<boolean | null>(null);
+	const [imageryFiles, setImageryFiles] = useState<File[]>([]);
+	const [hasExamples, setHasExamples] = useState<boolean | null>(null);
+	const [exampleFiles, setExampleFiles] = useState<File[]>([]);
 
-  const resetForm = useCallback(() => {
-    form.reset();
-    setLinks([""]);
-    setBriefAnswers({});
-  }, [form]);
+	// Deliverables
+	const [chosen, setChosen] = useState<Record<string, ChosenDeliverable>>({});
+	const [showOther, setShowOther] = useState(false);
 
-  const hasBriefAnswer = useMemo(
-    () => BRIEF_QUESTIONS.some((q) => briefAnswers[q.key]?.trim()),
-    [briefAnswers]
-  );
-  const canSubmit = useMemo(() => form.isValid() && hasBriefAnswer, [form, hasBriefAnswer]);
+	// Uploading state (mutation.isPending only covers the RPC, not uploads)
+	const [uploading, setUploading] = useState(false);
+	const busy = uploading || creating;
 
-  const handleCancel = () => {
-    resetForm();
-    close();
-  };
+	const form = useForm<{
+		title: string;
+		dateRange: DateRange;
+		objectives: string[];
+		topics: string[];
+		notes: string;
+	}>({
+		initialValues: {
+			title: "",
+			dateRange: { from: null, to: null },
+			objectives: [],
+			topics: [],
+			notes: "",
+		},
+		validate: {
+			title: (v) => (!v.trim() ? "Project name is required" : null),
+			dateRange: ({ from, to }) => {
+				if (!from || !to) return "Start and end dates are required";
+				if (!isValidDate(from) || !isValidDate(to)) return "Invalid dates";
+				if (from > to) return "Start date cannot be after end date";
+				return null;
+			},
+			objectives: (arr) =>
+				arr.length === 0 ? "Select at least one objective" : null,
+			topics: (arr) =>
+				arr.length === 0 ? "Select at least one category" : null,
+		},
+	});
 
-  const onSubmit = form.onSubmit((values) => {
-    const description = formatBriefToDescription(briefAnswers);
-    const { from, to } = values.dateRange;
-    if (!from || !to) {
-      toast.error("Please choose a valid start and end date.");
-      return;
-    }
+	const deliverableCount = Object.keys(chosen).length;
+	const hasDeliverable =
+		deliverableCount > 0 || narrative.other_deliverable.trim().length > 0;
 
-    const cleanedLinks = links.map((l) => l.trim()).filter(Boolean);
+	const canSubmit = useMemo(
+		() =>
+			form.isValid() &&
+			narrative.purpose.trim().length > 0 &&
+			hasDeliverable,
+		[form, narrative.purpose, hasDeliverable],
+	);
 
-    // Build FILTERED assets — only the items the user checked
-    const buildFiltered = <K extends keyof GetAssetsResponse>(key: K) => {
-      const section = assetsData?.[key]?.content ?? [];
-      return section
-        .filter((a) => values.selectedAssets.includes(a.name))
-        .map((a) => ({ ...a, userSelected: true }));
-    };
+	const resetForm = useCallback(() => {
+		form.reset();
+		setNarrative({ ...emptyNarrative });
+		setHasContent(null);
+		setContentFiles([]);
+		setHasImagery(null);
+		setImageryFiles([]);
+		setHasExamples(null);
+		setExampleFiles([]);
+		setChosen({});
+		setShowOther(false);
+	}, [form]);
 
-    const filteredAssets = {
-      printedAssets: buildFiltered("printedAssets"),
-      digitalAssets: buildFiltered("digitalAssets"),
-      externalPlacements: buildFiltered("externalPlacements"),
-    };
+	const handleCancel = () => {
+		resetForm();
+		close();
+	};
 
-    setPendingPayload({
-      title: values.title.trim(),
-      description: description.trim(),
-      from,
-      to,
-      notes: values.notes,
-      objectives: values.objectives,
-      topics: values.topics,
-      cleanedLinks,
-      filteredAssets,
-    });
-    setSubmitModalOpen(true);
-  });
+	const handleSubmit = async () => {
+		const { hasErrors } = form.validate();
+		if (hasErrors) return;
+		if (!narrative.purpose.trim()) {
+			toast.error("Please tell us the purpose of this project.");
+			return;
+		}
+		if (!hasDeliverable) {
+			toast.error("Pick at least one deliverable (or describe one under Other).");
+			return;
+		}
+		const { from, to } = form.values.dateRange;
+		if (!from || !to) return;
 
-  const handleModalSubmit = (result: SubmitChoicesResult) => {
-    if (!pendingPayload) return;
+		// 1. Upload any brief files → durable public URLs
+		let content_files: BespokeBrief["content_files"] = [];
+		let imagery_files: BespokeBrief["imagery_files"] = [];
+		let example_files: BespokeBrief["example_files"] = [];
+		try {
+			setUploading(true);
+			[content_files, imagery_files, example_files] = await Promise.all([
+				hasContent && contentFiles.length
+					? uploadBespokeBriefFiles(contentFiles)
+					: Promise.resolve([]),
+				hasImagery && imageryFiles.length
+					? uploadBespokeBriefFiles(imageryFiles)
+					: Promise.resolve([]),
+				hasExamples && exampleFiles.length
+					? uploadBespokeBriefFiles(exampleFiles)
+					: Promise.resolve([]),
+			]);
+		} catch (e: any) {
+			setUploading(false);
+			toast.error(e?.message ?? "File upload failed. Please try again.");
+			return;
+		}
+		setUploading(false);
 
-    const composedNotes = [pendingPayload.notes, result.note]
-      .filter(Boolean)
-      .join("\n\n");
+		// 2. Assemble the structured brief + back-compat description + assets
+		const brief: BespokeBrief = {
+			purpose: narrative.purpose.trim() || undefined,
+			audience_notes: narrative.audience_notes.trim() || undefined,
+			offers_cta: narrative.offers_cta.trim() || undefined,
+			look_and_feel: narrative.look_and_feel.trim() || undefined,
+			what_to_avoid: narrative.what_to_avoid.trim() || undefined,
+			other_deliverable: narrative.other_deliverable.trim() || undefined,
+			has_content: hasContent ?? false,
+			content_files,
+			has_imagery: hasImagery ?? false,
+			imagery_files,
+			has_examples: hasExamples ?? false,
+			example_files,
+		};
+		const finalAssets = buildFinalAssets(chosen);
 
-    createBespoke(
-      {
-        name: pendingPayload.title,
-        description: pendingPayload.description,
-        from: pendingPayload.from,
-        to: pendingPayload.to,
-        notes: composedNotes,
-        objectives: pendingPayload.objectives,
-        topics: pendingPayload.topics,
-        assets: pendingPayload.filteredAssets,
-        reference_links: pendingPayload.cleanedLinks,
-        chosenCreative: result.chosenCreative,
-        selectedAssets: result.finalAssets,
-      },
-      {
-        onSuccess: () => {
-          setSubmitModalOpen(false);
-          setPendingPayload(null);
-          resetForm();
-          close();
-          updateState(
-            setState,
-            "filters.userSelectedTab",
-            UserTabModes.Selected
-          );
-        },
-        onError: (e: any) => {
-          toast.error(e?.message ?? "Could not create bespoke campaign");
-        },
-      }
-    );
-  };
+		createBespoke(
+			{
+				name: form.values.title.trim(),
+				description: composeDescription(narrative),
+				from,
+				to,
+				notes: form.values.notes || null,
+				objectives: form.values.objectives,
+				topics: form.values.topics,
+				assets: finalAssets,
+				reference_links: [],
+				selectedAssets: finalAssets,
+				brief,
+			},
+			{
+				onSuccess: () => {
+					resetForm();
+					close();
+					updateState(
+						setState,
+						"filters.userSelectedTab",
+						UserTabModes.Selected,
+					);
+				},
+				onError: (e: any) => {
+					toast.error(e?.message ?? "Could not create bespoke campaign");
+				},
+			},
+		);
+	};
 
-  return (
-    <>
-      <StyledButton
-        fw={500}
-        leftSection={<IconPlus size={14} />}
-        onClick={open}
-      >
-        {buttonText}
-      </StyledButton>
+	const maxDate = new Date(new Date().getFullYear() + 2, 11, 31);
+	const minDate = (() => {
+		const d = new Date();
+		d.setDate(d.getDate() + 30);
+		return d;
+	})();
 
-      <Modal
-			fullScreen={isMobile}
-			opened={opened}
-        onClose={close}
-        title={
-          <Stack gap={0}>
-            <Flex align={"center"} gap={10}>
-              <IconPlus color={T.colors.blue[3]} size={21} />
-              <Text fz={"h4"} fw={600}>
-                Create Bespoke Campaign
-              </Text>
-            </Flex>
-            <Text size="sm" c="gray.6">
-              Submit a custom campaign brief — our design team picks it up straight away.
-            </Text>
-          </Stack>
-        }
-        centered
-        radius={10}
-        size="42rem"
-        overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
-      >
-        <form onSubmit={onSubmit}>
-          <Stack gap={25}>
-            <TextInput
-              withAsterisk
-              radius={10}
-              size="md"
-              label="Campaign Title"
-              placeholder="Enter campaign title"
-              {...form.getInputProps("title")}
-            />
-            <BriefGuide
-              answers={briefAnswers}
-              onChange={setBriefAnswers}
-            />
-            <CampaignDates
-              required
-              minDate={(() => { const d = new Date(); d.setDate(d.getDate() + 30); return d; })()}
-              maxDate={new Date(2026, 11, 31)}
-              title="Preferred Dates"
-              icon={<IconCalendar size={16} />}
-              dateRange={form.values.dateRange}
-              onChange={(range) => form.setFieldValue("dateRange", range)}
-              startLabel="Preferred Start Date"
-              endLabel="Preferred End Date"
-              inputSize="md"
-              labelSize="sm"
-              titleLabelSize="md"
-              hideTitleIcon
-            />
-            {form.errors.dateRange && (
-              <Text size="xs" c="red.6">
-                {" "}
-                {form.errors.dateRange as string}{" "}
-              </Text>
-            )}
-            <Stack gap={10}>
-              {" "}
-              <Group align="flex-start" gap={3}>
-                {" "}
-                <Text size="md" c="gray.9" fw={500}>
-                  {" "}
-                  Objectives{" "}
-                </Text>{" "}
-                <IconAsterisk size={9} color="red" />{" "}
-              </Group>{" "}
-              <Chip.Group
-                multiple
-                value={form.values.objectives}
-                onChange={(v) => form.setFieldValue("objectives", v)}
-              >
-                {" "}
-                <Group align="center" gap={5}>
-                  {" "}
-                  {filtersOptions?.objectives.map((c) => (
-                    <Chip
-                      value={c}
-                      key={c}
-                      color={"blue.3"}
-                      size="xs"
-                      fw={600}
-                      variant={
-                        form.values.objectives.includes(c)
-                          ? "filled"
-                          : "outline"
-                      }
-                    >
-                      {" "}
-                      {startCase(c)}{" "}
-                    </Chip>
-                  ))}{" "}
-                </Group>{" "}
-              </Chip.Group>{" "}
-              {form.errors.objectives && (
-                <Text size="xs" c="red.6">
-                  {" "}
-                  {form.errors.objectives}{" "}
-                </Text>
-              )}{" "}
-            </Stack>{" "}
-            <Stack gap={10}>
-              {" "}
-              <Group align="flex-start" gap={3}>
-                {" "}
-                <Text size="md" c="gray.9" fw={500}>
-                  {" "}
-                  Categories{" "}
-                </Text>{" "}
-                <IconAsterisk size={9} color="red" />{" "}
-              </Group>{" "}
-              <Chip.Group
-                multiple
-                value={form.values.topics}
-                onChange={(v) => form.setFieldValue("topics", v)}
-              >
-                {" "}
-                <Group align="center" gap={5}>
-                  {" "}
-                  {filtersOptions?.topics.map((c) => (
-                    <Chip
-                      value={c}
-                      key={c}
-                      color={"blue.3"}
-                      size="xs"
-                      fw={600}
-                      variant={
-                        form.values.topics.includes(c) ? "filled" : "outline"
-                      }
-                    >
-                      {" "}
-                      {startCase(c)}{" "}
-                    </Chip>
-                  ))}{" "}
-                </Group>{" "}
-              </Chip.Group>{" "}
-              {form.errors.topics && (
-                <Text size="xs" c="red.6">
-                  {" "}
-                  {form.errors.topics}{" "}
-                </Text>
-              )}{" "}
-            </Stack>
-            {/* ✅ Required Assets Section */}
-            <Stack gap={15}>
-              <Group align="flex-start" gap={3}>
-                <Text size="md" c="gray.9" fw={500}>
-                  Required Assets
-                </Text>
-                <IconAsterisk size={9} color="red" />
-              </Group>
+	return (
+		<>
+			<StyledButton
+				fw={500}
+				leftSection={<IconPlus size={14} />}
+				onClick={open}
+			>
+				{buttonText}
+			</StyledButton>
 
-              {loadingAssets && <Loader size="sm" color="blue" />}
-              {assetsError && (
-                <Text size="sm" c="red">
-                  Failed to load assets.
-                </Text>
-              )}
+			<Modal
+				fullScreen={isMobile}
+				opened={opened}
+				onClose={close}
+				title={
+					<Stack gap={0}>
+						<Flex align="center" gap={10}>
+							<IconPlus color={T.colors.blue[3]} size={21} />
+							<Text fz="h4" fw={600}>
+								Create Bespoke Campaign
+							</Text>
+						</Flex>
+						<Text size="sm" c="gray.6">
+							Submit a custom campaign brief — our design team picks it up
+							straight away.
+						</Text>
+					</Stack>
+				}
+				centered
+				radius={10}
+				size="44rem"
+				overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
+			>
+				<Stack gap={22}>
+					{/* Project name */}
+					<TextInput
+						withAsterisk
+						radius={10}
+						size="md"
+						label="What is the name of this project?"
+						placeholder="e.g. Local Homes Drop"
+						{...form.getInputProps("title")}
+					/>
 
-              {!loadingAssets && assetsData && (
-                <>
-                  {(
-                    [
-                      { key: "printedAssets", label: "Printed Assets" },
-                      { key: "digitalAssets", label: "Digital Assets" },
-                      // {
-                      //   key: "externalPlacements",
-                      //   label: "External Placements",
-                      // },
-                    ] as const
-                  ).map(({ key, label }) => (
-                    <Box key={key}>
-                      <Text fw={600} size="sm" mb={6} c="blue.3">
-                        {label}
-                      </Text>
-                      <Checkbox.Group
-                        value={form.values.selectedAssets}
-                        onChange={(v) =>
-                          form.setFieldValue("selectedAssets", v)
-                        }
-                      >
-                        <SimpleGrid cols={2} spacing={6} mt={4}>
-                          {assetsData?.[key]?.content?.map((a) => (
-                            <Checkbox
-                              key={a.name}
-                              radius={50}
-                              size="xs"
-                              color="blue.3"
-                              value={a.name}
-                              label={
-                                <Text size="sm" fw={500}>
-                                  {a.name}
-                                </Text>
-                              }
-                            />
-                          ))}
-                        </SimpleGrid>
-                      </Checkbox.Group>
-                      <GradientDivider my={12} />
-                    </Box>
-                  ))}
-                </>
-              )}
+					{/* Background */}
+					<Stack gap={12}>
+						<SectionHeader
+							icon={<IconBulb size={14} />}
+							title="Background"
+							color="blue"
+						/>
+						<Textarea
+							radius={10}
+							autosize
+							minRows={2}
+							withAsterisk
+							label="What is the purpose of this project?"
+							placeholder="e.g. To increase brand awareness in the local area and inform those who have just moved onto new build estates that we are a trusted, local, independent optician."
+							value={narrative.purpose}
+							onChange={(e) => setField("purpose", e.currentTarget.value)}
+						/>
+					</Stack>
 
-              {form.errors.selectedAssets && (
-                <Text size="xs" c="red.6">
-                  {form.errors.selectedAssets}
-                </Text>
-              )}
-            </Stack>
-            {/* ✅ Reference Links */}
-            <Stack gap={10}>
-              <Flex align="center" justify="space-between">
-                <Text size="md" c="gray.9" fw={500}>
-                  Reference Links (optional)
-                </Text>
-                <StyledButton
-                  leftSection={<IconPlus size={14} />}
-                  onClick={handleAddLink}
-                >
-                  Add Link
-                </StyledButton>
-              </Flex>
+					{/* Who is the Audience? */}
+					<Stack gap={12}>
+						<SectionHeader
+							icon={<IconUsers size={14} />}
+							title="Who is the Audience?"
+							color="teal"
+						/>
+						<Textarea
+							radius={10}
+							autosize
+							minRows={2}
+							label="Is there anything important we should know about this audience?"
+							placeholder="e.g. The audience is non-patients in our local area. The area is very affluent and high-end; the estate has an entry house price of £750k."
+							value={narrative.audience_notes}
+							onChange={(e) =>
+								setField("audience_notes", e.currentTarget.value)
+							}
+						/>
+					</Stack>
 
-              {links.map((link, index) => (
-                <Grid key={index} gutter="xs">
-                  <Grid.Col span={links.length > 1 ? 11 : 12}>
-                    <TextInput
-                      w="100%"
-                      radius={10}
-                      placeholder="https://example.com"
-                      value={link}
-                      onChange={({ target: { value } }) =>
-                        handleChangeLink(index, value)
-                      }
-                    />
-                  </Grid.Col>
-                  {links.length > 1 && (
-                    <Grid.Col span={1}>
-                      <ActionIcon
-                        color="red"
-                        variant="subtle"
-                        onClick={() => handleRemoveLink(index)}
-                      >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Grid.Col>
-                  )}
-                </Grid>
-              ))}
-            </Stack>
-            <Textarea
-              resize="vertical"
-              radius={10}
-              label="Additional Notes"
-              placeholder="Any additional requirements or context"
-              minRows={3}
-              autosize
-              {...form.getInputProps("notes")}
-            />
-            <Flex justify="flex-end" gap={8}>
-              <StyledButton onClick={handleCancel}>Cancel</StyledButton>
-              <Button
-                type="submit"
-                radius={10}
-                color="blue.3"
-                disabled={!canSubmit}
-                leftSection={<IconPlus size={14} />}
-              >
-                Continue
-              </Button>
-            </Flex>
-          </Stack>
-        </form>
-      </Modal>
+					{/* Objectives + Categories (kept) */}
+					<Stack gap={14}>
+						<Stack gap={8}>
+							<Group gap={3}>
+								<Text size="sm" fw={500} c="gray.8">
+									Objectives
+								</Text>
+								<IconAsterisk size={8} color="red" />
+							</Group>
+							<Chip.Group
+								multiple
+								value={form.values.objectives}
+								onChange={(v) => form.setFieldValue("objectives", v)}
+							>
+								<Group gap={5}>
+									{filtersOptions?.objectives.map((c) => (
+										<Chip
+											value={c}
+											key={c}
+											color="blue.3"
+											size="xs"
+											fw={600}
+											variant={
+												form.values.objectives.includes(c)
+													? "filled"
+													: "outline"
+											}
+										>
+											{startCase(c)}
+										</Chip>
+									))}
+								</Group>
+							</Chip.Group>
+							{form.errors.objectives && (
+								<Text size="xs" c="red.6">
+									{form.errors.objectives}
+								</Text>
+							)}
+						</Stack>
 
-      <SubmitChoicesModal
-        opened={submitModalOpen}
-        onClose={() => setSubmitModalOpen(false)}
-        title={`Submit ${pendingPayload?.title ?? "Bespoke Campaign"}`}
-        category="Bespoke"
-        description={pendingPayload?.description ?? null}
-        fromDate={pendingPayload?.from ?? null}
-        toDate={pendingPayload?.to ?? null}
-        assets={pendingPayload?.filteredAssets}
-        defaultCreative={DEFAULT_BESPOKE_CREATIVE}
-        preselectAssets
-        loading={creating}
-        submitLabel="Submit Campaign"
-        onSubmit={handleModalSubmit}
-      />
-    </>
-  );
+						<Stack gap={8}>
+							<Group gap={3}>
+								<Text size="sm" fw={500} c="gray.8">
+									Categories
+								</Text>
+								<IconAsterisk size={8} color="red" />
+							</Group>
+							<Chip.Group
+								multiple
+								value={form.values.topics}
+								onChange={(v) => form.setFieldValue("topics", v)}
+							>
+								<Group gap={5}>
+									{filtersOptions?.topics.map((c) => (
+										<Chip
+											value={c}
+											key={c}
+											color="blue.3"
+											size="xs"
+											fw={600}
+											variant={
+												form.values.topics.includes(c)
+													? "filled"
+													: "outline"
+											}
+										>
+											{startCase(c)}
+										</Chip>
+									))}
+								</Group>
+							</Chip.Group>
+							{form.errors.topics && (
+								<Text size="xs" c="red.6">
+									{form.errors.topics}
+								</Text>
+							)}
+						</Stack>
+					</Stack>
+
+					<GradientDivider />
+
+					{/* Content & Assets */}
+					<Stack gap={14}>
+						<SectionHeader
+							icon={<IconPhoto size={14} />}
+							title="Content & Assets"
+							color="grape"
+						/>
+						<BriefFileUpload
+							question="Do you already have content written for this project?"
+							has={hasContent}
+							onHasChange={setHasContent}
+							files={contentFiles}
+							onFilesChange={setContentFiles}
+							disabled={busy}
+						/>
+						<BriefFileUpload
+							question="Do you already have imagery for this project?"
+							has={hasImagery}
+							onHasChange={setHasImagery}
+							files={imageryFiles}
+							onFilesChange={setImageryFiles}
+							disabled={busy}
+						/>
+					</Stack>
+
+					<GradientDivider />
+
+					{/* Offers, Promotions & CTA */}
+					<Stack gap={12}>
+						<SectionHeader
+							icon={<IconGift size={14} />}
+							title="Offers, Promotions & Call-to-Action"
+							color="teal"
+						/>
+						<Textarea
+							radius={10}
+							autosize
+							minRows={2}
+							label="Would you like to include any offers, promotions, or calls-to-action?"
+							placeholder="e.g. I would like to offer 10% off for new patients, I'd also like to invite patients to book an appointment by scanning a QR code."
+							value={narrative.offers_cta}
+							onChange={(e) => setField("offers_cta", e.currentTarget.value)}
+						/>
+					</Stack>
+
+					<GradientDivider />
+
+					{/* Design & Style */}
+					<Stack gap={14}>
+						<SectionHeader
+							icon={<IconPalette size={14} />}
+							title="Design & Style"
+							color="pink"
+						/>
+						<Textarea
+							radius={10}
+							autosize
+							minRows={2}
+							label="How should this look and feel?"
+							placeholder="e.g. High-end and uncluttered. We want to target affluent patients, so we'd like to show the technology in the practice as well as some of the designer brands we have available. We don't want too many words; we'd like to rely more on the practice imagery provided."
+							value={narrative.look_and_feel}
+							onChange={(e) =>
+								setField("look_and_feel", e.currentTarget.value)
+							}
+						/>
+						<BriefFileUpload
+							question="Are there any existing designs or examples we should refer to?"
+							has={hasExamples}
+							onHasChange={setHasExamples}
+							files={exampleFiles}
+							onFilesChange={setExampleFiles}
+							disabled={busy}
+						/>
+						<Textarea
+							radius={10}
+							autosize
+							minRows={2}
+							label="What should be avoided?"
+							placeholder="e.g. I'd like to avoid using too much written content."
+							value={narrative.what_to_avoid}
+							onChange={(e) =>
+								setField("what_to_avoid", e.currentTarget.value)
+							}
+						/>
+					</Stack>
+
+					<GradientDivider />
+
+					{/* Deliverables */}
+					<Stack gap={12}>
+						<Group gap={3} align="center">
+							<SectionHeader
+								icon={<IconBox size={14} />}
+								title="Deliverables"
+								color="indigo"
+							/>
+							<IconAsterisk size={8} color="red" />
+						</Group>
+						<Text size="xs" c="gray.5" mt={-6}>
+							What assets do you need for this project?
+						</Text>
+
+						{loadingCatalog ? (
+							<Loader size="sm" color="blue" />
+						) : (
+							<BespokeDeliverablesPicker
+								catalog={catalog ?? []}
+								value={chosen}
+								onChange={setChosen}
+								disabled={busy}
+							/>
+						)}
+
+						<Box>
+							<Checkbox
+								size="xs"
+								radius="sm"
+								color="blue.5"
+								disabled={busy}
+								checked={showOther}
+								onChange={(e) => {
+									const on = e.currentTarget.checked;
+									setShowOther(on);
+									if (!on) setField("other_deliverable", "");
+								}}
+								label={
+									<Text size="sm" fw={500} c="gray.7">
+										Other
+									</Text>
+								}
+							/>
+							<Collapse in={showOther}>
+								<Textarea
+									mt={8}
+									radius={10}
+									autosize
+									minRows={2}
+									label="If you have selected other, please specify:"
+									placeholder="e.g. We would like an accompanying advert for our local magazine, they need 185mm x 130mm with a 3mm bleed."
+									value={narrative.other_deliverable}
+									onChange={(e) =>
+										setField("other_deliverable", e.currentTarget.value)
+									}
+								/>
+							</Collapse>
+						</Box>
+					</Stack>
+
+					<GradientDivider />
+
+					{/* Preferred Dates */}
+					<CampaignDates
+						required
+						minDate={minDate}
+						maxDate={maxDate}
+						title="Preferred Dates"
+						icon={<IconCalendar size={16} />}
+						dateRange={form.values.dateRange}
+						onChange={(range) => form.setFieldValue("dateRange", range)}
+						startLabel="Preferred Start Date"
+						endLabel="Preferred End Date"
+						inputSize="md"
+						labelSize="sm"
+						titleLabelSize="md"
+						hideTitleIcon
+					/>
+					{form.errors.dateRange && (
+						<Text size="xs" c="red.6">
+							{form.errors.dateRange as string}
+						</Text>
+					)}
+
+					{/* Additional Notes */}
+					<Stack gap={10}>
+						<SectionHeader
+							icon={<IconNotes size={14} />}
+							title="Additional Notes"
+							color="gray"
+						/>
+						<Textarea
+							radius={10}
+							autosize
+							minRows={2}
+							label="Any additional requirements or context?"
+							placeholder="e.g. We have recently chosen our new rebrand option, could we please have this in our new branding ready for launch."
+							{...form.getInputProps("notes")}
+						/>
+					</Stack>
+
+					<Flex justify="flex-end" gap={8}>
+						<StyledButton onClick={handleCancel} disabled={busy}>
+							Cancel
+						</StyledButton>
+						<Button
+							radius={10}
+							color="blue.5"
+							loading={busy}
+							disabled={!canSubmit}
+							leftSection={<IconPlus size={14} />}
+							onClick={handleSubmit}
+						>
+							Submit Campaign
+						</Button>
+					</Flex>
+				</Stack>
+			</Modal>
+		</>
+	);
 };
 
 export default Bespoke;

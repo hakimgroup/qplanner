@@ -8,6 +8,7 @@ import {
   GuidedParams,
   BulkDeletePayload,
 } from "@/models/campaign.models";
+import { BespokeBrief } from "@/models/bespokeBrief.models";
 import { useAuth } from "@/shared/AuthProvider";
 import { usePractice } from "@/shared/PracticeProvider";
 import { ActorNotificationType, DatabaseTables, RPCFunctions } from "@/shared/shared.models";
@@ -251,6 +252,114 @@ export const useCreateBespokeSelection = () => {
       qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
 
       // Fire inProgress email to admins
+      if (notificationId) {
+        sendNotificationEmail({ notificationId });
+      }
+
+      if (activePracticeId && user?.id) {
+        queuePracticeOnboardingEmail(activePracticeId, user.id);
+
+        const isOnboarded = await isPracticeOnboarded(activePracticeId);
+        if (isOnboarded) {
+          await sendActorEmail({
+            type: "bespoke_added",
+            userId: user.id,
+            practiceId: activePracticeId,
+            selectionId,
+            campaignName: name,
+            campaignCategory: "Bespoke",
+            fromDate: format(from, "yyyy-MM-dd"),
+            toDate: format(to, "yyyy-MM-dd"),
+            isBespoke: true,
+          });
+          qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
+        }
+      }
+    },
+  });
+};
+
+/**
+ * Revamped bespoke create (2026-08) — calls create_bespoke_selection_v3 with
+ * the structured `brief`. No creative picker (server applies the default);
+ * otherwise mirrors the v2 hook's side-effects (admin email, onboarding,
+ * bespoke_added actor email). v2 hook left intact for the legacy Event form.
+ */
+export const useCreateBespokeSelectionV3 = () => {
+  const qc = useQueryClient();
+  const { activePracticeId } = usePractice();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (
+      input: CreateBespokeInput & {
+        selectedAssets?: any | null;
+        brief?: BespokeBrief;
+      }
+    ) => {
+      if (!activePracticeId) {
+        throw new Error("No active practice selected.");
+      }
+
+      const {
+        name,
+        description,
+        from,
+        to,
+        notes = null,
+        objectives = [],
+        topics = [],
+        assets = [],
+        reference_links,
+        selectedAssets = null,
+        brief = {},
+      } = input;
+
+      const { data, error } = await supabase.rpc(
+        RPCFunctions.CreateBespokeSelectionV3,
+        {
+          p_practice: activePracticeId,
+          p_name: name,
+          p_description: description,
+          p_from_date: format(from, "yyyy-MM-dd"),
+          p_to_date: format(to, "yyyy-MM-dd"),
+          p_notes: notes,
+          p_objectives: objectives,
+          p_topics: topics,
+          p_assets: assets,
+          p_reference_links: reference_links,
+          p_chosen_creative: null, // form no longer asks; server applies default
+          p_selected_assets: selectedAssets,
+          p_brief: brief,
+        }
+      );
+
+      if (error) throw error;
+      if (data && !data.success)
+        throw new Error(data.error || "Failed to create bespoke campaign");
+
+      return {
+        selectionId: data.selection_id as string,
+        notificationId: data.notification_id as string | undefined,
+        name,
+        from,
+        to,
+      };
+    },
+
+    onSuccess: async ({ selectionId, notificationId, name, from, to }) => {
+      toast.success(`"${name}" added to your plan`);
+
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.CampaignsCatalog],
+        exact: false,
+      });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Selections],
+        exact: false,
+      });
+      qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+
       if (notificationId) {
         sendNotificationEmail({ notificationId });
       }
@@ -617,6 +726,102 @@ export function useCreateBespokeEvent() {
       }
     },
     onError: (e) => {},
+  });
+}
+
+/**
+ * Revamped event create (2026-08) — calls create_bespoke_event_v3 with the
+ * structured `brief` (theme/brands/discounts/on_the_day/date_slots/pr). No
+ * creative picker (server applies the default). Mirrors v2's side-effects.
+ * v2 hook left intact for rollback.
+ */
+export function useCreateBespokeEventV3() {
+  const qc = useQueryClient();
+  const { activePracticeId } = usePractice();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (
+      input: CreateBespokeEventInput & {
+        selectedAssets?: any | null;
+        brief?: BespokeBrief;
+      }
+    ) => {
+      const practiceId = input.practiceId ?? activePracticeId;
+
+      const { data, error } = await supabase.rpc(
+        RPCFunctions.CreateBespokeEventV3,
+        {
+          p_practice: practiceId,
+          p_event_type: input.eventType,
+          p_title: input.title,
+          p_description: input.description,
+          p_event_from_date: format(input.eventFromDate, "yyyy-MM-dd"),
+          p_event_to_date: format(input.eventToDate, "yyyy-MM-dd"),
+          p_objectives: input.objectives ?? [],
+          p_topics: input.topics ?? [],
+          p_assets: input.assets ?? [],
+          p_requirements: input.requirements ?? null,
+          p_notes: input.notes ?? null,
+          p_reference_links: input.links ?? [],
+          p_chosen_creative: null, // form no longer asks; server applies default
+          p_selected_assets: input.selectedAssets ?? null,
+          p_brief: input.brief ?? {},
+        }
+      );
+
+      if (error) throw error;
+      if (data && !data.success)
+        throw new Error(data.error || "Failed to create event");
+
+      return {
+        selectionId: data.selection_id as string,
+        notificationId: data.notification_id as string | undefined,
+        practiceId,
+        title: input.title,
+        eventType: input.eventType,
+        fromDate: format(input.eventFromDate, "yyyy-MM-dd"),
+        toDate: format(input.eventToDate, "yyyy-MM-dd"),
+      };
+    },
+    onSuccess: async ({ selectionId, notificationId, practiceId, title, eventType, fromDate, toDate }) => {
+      toast.success(`"${title}" event added to your plan`);
+
+      await qc.invalidateQueries({
+        queryKey: [DatabaseTables.CampaignsCatalog, activePracticeId],
+      });
+      qc.invalidateQueries({
+        queryKey: [DatabaseTables.Selections],
+        exact: false,
+      });
+      qc.invalidateQueries({ queryKey: [RPCFunctions.GetPlans], exact: false });
+
+      if (notificationId) {
+        sendNotificationEmail({ notificationId });
+      }
+
+      const pid = practiceId ?? activePracticeId;
+      if (pid && user?.id) {
+        queuePracticeOnboardingEmail(pid, user.id);
+
+        const isOnboarded = await isPracticeOnboarded(pid);
+        if (isOnboarded) {
+          await sendActorEmail({
+            type: "bespoke_event_added",
+            userId: user.id,
+            practiceId: pid,
+            selectionId,
+            campaignName: title,
+            campaignCategory: eventType || "Event",
+            fromDate,
+            toDate,
+            isBespoke: true,
+          });
+          qc.invalidateQueries({ queryKey: [DatabaseTables.Notifications] });
+        }
+      }
+    },
+    onError: () => {},
   });
 }
 

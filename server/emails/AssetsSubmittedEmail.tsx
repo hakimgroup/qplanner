@@ -22,6 +22,48 @@ interface AssetItem {
 	quantity?: number;
 }
 
+interface BriefFile {
+	name?: string;
+	url?: string;
+}
+
+interface DateSlot {
+	date?: string;
+	start?: string;
+	end?: string;
+}
+
+/** "17:30" -> "5:30 PM". Passes through anything not in HH:mm form. */
+function to12Hour(t?: string): string {
+	if (!t) return "";
+	const m = /^(\d{1,2}):(\d{2})$/.exec(t.trim());
+	if (!m) return t;
+	const h = Number(m[1]);
+	const period = h < 12 ? "AM" : "PM";
+	const h12 = h % 12 === 0 ? 12 : h % 12;
+	return `${h12}:${m[2]} ${period}`;
+}
+
+interface BespokeBriefShape {
+	// Bespoke campaign fields
+	purpose?: string;
+	audience_notes?: string;
+	offers_cta?: string;
+	look_and_feel?: string;
+	what_to_avoid?: string;
+	other_deliverable?: string;
+	content_files?: BriefFile[];
+	imagery_files?: BriefFile[];
+	example_files?: BriefFile[];
+	// Event fields
+	theme?: string;
+	brands?: string;
+	discounts?: string;
+	on_the_day?: string;
+	pr?: boolean;
+	date_slots?: DateSlot[];
+}
+
 interface AssetsSubmittedEmailProps {
 	practiceName: string;
 	practiceId: string;
@@ -36,6 +78,7 @@ interface AssetsSubmittedEmailProps {
 		externalPlacements?: AssetItem[];
 	};
 	note?: string | null;
+	brief?: BespokeBriefShape | null;
 	appUrl: string;
 	selectionId: string;
 }
@@ -50,10 +93,39 @@ export const AssetsSubmittedEmail = ({
 	chosenCreative,
 	assets,
 	note,
+	brief,
 	appUrl,
 	selectionId,
 }: AssetsSubmittedEmailProps) => {
 	const reviewUrl = `${appUrl}/notifications-center`;
+
+	const briefNarrative: [string, string | undefined][] = brief
+		? [
+				["Purpose", brief.purpose],
+				["About the audience", brief.audience_notes],
+				["Offers, promotions & CTA", brief.offers_cta],
+				["Look & feel", brief.look_and_feel],
+				["What to avoid", brief.what_to_avoid],
+				["Theme", brief.theme],
+				["Brands", brief.brands],
+				["Exclusive discounts", brief.discounts],
+				["On the day", brief.on_the_day],
+				["Other deliverable", brief.other_deliverable],
+				["PR", brief.pr === undefined ? undefined : brief.pr ? "Yes" : "No"],
+			]
+		: [];
+	const dateSlots = brief?.date_slots ?? [];
+	const briefFileGroups: [string, BriefFile[] | undefined][] = brief
+		? [
+				["Content", brief.content_files],
+				["Imagery", brief.imagery_files],
+				["Design examples & references", brief.example_files],
+			]
+		: [];
+	const hasBrief =
+		briefNarrative.some(([, v]) => (v ?? "").trim()) ||
+		briefFileGroups.some(([, f]) => (f?.length ?? 0) > 0) ||
+		dateSlots.length > 0;
 
 	// Count assets with quantities
 	const digitalWithQty = assets?.digitalAssets?.filter(a => a.quantity && a.quantity > 0) || [];
@@ -126,6 +198,54 @@ export const AssetsSubmittedEmail = ({
 							<Section style={selectionBox}>
 								<Text style={selectionLabel}>Selected Creative</Text>
 								<Text style={selectionValue}>{chosenCreative}</Text>
+							</Section>
+						)}
+
+						{hasBrief && (
+							<Section style={selectionBox}>
+								<Text style={sectionTitle}>Campaign Brief</Text>
+
+								{dateSlots.length > 0 && (
+									<>
+										<Text style={assetCategoryLabel}>Dates &amp; times</Text>
+										<ul style={assetList}>
+											{dateSlots.map((s, i) => (
+												<li key={`ds-${i}`} style={assetItem}>
+													{s.date}
+													{s.start || s.end
+														? ` — ${to12Hour(s.start)}${s.end ? ` to ${to12Hour(s.end)}` : ""}`
+														: ""}
+												</li>
+											))}
+										</ul>
+									</>
+								)}
+
+								{briefNarrative
+									.filter(([, v]) => (v ?? "").trim())
+									.map(([label, v]) => (
+										<React.Fragment key={label}>
+											<Text style={assetCategoryLabel}>{label}</Text>
+											<Text style={noteText}>{v}</Text>
+										</React.Fragment>
+									))}
+
+								{briefFileGroups
+									.filter(([, files]) => (files?.length ?? 0) > 0)
+									.map(([label, files]) => (
+										<React.Fragment key={label}>
+											<Text style={assetCategoryLabel}>{label}</Text>
+											<ul style={assetList}>
+												{files!.map((f, i) => (
+													<li key={`bf-${i}`} style={assetItem}>
+														<Link href={f.url}>
+															{f.name || f.url}
+														</Link>
+													</li>
+												))}
+											</ul>
+										</React.Fragment>
+									))}
 							</Section>
 						)}
 
