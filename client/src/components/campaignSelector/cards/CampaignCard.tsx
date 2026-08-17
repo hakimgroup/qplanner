@@ -107,9 +107,10 @@ const CampaignCard = (c: Campaign) => {
 	const handleShare = async (e: React.MouseEvent) => {
 		e.stopPropagation();
 		if (!c.id) return;
-		const base =
-			(import.meta as any).env?.VITE_APP_BASE_URL ||
-			window.location.origin;
+		// Always build the link from the domain the user is actually on, so it
+		// matches the environment (prod / staging / local) and can't drift from
+		// a mis-set env var.
+		const base = window.location.origin;
 		const url = `${base.replace(/\/$/, "")}${AppRoutes.Dashboard}?campaign=${c.id}`;
 		try {
 			await navigator.clipboard.writeText(url);
