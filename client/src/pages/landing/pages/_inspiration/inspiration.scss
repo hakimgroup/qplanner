@@ -1,0 +1,134 @@
+/**
+ * Scoped styling for the campaign inspiration gallery. Everything is namespaced
+ * under `.insp` so it can't leak into the rest of the planner.
+ *
+ * Only three things genuinely need CSS rather than Mantine props: the card
+ * hover lift, the image zoom inside the card, and the snap-scrolling gallery
+ * strip in the case-study modal.
+ */
+
+.insp {
+	/* ── Campaign card ─────────────────────────────────────────────────────── */
+	&__card {
+		cursor: pointer;
+		border: none;
+		padding: 0;
+		margin: 0;
+		width: 100%;
+		text-align: left;
+		background: #fff;
+		border-radius: 16px;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		font: inherit;
+		color: inherit;
+		box-shadow: 0 1px 2px rgba(16, 12, 40, 0.06);
+		transition:
+			transform 0.22s ease,
+			box-shadow 0.22s ease;
+
+		&:hover,
+		&:focus-visible {
+			transform: translateY(-4px);
+			box-shadow: 0 14px 32px rgba(16, 12, 40, 0.13);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--mantine-color-violet-6);
+			outline-offset: 3px;
+		}
+
+		&:hover .insp__card-img,
+		&:focus-visible .insp__card-img {
+			transform: scale(1.045);
+		}
+	}
+
+	&__card-media {
+		position: relative;
+		aspect-ratio: 16 / 10;
+		overflow: hidden;
+		background: var(--mantine-color-gray-1);
+	}
+
+	&__card-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		transition: transform 0.4s ease;
+	}
+
+	/* Keeps the category badge legible over any photograph. */
+	&__card-scrim {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			to bottom,
+			rgba(0, 0, 0, 0.28) 0%,
+			rgba(0, 0, 0, 0) 42%
+		);
+		pointer-events: none;
+	}
+
+	&__card-body {
+		padding: 16px 18px 18px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		flex: 1;
+	}
+
+	/* ── Case-study gallery strip ──────────────────────────────────────────── */
+	&__strip {
+		display: flex;
+		gap: 14px;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		padding-bottom: 10px;
+		scrollbar-width: thin;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	&__strip-item {
+		flex: 0 0 clamp(210px, 46%, 300px);
+		scroll-snap-align: start;
+		margin: 0;
+	}
+
+	&__strip-img {
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		object-fit: cover;
+		border-radius: 12px;
+		display: block;
+		background: var(--mantine-color-gray-1);
+	}
+
+	/* ── Modal banner ──────────────────────────────────────────────────────── */
+	&__banner {
+		width: 100%;
+		aspect-ratio: 21 / 9;
+		object-fit: cover;
+		display: block;
+		background: var(--mantine-color-gray-1);
+	}
+
+	/* Respect users who've asked the OS to reduce motion. */
+	@media (prefers-reduced-motion: reduce) {
+		&__card,
+		&__card-img {
+			transition: none;
+		}
+
+		&__card:hover,
+		&__card:focus-visible {
+			transform: none;
+		}
+
+		&__card:hover .insp__card-img {
+			transform: none;
+		}
+	}
+}
