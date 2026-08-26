@@ -1,0 +1,850 @@
+/**
+ * Scoped port of the standalone Q4 campaign-page stylesheet (originally styles.css).
+ * Same rules as the hub sheet: everything nested under `.uypp-q4-detail`, @font-face
+ * and @keyframes hoisted, keyframe names prefixed `uyppQ4`.
+ *
+ * Do not reintroduce `overflow-x: hidden` on the wrapper: it breaks `position:
+ * sticky` on the topbar inside the planner's layout.
+ */
+
+/* ===================== FONTS ===================== */
+@font-face { font-family:"Bebas Neue Pro"; src:url("/landing-assets/uypp-q4/fonts/BebasNeuePro-Regular.otf") format("opentype"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Bebas Neue Pro"; src:url("/landing-assets/uypp-q4/fonts/BebasNeuePro-Middle.otf") format("opentype"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Bebas Neue Pro"; src:url("/landing-assets/uypp-q4/fonts/BebasNeuePro-Bold.otf") format("opentype"); font-weight:700; font-display:swap; }
+
+/* ============ KEYFRAMES (global, must not nest — prefixed) ============ */
+@keyframes uyppQ4HeroZoom { from { transform:scale(1.06); } to { transform:scale(1); } }
+@keyframes uyppQ4RouteIn { from { opacity:0; transform:translateY(14px);} to { opacity:1; transform:none; } }
+@keyframes uyppQ4TileIn { to { opacity:1; transform:none; } }
+
+/* ===================== SCOPED ROOT ===================== */
+.uypp-q4-detail {
+	/* ===================== FONTS ===================== */
+
+	/* ===================== TOKENS ===================== */
+	& {
+	  --bg:#F7F6F2; --tint:#EFEEE8; --dark:#15131A; --ink:#17141A;
+	  --muted:#6B6770; --line:#E2E0D8; --accent:#EA5297;
+	  --deck-light:#7D69B0;           /* lighter purple — a tint of --deck, for brand-campaign markers */
+	  --deck:#3D305C;                 /* HG indigo — "the problem" sections, hero fallback */
+	  --route:#3D305C;                /* per-campaign accent, set inline on <body> */
+	  --maxw:1180px; --pad:clamp(20px,5vw,64px); --radius:18px;
+	  --head-gap:clamp(12px,1.2vw,18px);  /* every heading to its copy — see SECTION TYPOGRAPHY */
+	  /* The exact gap between .wrap's edge and the edge of the viewport. Resolves to the page
+	     padding while the wrap is still shrinking, then to (100vw - maxw)/2 once it hits its max
+	     width. Anything wanting to run full bleed out of the wrap uses this. */
+	  --bleed:calc((100vw - min(100vw - (var(--pad) * 2), var(--maxw))) / 2);
+	  --display:"Bebas Neue Pro","Arial Narrow",sans-serif;
+	  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+	  --ease:cubic-bezier(.22,.61,.36,1);
+	}
+
+	/* ===================== BASE ===================== */
+	* { box-sizing:border-box; }
+	& {  background:var(--bg); color:var(--ink); font-family:var(--body);
+	  font-size:18.5px; line-height:1.55; -webkit-font-smoothing:antialiased;  
+	  min-height:100vh;
+	  /* The planner wraps pages in `.app main { padding: 0 20px }` (10px at
+	     <=768px). Pull back out so the coloured bands reach the screen edge. */
+	  margin-inline:-20px;
+	  @media (max-width:768px){ margin-inline:-10px; }
+	}
+	img { max-width:100%; display:block; }
+	a { color:inherit; text-decoration:none; }
+	p { margin:0 0 1em; }
+	.wrap { width:min(100% - calc(var(--pad)*2),var(--maxw)); margin-inline:auto; }
+	.section { padding-block:clamp(40px,5.5vw,80px); }
+	.section--tint { background:var(--tint); }
+	.section--dark { background:var(--dark); color:#fff; }
+	.section--deck { background:var(--deck); color:#fff; }
+
+	.display { font-family:var(--display); font-weight:700; line-height:.92; letter-spacing:.01em; text-transform:uppercase; margin:0; }
+	.eyebrow { font-family:var(--display); font-weight:500; letter-spacing:.16em; text-transform:uppercase; font-size:1.12rem; color:var(--muted); margin:0 0 .5em; }
+	.eyebrow--light { color:#fff; text-shadow:0 1px 12px rgba(0,0,0,.45); }
+	/* The campaign's own accent now appears on one element only: the active route pill
+	   (.rtab--active). Every other label, including inside the creative section, stays
+	   on the HG palette. detail.js still sets --route on <body> for that pill. */
+	.eyebrow--route { color:var(--deck); }
+	.lead { font-size:clamp(1.05rem,1.6vw,1.3rem); line-height:1.5; color:#2b2730; }
+	.lead--narrow { max-width:46ch; }
+	.section--dark .lead, .section--deck .lead { color:rgba(255,255,255,.8); }
+
+	/* ===================== REVEAL ===================== */
+	.reveal { opacity:0; transform:translateY(26px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
+	.reveal.in { opacity:1; transform:none; }
+	.reveal:nth-child(2){ transition-delay:.06s; }
+	.reveal:nth-child(3){ transition-delay:.12s; }
+	.reveal:nth-child(4){ transition-delay:.18s; }
+	@media (prefers-reduced-motion:reduce){ .reveal{ opacity:1; transform:none; transition:none; }  .hero__img{ animation:none !important; } }
+
+	/* ===================== TOP BAR ===================== */
+	.topbar { position:sticky; top:0; z-index:50; background:rgba(247,246,242,.82); backdrop-filter:blur(12px);
+	  border-bottom:1px solid transparent; transition:border-color .3s, background .3s; }
+	.topbar.is-stuck { border-bottom-color:var(--line); }
+	.topbar__inner { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-block:14px; flex-wrap:wrap; }
+	.brand { display:inline-flex; align-items:center; }
+	.brand__logo { height:58px; width:auto; transition:transform .5s var(--ease); }
+	.brand:hover .brand__logo { transform:scale(1.04); }
+	.brand__logo--foot { height:66px; }
+	/* ---- BUTTON RULE ----
+	   Every control on the site — nav chips, buttons, route tabs, carousel arrows — is set in
+	   Bebas, uppercase, same letter-spacing. On hover it always FILLS with a brand colour and the
+	   text always goes white:
+
+	     on a light background  ->  indigo  (--deck)
+	     on a dark background   ->  HG pink (--accent), because indigo would disappear
+	     already pink           ->  reverses out to white with indigo text
+
+	   Keep new controls inside this rule rather than inventing a hover. The one deliberate
+	   exception is the active route tab, which stays --route: that is the campaign's own accent
+	   sampled from its artwork, and it is what ties the tabs to the creative. */
+	.topnav { display:flex; gap:8px; flex-wrap:wrap; }
+	.chip { font-family:var(--display); font-size:1.05rem; letter-spacing:.06em; text-transform:uppercase;
+	  padding:10px 20px; border-radius:999px;
+	  border:2px solid rgba(61,48,92,.3); color:var(--ink); }
+	.chip { transition:background .2s, color .2s, border-color .2s; }
+	.chip:hover { background:var(--deck); color:#fff; border-color:var(--deck); }
+	.chip--active { background:var(--deck); color:#fff; border-color:var(--deck); }
+	/* Three two-word labels will not fit a phone. Dropping the second word below 820px keeps it to
+	   one row: Featured / Evergreen / Brand — still distinct, since the first word is the one
+	   carrying the meaning. Below 560px they tighten and the logo comes down a little as well,
+	   which is what keeps the nav beside the logo rather than wrapping under it: a 152px sticky
+	   header is nearly a quarter of a phone screen. Must match the same block in home.css. */
+	@media (max-width:820px){
+	  .chip__suffix { display:none; }
+	}
+	@media (max-width:560px){
+	  .topnav { gap:6px; }
+	  .chip { font-size:1rem; padding:8px 13px; border-width:1px; }
+	  .brand__logo { height:44px; }
+	}
+
+	/* ===================== HERO ===================== */
+	.hero { position:relative; min-height:clamp(360px,52vw,620px); display:flex; align-items:flex-end; overflow:hidden; background:var(--deck); }
+	/* Gifting & Party has no hero artwork yet, so its hero would show the plain indigo fallback
+	   directly above the indigo band below it — the two would read as one strip. The striped
+	   dark treatment (same as .ph-block) separates them and says "artwork to come". */
+	.hero--placeholder { background:
+	  repeating-linear-gradient(45deg, rgba(255,255,255,.045) 0 16px, rgba(255,255,255,0) 16px 32px),
+	  linear-gradient(135deg,#221f29 0%, var(--dark) 72%); }
+	/* Cropped tight on the poster band rather than centred, so less pavement and sky shows —
+	   object-position pulls the crop up, and --hero-y tunes it per page from the <body> tag.
+
+	   No resting zoom. The deck renders are 1600px wide and this hero is roughly 3000 device
+	   pixels across on a Retina screen, so the artwork is already being enlarged nearly 2x.
+	   Any scale on top of that is sharpness thrown away, and it showed on the posters. The
+	   slow drift stays but now settles at 1:1, so the state you actually read is the sharpest
+	   one. If renders at 3000px+ ever arrive, a resting zoom could come back. */
+	.hero__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+	  object-position:50% var(--hero-y, 40%); animation:uyppQ4HeroZoom 16s var(--ease) forwards; }
+
+	@media (prefers-reduced-motion:reduce){
+	  .hero__img { animation:none !important; transform:none; }
+	}
+	.hero__overlay { position:absolute; inset:0; background:linear-gradient(90deg,
+	  rgba(21,19,26,.96) 0%, rgba(21,19,26,.86) 36%, rgba(21,19,26,.36) 66%, rgba(21,19,26,0) 92%); }
+	.hero__content { position:relative; padding-block:clamp(28px,5vw,56px); }
+	.hero__title { font-family:var(--display); font-weight:700; text-transform:uppercase; color:#fff; line-height:.9; margin:0;
+	  font-size:clamp(3rem,10vw,8rem); text-shadow:0 2px 30px rgba(0,0,0,.25); }
+	.hero__meta { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+	.hero__pill { font-family:var(--display); letter-spacing:.12em; text-transform:uppercase; font-size:1rem;
+	  color:var(--ink); background:#fff; padding:7px 16px; border-radius:999px; }
+	.hero__pill--ghost { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.5); }
+
+	/* ===================== BACK LINK ===================== */
+	/* Lives in the hero, above the "Q4 2026" eyebrow, on every campaign page. It used to sit
+	   part-way down inside the intro section, which meant you had to hunt for it. */
+	.back-link { display:inline-block; color:var(--muted); margin-bottom:32px; font-size:1.1rem; }
+	.back-link:hover { color:var(--ink); }
+	/* On the hero it sits over a photograph, so it needs light type and a tighter gap — the
+	   eyebrow follows immediately underneath it. */
+	.back-link--hero { color:rgba(255,255,255,.82); margin-bottom:clamp(14px,1.6vw,20px); }
+	.back-link--hero:hover { color:#fff; text-decoration:underline; text-underline-offset:3px; }
+
+	/* ===================== INTRO ===================== */
+	/* Columns come from the shared .twocol frame below — the intro used to be 1.2fr 1fr while
+	   the deck statement above it was 1fr 1fr, so their right-hand columns started at different
+	   points and the two sections read as misaligned down the page. */
+	.intro { }
+	/* Size and bottom margin come from the shared SECTION TYPOGRAPHY rule below. */
+	.intro__heading { }
+	/* The intro's right column is an image now — its benefit bullets moved into the Practices
+	   panel in "Who this campaign speaks to", where they belong. Natural aspect ratio, no crop:
+	   the column is roughly the shape of the 16:9 renders anyway. */
+	/* Full bleed to the right. The left edge stays on the column line, so it still reads as the
+	   right-hand half of the section, but the picture runs off the edge of the page instead of
+	   stopping at the container. No border and no right-hand radius — both would draw attention
+	   to an edge that is meant to disappear.
+
+	   The intro section clips horizontally because --bleed is derived from 100vw, which counts the
+	   scrollbar, so on a scrollbar-ed window the image overshoots the true content edge by half a
+	   scrollbar. Clipping that is right: a few pixels of photo lost at the edge is invisible,
+	   whereas leaving it would put a horizontal scrollbar on the page. Overshooting deliberately
+	   also guarantees no pale sliver between the image and the edge. */
+	#core { overflow-x:clip; }
+	.intro__media { margin:0; margin-right:calc(-1 * var(--bleed));
+	  border-radius:var(--radius) 0 0 var(--radius); overflow:hidden; }
+	.intro__media img { width:100%; height:auto; display:block; }
+	.intro__media .ph-block { border-radius:0; }
+	@media (max-width:860px){
+	  /* Stacked, so bleeding one side only would look lopsided — run it edge to edge. */
+	  .intro__media { margin-left:calc(-1 * var(--bleed)); border-radius:0; }
+	}
+	.intro__points { list-style:none; margin:0; padding:0; display:grid; gap:14px; }
+	.intro__points li { position:relative; padding-left:28px; color:#2b2730; }
+	.intro__points li::before { content:""; position:absolute; left:0; top:.55em; width:12px; height:12px; border-radius:3px; background:var(--deck); }
+	.points--two { grid-template-columns:1fr 1fr; gap:14px clamp(24px,4vw,56px); }
+
+	/* ===================== THE PROBLEM ===================== */
+	.problem { max-width:none; }
+	.problem__label { font-family:var(--display); letter-spacing:.18em; text-transform:uppercase; font-size:1.05rem; color:rgba(255,255,255,.72); margin:0 0 .8em; }
+	/* Size and bottom margin come from the shared SECTION TYPOGRAPHY rule below. The negative
+	   top margin is re-applied after that rule, since its margin shorthand would wipe it. */
+	.problem__text { font-family:var(--display); font-weight:500; text-transform:uppercase; line-height:1.02;
+	  color:#fff; max-width:26ch; text-wrap:balance; }
+	.problem__body { margin:0; max-width:52ch; color:rgba(255,255,255,.82); }
+	/* ---- Shared two-column frame ----
+	   The deck statement and the intro directly below it use the SAME column split and gap, so
+	   the left edges line up and both right-hand columns start at the same point. Add any new
+	   two-column section here rather than giving it its own ratio. */
+	.problem__wrap,
+	.intro {
+	  display:grid; grid-template-columns:1fr 1fr;
+	  gap:clamp(24px,3.6vw,52px); align-items:start;
+	}
+
+	/* ===================== ROUTE SELECTOR ===================== */
+	.routes__tabs { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:clamp(24px,3vw,36px); }
+	.rtab { cursor:pointer; font:inherit; font-family:var(--display); letter-spacing:.06em; text-transform:uppercase;
+	  font-size:1.05rem; padding:11px 22px; border-radius:999px; background:transparent;
+	  border:1px solid var(--line); color:var(--muted); transition:all .25s var(--ease); }
+	.rtab:hover { border-color:var(--ink); color:var(--ink); }
+	.rtab--active { background:var(--route); border-color:var(--route); color:#fff; }
+	.rtab__no { opacity:.6; margin-right:8px; font-size:.85em; }
+
+	/* The image on the left matches the full height of the column on the right — tagline,
+	   title, body copy and the "Order this campaign" button — so the two sides square off.
+
+	   align-items:stretch alone would not do it: the figure would still claim its image's
+	   natural height, and whichever side happened to be taller would set the row. Taking the
+	   image out of flow (absolute inside a relative figure) means the figure contributes no
+	   height of its own, so the text column decides the row height and the image fills
+	   whatever that turns out to be. min-height is the floor for short copy, and for the
+	   stacked layout below 860px where there is no text column beside it. */
+	.route { display:grid; grid-template-columns:1fr 1fr; gap:clamp(28px,4vw,56px); align-items:stretch;
+	  animation:uyppQ4RouteIn .45s var(--ease); }
+
+	/* --bg, not --tint: the creative-directions section is itself tinted now, so a tint mat
+	   would disappear into it and the artwork would look like it was floating. */
+	.route__media { position:relative; margin:0; border-radius:var(--radius); overflow:hidden;
+	  border:1px solid var(--line); background:var(--bg);
+	  min-height:clamp(260px,26vw,360px); }
+	/* contain, not cover. The route visuals are all 16:9 deck renders, and the box is now
+	   roughly square because the text sets its height — cover crops about 40% of the width and
+	   slices the outer posters straight through, which is the same problem that got the order
+	   cards fixed earlier. Matting it against the tint keeps the whole artwork visible and the
+	   box still squares off with the text beside it. */
+	.route__media img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+	  padding:clamp(10px,1.4vw,20px); }
+	/* The placeholder block brings its own min-height, which would otherwise fight the figure. */
+	.route__media .ph-block { position:absolute; inset:0; min-height:0; }
+	/* Right column stacks so the button can sit on the bottom edge of the image when the copy
+	   is shorter than the picture.
+
+	   Note the direct-child selector: .route__body names both this wrapper AND the paragraphs
+	   inside it (the campaign data emits <p class='route__body'>). Without the >, these flex
+	   rules would hit the paragraphs too, and align-items:flex-start would shrink-wrap their
+	   text and change where every line breaks. */
+	.route > .route__body { display:flex; flex-direction:column; align-items:flex-start; }
+	.route > .route__body > .btn { margin-top:auto; }
+	.route__tagline { font-family:var(--display); letter-spacing:.14em; text-transform:uppercase; font-size:1rem; color:var(--muted); margin:0 0 .7em; }
+	/* Size and bottom margin come from the shared SECTION TYPOGRAPHY rule below. */
+	.route__title { }
+	.route__body { color:#2b2730; }
+	.taglist { display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; list-style:none; }
+	.taglist li { font-size:1.05rem; padding:6px 14px; border-radius:999px; background:var(--tint); border:1px solid var(--line); }
+	.section--tint .taglist li { background:var(--bg); }
+	.taglist .is-tbc { color:var(--muted); background:transparent; }
+
+	/* The at-a-glance block (.glance / .meta-block / .pipes) was removed on 13 Aug 2026. It
+	   restated the campaign month and KPI, both of which the hero pills and the intro eyebrow
+	   already carry, so only the "best for" line survived — that is now a plain section using
+	   .section-head and .lead, matching "Who this campaign speaks to". No rules needed. */
+
+	/* ===================== CAMPAIGN HOOK ===================== */
+	/* The opening section of a campaign page. It replaced a pair of sections — an indigo "problem"
+	   strip and then a separate intro with its own heading — which meant two headlines and two
+	   half-explanations before you learned anything about the campaign, plus a lot of dead space on
+	   a laptop.
+
+	   One read now, carried by three levels of type:
+	     hook__title      the problem, in display type
+	     hook__standfirst the turn, pulled out bold like the hub's opening hook
+	     hook__body       what the campaign does about it
+
+	   Same two-column frame as everything else, and the image runs full bleed off the right using
+	   --bleed. Sits on the indigo band, so everything in here is light. */
+	.hook { display:grid; grid-template-columns:1fr 1fr;
+	  gap:clamp(24px,3.6vw,52px); align-items:center; }
+	/* No image alongside: one centred column running the full container width, margin to margin.
+	   The measure caps that apply everywhere else are deliberately lifted here — this is a hook, a
+	   short statement meant to be read as one, not a column of body copy, so the wide centred
+	   setting is the point. Keep it short: three or four lines each. If the copy ever grows into
+	   real paragraphs, put the caps back or it will be hard to read. */
+	.section--hook .hook { grid-template-columns:minmax(0,1fr); text-align:center; }
+	.section--hook .hook__title,
+	.section--hook .hook__standfirst,
+	.section--hook .hook__body { max-width:none; margin-inline:0; }
+	.section--hook { padding-block:clamp(52px,7vw,104px); }
+	/* ---- .break-wide ----
+	   An art-directed line break that is honoured only while there is width to honour it. Used in
+	   the campaign hook and to drop the second sentence of a section intro onto its own line.
+	   Below 860px it disappears, because a forced break in a narrow column leaves a stranded short
+	   line and natural wrapping reads better. Use this rather than a bare <br>. */
+	@media (max-width:860px){
+	  .break-wide { display:none; }
+	}
+	.hook__title { font-size:clamp(2.2rem,5vw,3.6rem); color:#fff;
+	  max-width:26ch; text-wrap:balance; margin:0 0 var(--head-gap); }
+	.hook__standfirst { font-size:clamp(1.15rem,1.9vw,1.5rem); font-weight:600; line-height:1.35;
+	  color:#fff; max-width:34ch; margin:0 0 .9em; }
+	.hook__body { font-size:clamp(1.05rem,1.6vw,1.3rem); line-height:1.5;
+	  color:rgba(255,255,255,.82); max-width:46ch; margin:0; }
+	.hook__media { position:relative; margin:0; margin-right:calc(-1 * var(--bleed));
+	  border-radius:var(--radius) 0 0 var(--radius); overflow:hidden; min-height:clamp(240px,26vw,380px); }
+	.hook__media img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+	@media (max-width:860px){
+	  .hook { grid-template-columns:1fr; }
+	  .hook__media { margin-left:calc(-1 * var(--bleed)); border-radius:0; }
+	  .hook__title, .hook__standfirst, .hook__body { max-width:none; }
+	}
+
+	/* ---- "Click to enlarge" hint ----
+	   The images have opened in a lightbox for a while, but the only clue was a zoom cursor, which
+	   says nothing on a touch screen and nothing until you happen to hover.
+
+	   Styled like the site's other quiet affordances — the card and cross-link arrows — rather than
+	   as a button: no fill, no shadow box, just a small Bebas label with a glyph that underlines on
+	   hover. It is a hint, not a control, so it should not compete with "Order this campaign".
+
+	   Bottom right is the one free corner: the caption runs along the bottom left and the "Animated"
+	   badge sits top right. Not on dimmed tiles (those select their placement instead of opening)
+	   and not on placeholder blocks. pointer-events:none so it never eats the click it advertises.
+
+	   Two colours, because the two contexts differ: a placement tile is the photograph itself, so
+	   white with a soft text-shadow reads; the creative-direction figure mats its artwork against
+	   --tint, so the corner is light and the label has to be ink. */
+	.tile:not(.tile--dim):not(.tile--ph)::after,
+	.route__media:has(img)::after {
+	  content:"⤢  Click to enlarge";
+	  position:absolute; left:0; right:0; z-index:2; text-align:center;
+	  font-family:var(--display); letter-spacing:.08em; text-transform:uppercase; font-size:.9rem;
+	  line-height:1; pointer-events:none;
+	  text-decoration:underline transparent; text-underline-offset:3px;
+	  transition:text-decoration-color .25s var(--ease);
+	}
+	/* Top right. It was centred at the foot of each image, where it competed with the caption and
+	   got lost against busy artwork. Up here it sits in the corner and reads immediately. */
+	.route__media:has(img)::after,
+	.tile:not(.tile--dim):not(.tile--ph)::after { top:12px; bottom:auto; text-align:right;
+	  padding-right:14px; }
+	.tile:not(.tile--dim):not(.tile--ph)::after {
+	  color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.7);
+	}
+	.route__media:has(img)::after { color:var(--muted); }
+	.tile:not(.tile--dim):not(.tile--ph):hover::after { text-decoration-color:#fff; }
+	.route__media:has(img):hover::after { text-decoration-color:var(--ink); color:var(--ink); }
+
+	/* ===================== SECTION TYPOGRAPHY ===================== */
+	/* ONE rule for every section-level heading, and one for the copy under it. Before this,
+	   headings ranged from 54px to 67px, body copy from 18.5px to 20.8px, and the gap between
+	   a heading and its copy from 14px to 50px, depending on which section you happened to be
+	   looking at. If you add a heading, add it to this list rather than giving it its own
+	   font-size — that is the whole point.
+	   The hero title and the closing CTA are deliberately excluded: those are page-level, not
+	   section-level. Card, panel and tier titles are a smaller tier of their own. */
+	.section-head__title,
+	.intro__heading,
+	.problem__text,
+	.hook__title,
+	.route__title {
+	  font-size:clamp(2.2rem,5vw,3.6rem);
+	  margin:0 0 var(--head-gap);
+	}
+	/* Copy sitting directly under a section heading. */
+	.lead,
+	.problem__body,
+	.route__body,
+	.whofor__body,
+	.hook__body {
+	  font-size:clamp(1.05rem,1.6vw,1.3rem);
+	  line-height:1.5;
+	}
+	/* Bebas sits low in its line box, so the big deck statement needs pulling up to put its cap
+	   height exactly level with the body copy opposite. This value is measured, not guessed:
+	   at 1440 the heading's ink starts 12.06px below its box top and the body's 8.43px below
+	   its own, a 3.63px difference, which is .063 of the 57.6px heading. Re-measure if either
+	   font size changes. Has to come after the margin shorthand above. */
+	.problem__text { margin-top:-.063em; }
+
+	/* ===================== WHO IT'S FOR — TWO PANELS ===================== */
+	/* Patients on the left, the practice on the right, under a single heading. Two tones so
+	   they read as a pair of related-but-different answers rather than one long list. */
+	/* Both panels are identical white cards, so the two headings land on the same line and the
+	   copy underneath starts at the same height. Nothing is vertically centred — that is what
+	   made the shorter panel look unbalanced against the list opposite. */
+	.whofor { display:grid; grid-template-columns:1fr 1fr; gap:clamp(16px,2vw,26px); align-items:stretch; }
+	.whofor__panel { background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
+	  padding:clamp(24px,2.8vw,40px); color:var(--ink);
+	  transition:background .3s var(--ease), border-color .3s var(--ease), color .3s var(--ease); }
+	/* HG pink on hover, white text on it — pink always carries white type. */
+	.whofor__panel:hover { background:var(--accent); border-color:var(--accent); color:#fff; }
+	.whofor__title { font-family:var(--display); font-weight:700; text-transform:uppercase;
+	  font-size:clamp(1.5rem,2.2vw,1.9rem); line-height:1; margin:0 0 var(--head-gap); }
+	.whofor__list { list-style:none; margin:0; padding:0; display:grid; gap:14px; }
+	.whofor__list li { position:relative; padding-left:26px; }
+	/* Indigo, not --route: the route accents are sampled from campaign artwork and go orange or
+	   red, which is not a Hakim colour. Brand palette only here. */
+	.whofor__list li::before { content:""; position:absolute; left:0; top:.62em;
+	  width:9px; height:9px; border-radius:50%; background:var(--deck);
+	  transition:background .3s var(--ease); }
+	.whofor__panel:hover .whofor__list li::before { background:#fff; }
+	/* Colour is inherited so the pink hover carries through to every child. */
+	.whofor__body { margin:0; }
+	.whofor__panel:hover .is-lorem { color:rgba(255,255,255,.78); }
+	@media (max-width:860px){
+	  .whofor { grid-template-columns:1fr; }
+	}
+
+	/* ===================== SECTION HEAD ===================== */
+	.section-head { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:clamp(22px,2.6vw,36px); flex-wrap:wrap; }
+	.section--dark .section-head__title, .section--deck .section-head__title { color:#fff; }
+	.section--dark .eyebrow, .section--deck .eyebrow { color:rgba(255,255,255,.75); }
+
+	/* ===================== PLACEMENTS EXPLORER ===================== */
+	.explorer { margin-top:8px; }
+	.explorer__tabs { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:28px; }
+	.atab { cursor:pointer; font:inherit; font-size:1.1rem; padding:9px 18px; border-radius:999px; background:transparent;
+	  border:1px solid rgba(255,255,255,.25); color:rgba(255,255,255,.75); transition:all .25s var(--ease); }
+	.atab:hover { border-color:#fff; color:#fff; }
+	.atab--active { background:#fff; border-color:#fff; color:var(--ink); font-weight:600; }
+	.explorer__stage { position:relative; display:flex; align-items:center; gap:12px; }
+	.explorer__track { display:flex; gap:18px; overflow-x:auto; scroll-behavior:smooth; scroll-snap-type:x mandatory;
+	  padding:6px 2px 18px; flex:1; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.3) transparent; }
+	.explorer__track::-webkit-scrollbar { height:8px; }
+	.explorer__track::-webkit-scrollbar-thumb { background:rgba(255,255,255,.3); border-radius:99px; }
+	/* Every tile is the same HEIGHT and takes its width from the image's own shape, so
+	   a portrait poster is narrow and a shopfront mockup is wide, but the strip stays
+	   level. Previously the width was fixed, which made tall posters enormous. */
+	.tile { position:relative; flex:0 0 auto; height:clamp(220px,26vw,330px); max-width:580px;
+	  scroll-snap-align:center; border-radius:var(--radius); overflow:hidden;
+	  background:#221f29; border:1px solid rgba(255,255,255,.1);
+	  opacity:0; transform:scale(.96) translateY(10px); animation:uyppQ4TileIn .5s var(--ease) forwards;
+	  transition:filter .45s var(--ease); }
+
+	/* width:auto lets the tile size itself to the image; max-width + object-fit means a
+	   very wide asset (the 1940x500 web banner) is cropped to the cap rather than
+	   stretching the strip or losing height. */
+	.tile img { width:auto; height:100%; max-width:100%; object-fit:cover; display:block; }
+	/* Unselected placements stay on the strip in greyscale. Dimming uses filter, not
+	   opacity — tileIn is a forwards animation and would override opacity. */
+	.tile--dim { filter:grayscale(1) brightness(.6); cursor:pointer; }
+	.tile--dim:hover, .tile--dim:focus-visible { filter:grayscale(.3) brightness(.88); }
+	.tile--ph { aspect-ratio:16/9; display:grid; place-items:center; background:repeating-linear-gradient(135deg,#26232e,#26232e 18px,#2c2935 18px,#2c2935 36px); }
+	.tile--ph span { font-family:var(--display); letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.5); font-size:1.05rem; }
+	.tile__cap { position:absolute; left:0; right:0; bottom:0; padding:26px 16px 13px; font-size:1.05rem;
+	  background:linear-gradient(transparent,rgba(0,0,0,.82)); color:#fff; letter-spacing:.02em; }
+	/* Top LEFT, because the click-to-enlarge hint now occupies the top right. */
+	.tile__badge { position:absolute; top:12px; left:12px; font-family:var(--display); letter-spacing:.1em; text-transform:uppercase;
+	  font-size:1rem; padding:4px 10px; border-radius:999px; background:#fff; color:var(--ink); }
+	.explorer__nav { flex:0 0 auto; width:46px; height:46px; border-radius:50%; cursor:pointer; font-size:1.4rem; line-height:1;
+	  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25); color:#fff; transition:all .2s var(--ease); }
+	.explorer__nav:hover { background:#fff; border-color:#fff; color:var(--ink); }
+	.explorer__meta { margin:16px 0 0; color:rgba(255,255,255,.55); font-size:1.05rem; letter-spacing:.04em; }
+
+	/* ===================== TIERS (festive step / jump / leap) ===================== */
+	.tiers { display:grid; gap:clamp(20px,2.6vw,30px); }
+	.tier { display:grid; grid-template-columns:auto 1fr 1.2fr; gap:clamp(20px,3vw,44px); align-items:center;
+	  padding:clamp(22px,3vw,36px); border:1px solid var(--line); border-radius:var(--radius); background:var(--bg);
+	  transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s; }
+	.tier:hover { transform:translateY(-4px); box-shadow:0 26px 50px -30px rgba(0,0,0,.32); border-color:transparent; }
+	.tier__step { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(2.4rem,4vw,3.6rem);
+	  line-height:.9; color:var(--deck); }
+	.tier__title { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(1.6rem,2.4vw,2.2rem); line-height:1; margin:0 0 .35em; }
+	.tier__body { color:#3a3640; margin:0; }
+	.tier__media { margin:0; border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+
+	/* ===================== PANELS ===================== */
+	.panels { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(18px,2.5vw,28px); }
+	.panel { background:var(--bg); border:1px solid var(--line); border-radius:var(--radius); padding:clamp(22px,3vw,34px);
+	  display:flex; flex-direction:column; transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s; }
+	.panel:hover { transform:translateY(-5px); box-shadow:0 24px 46px -28px rgba(0,0,0,.32); border-color:transparent; }
+	.panel__no { font-family:var(--display); letter-spacing:.12em; text-transform:uppercase; font-size:1rem; color:var(--muted); }
+	.panel__title { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(1.5rem,2.2vw,1.9rem); line-height:1; margin:.3em 0 .6em; }
+	.panel p { color:#3a3640; }
+	.panel p:last-child { margin-bottom:0; }
+	.panel ul { margin:.2em 0 0; padding-left:1.1em; color:#3a3640; }
+	.panel li { margin-bottom:6px; }
+	.panel--flag { border-left:3px solid var(--deck); }
+
+	/* ===================== PLACEHOLDER BLOCKS ===================== */
+	.ph-block { position:relative; border-radius:var(--radius); overflow:hidden; display:grid; place-items:center;
+	  min-height:clamp(220px,30vw,380px); padding:24px;
+	  background:repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 16px, rgba(255,255,255,0) 16px 32px),
+	             linear-gradient(135deg,#221f29 0%, var(--dark) 72%); }
+	.ph-block span { font-family:var(--display); letter-spacing:.14em; text-transform:uppercase; font-size:clamp(.85rem,1.3vw,1.05rem);
+	  color:rgba(255,255,255,.34); border:1px solid rgba(255,255,255,.2); padding:.5em 1.1em; border-radius:999px; text-align:center; }
+	.is-lorem { color:var(--muted); }
+
+	/* ===================== SPLIT ===================== */
+	.split { display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,3.6vw,52px); align-items:center; }
+	.split--top { align-items:start; }
+	.split__media { margin:0; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); }
+	.split__media img { width:100%; height:100%; object-fit:cover; min-height:300px; }
+	.split__title { font-size:clamp(2.2rem,5vw,3.6rem); margin-bottom:.35em; }
+	.services { margin-top:24px; }
+	.services ul { margin:.4em 0 0; padding-left:1.1em; }
+	.services li { margin-bottom:6px; }
+
+	/* ===================== BUTTONS ===================== */
+	.btn { display:inline-block; cursor:pointer; font-family:var(--display); letter-spacing:.06em; text-transform:uppercase;
+	  font-size:1.05rem; padding:14px 26px; border-radius:999px; background:var(--accent); color:#fff; border:1px solid var(--accent);
+	  transition:transform .15s, background .2s, color .2s; }
+	.btn:hover { transform:translateY(-2px); }
+	.btn:not(.btn--ghost):not(.btn--ghost-light):hover { background:#fff; color:var(--deck); border-color:#fff; }
+	/* Outlined on a light background -> fills indigo, not near-black, so it matches every other
+	   control rather than being the only one that goes dark grey. */
+	.btn--ghost { background:transparent; color:var(--ink); }
+	.btn--ghost:hover { background:var(--deck); color:#fff; border-color:var(--deck); }
+	.fineprint { margin-top:16px; font-size:1.05rem; color:var(--muted); }
+	.fineprint a { color:var(--deck); }
+
+	/* ===================== CROSS-LINKS ===================== */
+	.crosslinks { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(16px,2.4vw,26px); }
+	.crosslink { display:flex; flex-direction:column; gap:6px; padding:0; overflow:hidden;
+	  border:1px solid var(--line); border-radius:var(--radius); background:var(--bg);
+	  transition:transform .25s var(--ease), border-color .25s, box-shadow .25s var(--ease); }
+	.crosslink:hover { transform:translateY(-5px); border-color:var(--ink); box-shadow:0 22px 42px -28px rgba(0,0,0,.32); }
+	.crosslink__month { font-family:var(--display); letter-spacing:.14em; text-transform:uppercase; font-size:1rem; color:var(--muted); }
+	.crosslink__title { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:1.6rem; line-height:1; margin:0; }
+	.crosslink__arrow { margin-top:10px; color:var(--muted); transition:transform .25s var(--ease), color .25s; }
+	.crosslink:hover .crosslink__arrow { transform:translateX(6px); color:var(--ink); }
+
+	/* ===================== CTA + FOOTER ===================== */
+	.cta { background:var(--deck); color:#fff; }
+	.cta__inner { text-align:center; padding-block:clamp(44px,6vw,84px); }
+	.cta__title { font-size:clamp(2.6rem,7vw,5rem); margin-bottom:.2em; }
+	.cta__inner p { font-size:1.15rem; margin-bottom:1.6em; }
+	.cta .btn--ghost { color:#fff; border-color:rgba(255,255,255,.6); }
+	.cta .btn--ghost:hover { background:#fff; color:var(--ink); border-color:#fff; }
+	.foot { background:var(--ink); color:var(--bg); }
+	.foot__inner { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-block:28px; flex-wrap:wrap; font-size:1.05rem; color:rgba(247,246,242,.7); }
+
+	/* ===================== RESPONSIVE ===================== */
+	@media (max-width:980px){
+	  .panels, .crosslinks { grid-template-columns:1fr; }
+	  .tier { grid-template-columns:auto 1fr; }
+	  .tier__media { grid-column:1 / -1; }
+	}
+	@media (max-width:860px){
+	  .intro, .split, .points--two, .route, .problem__wrap { grid-template-columns:1fr; }
+	  .split__media img { min-height:220px; }
+	  .section-head { align-items:flex-start; }
+	  .problem { max-width:none; }
+	}
+	@media (max-width:520px){
+	  .explorer__nav { display:none; }
+	  .tier { grid-template-columns:1fr; }
+	}
+
+	@media (max-width:700px){
+	  .hero__overlay { background:linear-gradient(170deg,
+	    rgba(21,19,26,.55) 0%, rgba(21,19,26,.86) 55%, rgba(21,19,26,.96) 100%); }
+	}
+
+	/* ===================== COPY WIDTH + WIDOWS ===================== */
+	/* Body copy runs the full width of its container rather than stopping short.
+	   The centred closing CTA keeps its measure — it is centre-aligned by design. */
+	.lead--narrow { max-width:none; }
+	.problem__body { max-width:none; }
+	.quarter__note { max-width:none; }
+	.section--intro .lead { max-width:none; }
+
+	/* Avoid widows: text-wrap:pretty pulls a lone trailing word back onto the
+	   previous line. Headings use balance so line lengths even out instead. */
+	p, li, .lead, .problem__body, .quarter__note, .route__body, .tier__body,
+	.panel p, .intro__points li, .cta__inner p {
+	  text-wrap:pretty;
+	}
+	.display, .hero__title, .hero__sub, .section-head__title, .intro__heading,
+	.problem__text, .cta__title, .card__title, .panel__title, .route__title,
+	.crosslink__title, .tier__title, .qmonth__name {
+	  text-wrap:balance;
+	}
+
+	/* ===================== ORDERING CTAs ===================== */
+
+	/* A CTA sitting in a section head lines up with the heading rather than stacking under it. */
+	.section-head { position:relative; }
+	.section--dark .section-head .btn { margin-top:18px; }
+
+	/* Full-width CTA used inside the direction cards. */
+	.btn--block { display:block; width:100%; text-align:center; }
+
+	/* Outlined button for use on the dark and indigo sections. Defined in home.css for the
+	   hub; the campaign pages need their own copy. */
+	/* Outlined on a dark or indigo background -> fills HG pink, because indigo would vanish. */
+	.btn--ghost-light { background:transparent; color:#fff; border-color:rgba(255,255,255,.6); }
+	.btn--ghost-light:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+	/* Placeholder planner links still resolve to "#" and warn once in the console,
+	   but carry no on-screen badge. */
+
+	/* ---- Get involved: one indigo section, one card per direction ---- */
+	/* The ordering block and the old "Already know what you want?" panel are a single
+	   section. Cards sit as translucent panels on the indigo rather than as light cards,
+	   so the section reads as one surface instead of a tray of boxes. */
+	.section--order { background:var(--deck); color:#fff;
+	  background-image:radial-gradient(110% 120% at 100% 0%, rgba(234,82,151,.30) 0%, rgba(234,82,151,0) 55%); }
+	.section--order .section-head__title, .section--order .eyebrow { color:#fff; }
+	.section--order .eyebrow { color:rgba(255,255,255,.75); }
+	.section--order .lead { color:rgba(255,255,255,.82); }
+
+	.order__grid { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(16px,2.2vw,26px);
+	  margin-bottom:clamp(24px,3vw,38px); }
+	/* Two directions shouldn't leave a hole in a three-column grid, and one shouldn't
+	   stretch the full width. Count comes from detail.js. */
+	.order__grid[data-count="2"] { grid-template-columns:repeat(2,1fr); }
+	.order__grid[data-count="1"] { grid-template-columns:minmax(0,440px); }
+
+	.order__card { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16);
+	  border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column;
+	  transition:transform .3s var(--ease), box-shadow .3s var(--ease),
+	             background .3s, border-color .3s; }
+	.order__card:hover { transform:translateY(-5px); background:rgba(255,255,255,.11);
+	  border-color:rgba(255,255,255,.32); box-shadow:0 26px 50px -28px rgba(0,0,0,.55); }
+	/* 16:9 to match the deck renders (1440x810) — a 4:3 window sliced the posters off
+	   at the edges, which defeats the point of a card whose job is showing the creative. */
+	.order__media { aspect-ratio:16/9; overflow:hidden; background:var(--dark); }
+	.order__media img { width:100%; height:100%; object-fit:cover; transition:transform .5s var(--ease); }
+	.order__card:hover .order__media img { transform:scale(1.05); }
+	.order__body { padding:clamp(18px,2.2vw,26px); display:flex; flex-direction:column; gap:10px; flex:1; }
+	.order__no { font-family:var(--display); letter-spacing:.12em; text-transform:uppercase;
+	  font-size:1rem; color:rgba(255,255,255,.6); }
+	.order__title { font-family:var(--display); font-weight:700; text-transform:uppercase;
+	  font-size:clamp(1.4rem,2.1vw,1.8rem); line-height:1; margin:0 0 auto; color:#fff; }
+
+	/* The two things you can do with a direction: order it, or go and look at it. */
+	.order__actions { display:flex; flex-direction:column; gap:10px; margin-top:18px; }
+
+	/* ---- Closing planner line ---- */
+	/* What used to be the separate Marketing Planner card. Kept as a rule-topped row so the
+	   campaign-level link survives without competing with the direction cards above it. */
+	.order__foot { display:grid; gap:14px 28px; align-items:center;
+	  grid-template-columns:minmax(0,1fr) auto;
+	  padding-top:clamp(22px,2.8vw,32px); border-top:1px solid rgba(255,255,255,.2); }
+	.order__foot-text { margin:0; color:rgba(255,255,255,.86); max-width:62ch; }
+	.order__foot .btn { justify-self:end; white-space:nowrap; }
+	.order__foot .fineprint { grid-column:1 / -1; margin:0; color:rgba(255,255,255,.7); }
+	.order__foot .fineprint a { color:#fff; border-bottom:1px solid rgba(255,255,255,.5); }
+
+	@media (max-width:980px){
+	  .order__grid, .order__grid[data-count="2"] { grid-template-columns:1fr 1fr; }
+	}
+	@media (max-width:680px){
+	  .order__grid, .order__grid[data-count="2"], .order__grid[data-count="1"] { grid-template-columns:1fr; }
+	  /* Stack the closing planner line and let its button run full width. */
+	  .order__foot { grid-template-columns:1fr; }
+	  .order__foot .btn { justify-self:stretch; text-align:center; }
+	}
+
+	/* ===================== WHAT'S INCLUDED =====================
+	   A short bold standfirst, then any genuinely campaign-specific operational detail in a
+	   single full-width .panel — Black Friday's Optix discount code, the evergreen pages'
+	   formats-and-timing note. The brand add-ons that used to live at the foot of this section
+	   as a hardcoded logo strip now have their own "Supplier support" section below (see the
+	   .supplier block further down), or, on the pages with no add-ons of their own, a single
+	   .included__brandlead line pointing at the hub's Brand assets index. */
+	.included__lead { font-size:clamp(1.15rem,1.9vw,1.5rem); font-weight:600; line-height:1.4;
+	  color:#fff; margin:0 0 clamp(24px,3vw,40px); }
+	.panel--wide { margin-bottom:clamp(28px,3.4vw,48px); }
+	.included__brandlead { color:rgba(255,255,255,.82); margin:0 0 clamp(16px,2vw,24px); }
+	/* Sits on the photograph, so a link in it has to be light like the fineprint below it. The
+	   two evergreen pages and Gifting & Party use one to point at the hub's Brand assets index,
+	   since they have no supplier add-ons of their own. */
+	.included__brandlead a { color:#fff; text-decoration:underline; text-underline-offset:3px; }
+	/* The fineprint used to sit inside a white panel, so it was set in muted grey. It now sits
+	   directly on the photograph and has to be light. */
+	.section--imagebg .fineprint { color:rgba(255,255,255,.72); margin-top:clamp(20px,2.4vw,30px); }
+	.section--imagebg .fineprint a { color:#fff; text-decoration:underline; text-underline-offset:3px; }
+
+	/* The descriptive tail under a hero title. Festive Windows carries the longest campaign
+	   name on the site — "Festive Windows, Christmas gifting and party season" — which cannot be
+	   set as one line of display type without dominating the hero or wrapping badly. The name
+	   stays in Bebas and the tail sits beneath it in body type, so the two read as one lockup. */
+	.hero__subtitle { font-size:clamp(1.05rem,1.9vw,1.45rem); line-height:1.25; color:#fff;
+	  margin:.55em 0 0; max-width:26ch; text-shadow:0 1px 14px rgba(0,0,0,.5); }
+
+	/* ===================== SUPPLIER SUPPORT =====================
+	   Replaced the three-logo .brandrow that used to sit inside "What's included". That strip
+	   was hardcoded to Hoya, CooperVision and Bausch + Lomb on all seven pages regardless of
+	   which suppliers actually back the campaign, and it carried no information at all.
+
+	   One expandable row per brand. Collapsed it is a logo, the brand name and one line saying
+	   what is on offer; expanded it carries what the supplier provides, the products, and how
+	   to take it up. Rendered by detail.js from the page's `brands` data.
+
+	   Named .supplier, not .brand. .brand and .brand__logo are already the Hakim Group logo
+	   lockup in the header and the footer — reusing that namespace put a white card and a
+	   border round the HG logo on every page. Caught in a browser check, not by reading.
+
+	   Sits on the page tone between the photographic "What's included" and the indigo ordering
+	   section, so the run of section tones still never repeats. */
+	#supplier-support { background:var(--bg); }
+	.suppliers { display:grid; gap:clamp(26px,3.4vw,44px); }
+	.suppliers__group { display:grid; gap:clamp(10px,1.2vw,14px); }
+	/* Panel tier, matching .panel__title — these sit inside a section, under its heading. */
+	.suppliers__grouptitle { font-family:var(--display); font-weight:700; text-transform:uppercase;
+	  font-size:clamp(1.25rem,1.8vw,1.55rem); line-height:1; letter-spacing:.02em;
+	  color:var(--muted); margin:0; }
+	.suppliers__rows { display:grid; gap:10px; }
+
+	.supplier { background:#fff; border:1px solid var(--line); border-radius:var(--radius);
+	  overflow:hidden; transition:border-color .3s, box-shadow .3s var(--ease); }
+	.supplier:hover { border-color:transparent; box-shadow:0 20px 40px -30px rgba(0,0,0,.34); }
+	/* Arrived at from the hub's brand grid: mark it so it is obvious which row was asked for. */
+	.supplier--targeted { border-color:var(--deck); }
+
+	.supplier__head { margin:0; }
+	.supplier__btn { width:100%; cursor:pointer; font:inherit; text-align:left; background:transparent;
+	  border:0; padding:clamp(14px,1.8vw,20px) clamp(16px,2vw,24px);
+	  display:grid; grid-template-columns:clamp(104px,12vw,150px) 1fr auto auto;
+	  align-items:center; gap:clamp(14px,2vw,26px); }
+	.supplier__btn:focus-visible { outline:2px solid var(--deck); outline-offset:-4px; }
+	/* Sized by width, like .brandrow: every brand PNG is the same 780x160 transparent canvas
+	   with the mark pre-scaled to equal optical area inside it, so one width keeps every mark
+	   looking the same size. A height would size the canvas, not the mark. */
+	.supplier__logo img { width:100%; height:auto; }
+	.supplier__lede { display:grid; gap:2px; min-width:0; }
+	.supplier__name { font-family:var(--display); font-weight:700; text-transform:uppercase;
+	  font-size:clamp(1.15rem,1.6vw,1.4rem); line-height:1.05; }
+	.supplier__offer { color:var(--muted); font-size:1.02rem; line-height:1.35;
+	  /* The row is an <h3> for document outline, so everything in it inherits bold. The
+	     brand name is set in Bebas and wants it; this line is body copy and does not. */
+	  font-weight:400; }
+	.supplier__chip { font-family:var(--display); letter-spacing:.12em; text-transform:uppercase;
+	  font-size:.85rem; color:var(--muted); border:1px solid var(--line); border-radius:999px;
+	  padding:.35em .8em; white-space:nowrap; }
+	.supplier__chev { width:12px; height:12px; border-right:2px solid var(--muted);
+	  border-bottom:2px solid var(--muted); transform:rotate(45deg) translate(-3px,-3px);
+	  transition:transform .3s var(--ease); }
+	.supplier__btn[aria-expanded="true"] .supplier__chev { transform:rotate(-135deg) translate(-3px,-3px); }
+
+	/* Nothing confirmed from this supplier yet — dimmed, and detail.js gives it no button. */
+	.supplier--tbc .supplier__logo img, .supplier--tbc .supplier__name { opacity:.55; }
+
+	.supplier__panel-in { padding:0 clamp(16px,2vw,24px) clamp(20px,2.4vw,28px);
+	  border-top:1px solid var(--line); padding-top:clamp(16px,2vw,22px); }
+	.supplier__panel-in > p { color:#3a3640; max-width:70ch; }
+	.supplier__cols { display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+	  gap:clamp(16px,2.4vw,34px); margin:clamp(14px,1.8vw,20px) 0 0; }
+	.supplier__col ul { margin:.2em 0 0; padding-left:1.1em; color:#3a3640; }
+	.supplier__col li { margin-bottom:5px; }
+	.supplier__coltitle { font-family:var(--display); font-weight:700; text-transform:uppercase;
+	  letter-spacing:.04em; font-size:1.02rem; color:var(--deck); margin:0 0 .35em; }
+	.supplier__how { margin-top:clamp(16px,2vw,22px); }
+	.supplier__how p { color:#3a3640; max-width:70ch; }
+	.supplier__how p:last-child { margin-bottom:0; }
+	.supplier__actions { margin-top:clamp(16px,2vw,22px); }
+	.supplier__tbc { margin:0; color:var(--muted); font-size:1.05rem; }
+	/* Smaller button tier: these sit inside a row, not at the end of a section. */
+	.btn--sm { font-size:.95rem; padding:10px 20px; }
+
+	.suppliers__foot { margin-top:clamp(26px,3.4vw,44px); padding-top:clamp(20px,2.4vw,28px);
+	  border-top:1px solid var(--line); }
+	.suppliers__foot-text { color:var(--muted); max-width:62ch; margin:0 0 clamp(12px,1.4vw,18px); }
+
+	@media (max-width:760px){
+	  /* Stack the row: the logo over the name, chip and chevron on their own line. Four columns
+	     at 375px left the offer line about eight characters wide. */
+	  .supplier__btn { grid-template-columns:clamp(80px,24vw,108px) 1fr; row-gap:10px;
+	    gap:12px; }
+	  .supplier__chip { grid-column:1; justify-self:start; }
+	  .supplier__chev { grid-column:2; justify-self:end; }
+	  .supplier__cols { grid-template-columns:1fr; }
+	}
+
+	/* ===================== CROSS-LINK CARDS (with imagery) ===================== */
+	.crosslink__media { display:block; aspect-ratio:16/10; overflow:hidden; background:var(--dark); }
+	.crosslink__media img { width:100%; height:100%; object-fit:cover;
+	  transition:transform .5s var(--ease); }
+	.crosslink:hover .crosslink__media img { transform:scale(1.05); }
+	.crosslink__month,
+	.crosslink__title,
+	.crosslink__arrow { padding-inline:clamp(18px,2.2vw,26px); }
+	.crosslink__month { padding-top:clamp(16px,2vw,22px); }
+	.crosslink__arrow { padding-bottom:clamp(16px,2vw,22px); }
+
+	/* ===================== LIGHTBOX ===================== */
+	/* Hand-rolled, no dependency. Opens any artwork at full size so the work can actually
+	   be judged. Closes on backdrop click, the close button, or Escape. */
+	.lb { position:fixed; inset:0; z-index:200; display:none; align-items:center;
+	  justify-content:center; padding:clamp(16px,4vw,56px);
+	  background:rgba(12,10,16,.92); backdrop-filter:blur(6px); }
+	.lb.is-open { display:flex; }
+	.lb__figure { margin:0; max-width:min(1400px,100%); max-height:100%;
+	  display:flex; flex-direction:column; gap:12px; }
+	.lb__media { max-height:calc(100vh - 160px); display:flex; justify-content:center; }
+	.lb__media img, .lb__media video { max-width:100%; max-height:calc(100vh - 160px);
+	  width:auto; height:auto; border-radius:12px; display:block; }
+	.lb__cap { color:rgba(255,255,255,.82); font-size:1.05rem; text-align:center; margin:0; }
+	.lb__close { position:absolute; top:clamp(12px,2vw,24px); right:clamp(12px,2vw,24px);
+	  width:46px; height:46px; border-radius:50%; cursor:pointer; font-size:1.5rem; line-height:1;
+	  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.35); color:#fff; }
+	.lb__close:hover { background:#fff; color:var(--ink); border-color:#fff; }
+	/* Anything clickable to expand gets a zoom affordance. Done in CSS so it applies to
+	   tiles re-rendered on route change without any JS bookkeeping. */
+	.tile img, .tile video,
+	.route__media img, .route__media video { cursor:zoom-in; }
+	/* A dimmed tile selects its placement instead of opening, so it keeps a pointer. */
+	.tile--dim img, .tile--dim video { cursor:pointer; }
+
+	@media (max-width:680px){
+	  .crosslinks { grid-template-columns:1fr; }
+	}
+
+	/* ===================== IMAGE-BACKED SECTION ===================== */
+	/* Used by "What's included". The image comes from --section-img, set inline per page so
+	   the file reference is easy to find when imagery is swapped. A dark scrim sits over it
+	   so the white heading stays legible whatever the photograph is doing underneath, and
+	   the three panels read as light cards lifted off the image. */
+	.section--imagebg { position:relative; overflow:hidden; background:var(--dark); }
+	.section--imagebg::before { content:""; position:absolute; inset:0;
+	  background-image:var(--section-img); background-size:cover; background-position:50% 42%; }
+	/* The scrim is weighted heavily to the top third, because that is where the eyebrow and
+	   the "What's included" heading sit and the artwork underneath is often a poster with its
+	   own headline on it. Nearly solid there, then it opens up through the middle so the
+	   photograph still reads behind the white cards. Picking calmer images helps, but this is
+	   what makes the heading legible no matter which image ends up here. */
+	.section--imagebg::after { content:""; position:absolute; inset:0;
+	  background:linear-gradient(180deg,
+	    rgba(21,19,26,.94) 0%,
+	    rgba(21,19,26,.88) 16%,
+	    rgba(21,19,26,.62) 42%,
+	    rgba(21,19,26,.60) 62%,
+	    rgba(21,19,26,.86) 100%); }
+	.section--imagebg > .wrap { position:relative; z-index:1; }
+	.section--imagebg .section-head__title,
+	.section--imagebg .display { color:#fff; }
+	.section--imagebg .eyebrow { color:rgba(255,255,255,.75); }
+	.section--imagebg .lead { color:rgba(255,255,255,.82); }
+	/* Panels stay light so they pop off the photograph. */
+	.section--imagebg .panel { background:var(--bg); border-color:transparent;
+	  box-shadow:0 20px 44px -26px rgba(0,0,0,.5); }
+	.section--imagebg .panel:hover { box-shadow:0 28px 56px -26px rgba(0,0,0,.6); }
+	.section--imagebg .taglist li { background:var(--tint); border-color:var(--line); }
+
+	/* ---- CTA below the placements carousel ---- */
+	/* Sits under the imagery rather than beside the tab pills, which it used to crowd. */
+	.explorer__cta { margin-top:clamp(18px,2.4vw,28px); display:flex; justify-content:flex-end; }
+}
