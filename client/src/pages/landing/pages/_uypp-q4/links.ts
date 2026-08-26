@@ -7,10 +7,12 @@
  * Two kinds of destination:
  *
  *   Planner deep links, supplied 26 August 2026. `/dashboard?campaign=<id>` opens
- *   the dashboard with that campaign's details drawer already open. Written as an
- *   in-app path rather than an absolute URL so React Router keeps it inside the
- *   planner instead of reloading — see the landing README, "Linking to a specific
- *   campaign".
+ *   the dashboard with that campaign's details drawer already open — see the
+ *   landing README, "Linking to a specific campaign". Written as a root-relative
+ *   path, not an absolute URL, so it follows the environment it is served from:
+ *   the same link works on a Vercel preview and in production without a rewrite.
+ *   `Cta` opens it in a new tab rather than routing in-app, so the visitor keeps
+ *   the campaign page they were reading.
  *
  *   Requests, which go to the marketing team with a subject line so they can be
  *   triaged without being opened. The Q4 brief shows brand take-up runs through a
@@ -99,8 +101,10 @@ export function brandLink(id: CampaignId, brandId: string): string | null {
 	return BRANDS[id]?.[brandId] ?? null;
 }
 
-/** True where a destination is an email rather than a page in the planner. */
+/**
+ * True where a destination is an email rather than a page.
+ *
+ * The only distinction `Cta` still needs to draw: a mailto hands off to the mail
+ * client and must not open a tab, everything else opens in one.
+ */
 export const isMail = (href: string) => /^mailto:/i.test(href);
-
-/** True where a destination leaves the planner and should open in a new tab. */
-export const isExternal = (href: string) => /^https?:\/\//i.test(href);

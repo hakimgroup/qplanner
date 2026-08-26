@@ -710,7 +710,13 @@ export default function Q4Campaigns() {
 						<br />
 						We'll send artwork and print choices shortly after you choose.
 					</p>
-					<a className="btn" data-cta="planner-home" target="_blank" rel="noopener">
+					<a
+						className="btn"
+						href={PLANNER_HOME}
+						data-cta="planner-home"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
 						Open the Marketing Planner
 					</a>
 					<p className="cta__fine">
