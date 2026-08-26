@@ -433,64 +433,6 @@
 	   The base rules below are a plain vertical list. That is deliberately the fallback:
 	   no JavaScript, or reduced motion, and you still see every brand. app.js adds
 	   .is-cycling to collapse the list into a fading stack. */
-	/* ===================== RELATED CPD SESSIONS =====================
-	   Sits directly under Brand assets and uses the same control as the Supplier support rows on
-	   the campaign pages: collapsed to the title, who is presenting and the CPD points, with the
-	   detail behind a click. Rebuilt here rather than shared, because the hub loads app.js and not
-	   detail.js — keep the two visually in step if either is changed.
-
-	   Named .cpd*, in the same spirit as .supplier* — never .brand*, which is the Hakim Group logo
-	   lockup in the header and footer. */
-	.cpdlist { display:grid; gap:10px; margin-top:clamp(20px,2.6vw,32px); }
-
-	.cpd { background:#fff; border:1px solid var(--line); border-radius:var(--radius);
-	  overflow:hidden; transition:border-color .3s, box-shadow .3s var(--ease); }
-	.cpd:hover { border-color:transparent; box-shadow:0 20px 40px -30px rgba(0,0,0,.34); }
-	.cpd--targeted { border-color:var(--deck); }
-
-	.cpd__head { margin:0; }
-	.cpd__btn { width:100%; cursor:pointer; font:inherit; text-align:left; background:transparent;
-	  border:0; padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,26px);
-	  display:grid; grid-template-columns:1fr auto auto; align-items:center;
-	  gap:clamp(14px,2vw,26px); }
-	.cpd__btn:focus-visible { outline:2px solid var(--deck); outline-offset:-4px; }
-	.cpd__lede { display:grid; gap:3px; min-width:0; }
-	.cpd__name { font-family:var(--display); font-weight:700; text-transform:uppercase;
-	  font-size:clamp(1.15rem,1.7vw,1.5rem); line-height:1.05; }
-	/* The row is an <h3> for the document outline, so everything inside inherits bold. The name is
-	   set in Bebas and wants it; this line is body copy and does not. */
-	.cpd__by { color:var(--muted); font-size:1.02rem; line-height:1.35; font-weight:400; }
-	.cpd__points { font-family:var(--display); letter-spacing:.1em; text-transform:uppercase;
-	  font-size:.85rem; color:var(--deck); border:1px solid var(--line); border-radius:999px;
-	  padding:.4em .9em; white-space:nowrap; font-weight:400; }
-	.cpd__chev { width:12px; height:12px; border-right:2px solid var(--muted);
-	  border-bottom:2px solid var(--muted); transform:rotate(45deg) translate(-3px,-3px);
-	  transition:transform .3s var(--ease); }
-	.cpd__btn[aria-expanded="true"] .cpd__chev { transform:rotate(-135deg) translate(-3px,-3px); }
-
-	.cpd__panel-in { padding:clamp(16px,2vw,22px) clamp(18px,2.2vw,26px) clamp(22px,2.6vw,30px);
-	  border-top:1px solid var(--line); }
-	.cpd__meta { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 14px; align-items:center; }
-	.cpd__meta span { font-size:1rem; letter-spacing:.02em; padding:4px 10px; border-radius:999px;
-	  background:var(--tint); color:var(--muted); }
-	.cpd__standfirst { font-weight:600; color:var(--ink); margin:0 0 .8em; max-width:74ch; }
-	.cpd__panel-in p { color:#3a3640; max-width:74ch; }
-	.cpd__spec { margin:0 0 1em; display:grid; grid-template-columns:auto 1fr;
-	  gap:4px clamp(12px,1.6vw,20px); max-width:74ch; }
-	.cpd__spec dt { font-family:var(--display); letter-spacing:.06em; text-transform:uppercase;
-	  font-size:.95rem; color:var(--deck); }
-	.cpd__spec dd { margin:0; color:#3a3640; }
-	.cpd__note { font-size:1.02rem; color:var(--muted); }
-	.btn--sm { font-size:.95rem; padding:10px 20px; }
-
-	@media (max-width:700px){
-	  /* Three columns at 375px left the title about six characters wide. Stack the points chip and
-	     the chevron onto their own line beneath. */
-	  .cpd__btn { grid-template-columns:1fr auto; row-gap:10px; }
-	  .cpd__points { grid-column:1; justify-self:start; }
-	  .cpd__chev { grid-column:2; justify-self:end; align-self:end; }
-	}
-
 	/* ===================== BRAND ASSETS INDEX =====================
 	   A static list per month column: each entry is a link to that supplier's block on the
 	   campaign it supports. Replaced .logocycle, which crossfaded one logo at a time — fine as

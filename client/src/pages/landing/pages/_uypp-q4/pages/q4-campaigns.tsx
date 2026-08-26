@@ -11,7 +11,7 @@ import {
 	useStickyHeader,
 	useTypography,
 } from "../uypp-q4";
-import { CardCycle, CpdSession } from "../HomeBits";
+import { CardCycle } from "../HomeBits";
 import { PLANNER_HOME } from "../links";
 import "../uypp-q4-home.scss";
 
@@ -25,9 +25,10 @@ export const meta: LandingPageMeta = {
 };
 
 /** Sections with a nav chip. Add to both this list and the chip's data-spy, or
- *  the chip never lights up. #cpd is here without a chip on purpose: it stops the
- *  Brand assets chip staying lit once you scroll past it. */
-const SPY_IDS = ["featured", "evergreen", "brand-assets", "cpd"];
+ *  the chip never lights up. #cta is here without a chip on purpose: it stops the
+ *  Brand assets chip staying lit once you scroll past it — the job #cpd did until
+ *  Related CPD sessions moved to the Presbyopia page. */
+const SPY_IDS = ["featured", "evergreen", "brand-assets", "cta"];
 
 export default function Q4Campaigns() {
 	const root = useRef<HTMLDivElement>(null);
@@ -599,108 +600,9 @@ export default function Q4Campaigns() {
 				</div>
 			</section>
 
-			{/* Added 26 August 2026 at David's request. Note this reverses the long-standing rule
-			    "never re-add CPD | Education" — that referred to a CPD block removed from the campaign
-			    series in July. These are two specific, dated sessions tied to Q4 campaign subjects, not
-			    the old catch-all section. The rule has been updated in README.md and CLAUDE.md so the
-			    section is not stripped back out by someone following the old note.
-			    Same shape as Brand assets above it: section heading, a lead saying what these are and
-			    how they relate, then the content. Registration links are external event pages rather
-			    than planner destinations, so they sit in the markup — campaign-links.js is the single
-			    source of truth for planner and supplier destinations specifically. */}
-
-			<section className="section section--tint" id="cpd">
-				<div className="wrap">
-					<div className="section-head reveal">
-						<h2 className="display section-head__title">
-							Related CPD sessions
-						</h2>
-						<p className="lead lead--narrow">
-							Sessions that sit alongside this quarter's campaigns, so the team is ready for the conversations the artwork starts. Book directly with the organiser — these are not ordered through the Marketing Planner.
-						</p>
-					</div>
-					{/* Collapsed to title, presenter and CPD points; the rest opens on click. Same
-					    control as the Supplier support rows on the campaign pages, rebuilt here because
-					    the hub has no detail.js — the toggle lives in app.js. */}
-					<div className="cpdlist">
-											<CpdSession
-						id="forever-young"
-						name="Forever young: because adventures don't stop at 45"
-						by="CooperVision"
-						points="1 CPD point"
-					>
-						<p className="cpd__meta">
-							<span>
-								Interactive lecture
-							</span>
-							<span>
-								Thu 29 October · 18:30–20:00
-							</span>
-						</p>
-						<p className="cpd__standfirst">
-							Multifocal contact lenses for the modern presbyope.
-						</p>
-						<p>
-							This session covers the latest research-driven definition of presbyopia and its relevance to both emerging and established presbyopes, with a focus on the psychological and physiological impact on patients. Featuring real patient video testimonials and peer-to-peer insight from an experienced ECP, delegates will take away practical fitting tips for maximising success with MyDay multifocal and clariti 1 day multifocal.
-						</p>
-						<p className="cpd__note">
-							Please note: BDMs may follow up with practices after this session to offer support and discuss any relevant opportunities.
-						</p>
-						<a className="btn btn--sm" href="https://events.coopervision.com/213A45" target="_blank" rel="noopener">
-							Register
-						</a>
-					</CpdSession>
-											<CpdSession
-						id="patient-journey"
-						name="Embracing technology to supercharge your patient journey"
-						by="Richard Spencer BSc Hons FBDO"
-						points="1 CPD point"
-					>
-						<p className="cpd__meta">
-							<span>
-								Lecture
-							</span>
-							<span>
-								1 hour
-							</span>
-							<span>
-								Optometrists & dispensing opticians
-							</span>
-						</p>
-						<p className="cpd__standfirst">
-							Communication sits at the heart of patient complaints, as OCCS reports consistently show.
-						</p>
-						<p>
-							Built around four themes — understanding your practice and patients, reviewing the patient journey, communicating to build trust, and follow up — this lecture walks through real communication touchpoints, from practice management software to website, educational video and email. Generic in scope, with no product or company recommendations: the aim is to shift how practitioners think about communicating with the patients in front of them.
-						</p>
-						<dl className="cpd__spec">
-							<dt>
-								Domain
-							</dt>
-							<dd>
-								Communication
-							</dd>
-							<dt>
-								Learning outcome
-							</dt>
-							<dd>
-								By evaluating your patient journey you will better understand how to modify communication to your patients, whether verbal, written or virtual (s.2).
-							</dd>
-						</dl>
-						<p className="cpd__note">
-							Richard Spencer is director at David Burghardt Vision Care, Optician Magazine's Dispensing Optician of the Year 2022 and a current CLiP programme pre-reg optometry student.
-						</p>
-						<a className="btn btn--sm" href="https://events.teams.microsoft.com/event/a1b98272-f443-410d-b15e-6baafd97f919@b5e2b151-f5b3-403f-a7a2-25f5664f2157" target="_blank" rel="noopener">
-							Register on Teams
-						</a>
-					</CpdSession>
-					</div>
-				</div>
-			</section>
-
 			{/* ============ FOOTER CTA ============ */}
 
-			<section className="cta">
+			<section className="cta" id="cta">
 				<div className="wrap cta__inner reveal">
 					<h2 className="display cta__title">
 						Ready to activate?
