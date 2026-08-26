@@ -38,9 +38,19 @@ function isSafeInternalPath(path: string): boolean {
 	return pathname !== "/" && pathname !== "/login";
 }
 
-/** Remember an in-app destination across the OAuth round trip. */
+/**
+ * Remember an in-app destination across the OAuth round trip.
+ *
+ * Refuses to overwrite once sign-in is under way. `signInWithOAuth` does not
+ * navigate immediately — it resolves first, and the app kept routing in that
+ * gap. Any guarded route mounted during it sees no session yet and would record
+ * itself here, replacing the deep link that started the whole journey. The
+ * destination is fixed at the moment someone is turned away; nothing after that
+ * gets to change it.
+ */
 export function rememberReturnTo(path: string): void {
 	try {
+		if (sessionStorage.getItem("oauth_just_signed_in") === "1") return;
 		if (isSafeInternalPath(path)) sessionStorage.setItem(KEY, path);
 	} catch {
 		// Private browsing can refuse storage. Losing the destination is a

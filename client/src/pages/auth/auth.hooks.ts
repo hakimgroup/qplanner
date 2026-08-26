@@ -19,13 +19,14 @@ interface UsersModel {
 }
 
 export const useSignin = () => {
-  const navigate = useNavigate();
-
   return useMutation({
     mutationFn: () => signin(),
-    onSuccess: () => {
-      navigate(AppRoutes.Dashboard);
-    },
+    // Deliberately no navigation here. `signin()` hands the browser to
+    // Microsoft, so anything routed in the meantime is thrown away a moment
+    // later — except it was not harmless: navigating to /dashboard mounted
+    // RequireAuth with no session yet, which recorded /dashboard as the page
+    // to return to and overwrote the deep link that sent the visitor to sign
+    // in. Where they land is decided on the way back, not on the way out.
   });
 };
 
