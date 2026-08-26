@@ -49,6 +49,13 @@ export function rememberReturnTo(path: string): void {
 }
 
 /**
+ * Whether a destination has already been claimed and acted on during this page
+ * load. Module state, so it resets on every full load — which is exactly the
+ * scope wanted.
+ */
+let claimed = false;
+
+/**
  * Take the destination back, once. Returns null when there is nothing safe to
  * return to, which is the normal case for someone signing in from the front door.
  */
@@ -56,8 +63,26 @@ export function takeReturnTo(): string | null {
 	try {
 		const path = sessionStorage.getItem(KEY);
 		sessionStorage.removeItem(KEY);
-		return path && isSafeInternalPath(path) ? path : null;
+		const safe = path && isSafeInternalPath(path) ? path : null;
+		if (safe) claimed = true;
+		return safe;
 	} catch {
 		return null;
 	}
+}
+
+/**
+ * True once someone has taken a real destination this page load.
+ *
+ * Two places redirect after sign-in and their order is not fixed: the login page
+ * reacts to `user` appearing, while AuthProvider's post-OAuth block waits on an
+ * async whitelist check that Supabase itself defers — it fires SIGNED_IN inside a
+ * setTimeout. Whichever runs second finds the destination already consumed, and
+ * without this would fall back to the role's default and overwrite the page the
+ * visitor actually asked for. So: whoever claims it wins, and the other stands
+ * down. Nothing claimed means an ordinary front-door sign-in, where the role
+ * default is still right.
+ */
+export function returnToWasClaimed(): boolean {
+	return claimed;
 }

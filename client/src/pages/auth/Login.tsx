@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useSignin } from "./auth.hooks";
 import { useEffect } from "react";
 import { useAuth } from "@/shared/AuthProvider";
+import { takeReturnTo } from "@/shared/returnTo";
 import { Colors } from "@/shared/shared.const";
 import Logo from "@/components/logo/Logo";
 import Microsoft from "@/assets/microsoft.png";
@@ -19,9 +20,14 @@ const Login = () => {
 	};
 
 	useEffect(() => {
-		if (user) {
-			navigate(AppRoutes.Dashboard);
-		}
+		if (!user) return;
+		// The OAuth round trip returns to "/", which renders this page, so this
+		// effect is usually the first thing to run once a session appears —
+		// ahead of AuthProvider's post-sign-in block, which waits on an async
+		// whitelist check that Supabase defers behind a setTimeout. Claiming the
+		// destination here is what makes a shared /landing/… link work; whoever
+		// gets there second stands down. See shared/returnTo.ts.
+		navigate(takeReturnTo() ?? AppRoutes.Dashboard, { replace: true });
 	}, [user]);
 
 	useEffect(() => {

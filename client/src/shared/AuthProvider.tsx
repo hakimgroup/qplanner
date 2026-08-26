@@ -13,7 +13,7 @@ import {
 import { AppRoutes, DatabaseTables, RPCFunctions } from "./shared.models";
 import { useNavigate, useLocation } from "react-router-dom";
 import { pushAuthNotice } from "./shared.utilities";
-import { takeReturnTo } from "./returnTo";
+import { takeReturnTo, returnToWasClaimed } from "./returnTo";
 import { isLandingPath } from "./landingAccess";
 
 type Role = "user" | "admin" | "super_admin" | null;
@@ -196,7 +196,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 					sessionStorage.removeItem("oauth_just_signed_in");
 					if (returnTo) {
 						navigate(returnTo, { replace: true });
-					} else if (!isLandingPath(pathname)) {
+					} else if (!returnToWasClaimed() && !isLandingPath(pathname)) {
 						pushAuthNotice("denied");
 						await supabase.auth.signOut().catch(() => {});
 						if (cancelled) return;
@@ -250,7 +250,15 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 						const alreadyOnAdmin = pathname.startsWith(
 							AppRoutes.Admin
 						);
-						if (returnTo || !(adminLike && alreadyOnAdmin)) {
+						// Nothing left to claim and someone already used one —
+						// the login page got here first and has sent them to the
+						// page they asked for. Overwriting it with the role
+						// default is exactly the bug this guards against.
+						const standDown = !returnTo && returnToWasClaimed();
+						if (
+							!standDown &&
+							(returnTo || !(adminLike && alreadyOnAdmin))
+						) {
 							navigate(target, { replace: true });
 						}
 					}
