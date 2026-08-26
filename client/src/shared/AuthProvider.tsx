@@ -13,6 +13,8 @@ import {
 import { AppRoutes, DatabaseTables, RPCFunctions } from "./shared.models";
 import { useNavigate, useLocation } from "react-router-dom";
 import { pushAuthNotice } from "./shared.utilities";
+import { takeReturnTo } from "./returnTo";
+import { isLandingPath } from "./landingAccess";
 
 type Role = "user" | "admin" | "super_admin" | null;
 
@@ -24,6 +26,17 @@ interface AuthContextModel {
 	isAdmin: boolean;
 	firstName: string | null;
 	lastName: string | null;
+	/**
+	 * Whether this account is in `allowed_users` — i.e. may use the planner.
+	 *
+	 * A signed-in user is no longer automatically an authorised one. Landing
+	 * pages are shareable across the Hakim tenant, so someone can hold a valid
+	 * session without being provisioned. `null` means the check has not
+	 * finished. Planner routes must require `allowed`, not merely `user`:
+	 * RequireAuth does exactly that, and is the only thing standing between a
+	 * landing-page viewer and the dashboard.
+	 */
+	allowed: boolean | null;
 }
 const AuthContext = createContext<AuthContextModel>({
 	user: null,
@@ -33,6 +46,7 @@ const AuthContext = createContext<AuthContextModel>({
 	isAdmin: false,
 	firstName: null,
 	lastName: null,
+	allowed: null,
 });
 export const useAuth = () => useContext(AuthContext);
 
@@ -59,6 +73,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const { pathname } = useLocation();
 	const [user, setUser] = useState<User | null>(null);
 	const [role, setRole] = useState<Role>(null);
+	const [allowed, setAllowed] = useState<boolean | null>(null);
 	const [firstName, setFirstName] = useState<string | null>(null);
 	const [lastName, setLastName] = useState<string | null>(null);
 	const [loading, setLoading] = useState<boolean>(true);
@@ -116,6 +131,10 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 					lastCheckedUserIdRef.current = null;
 					linkedOnceRef.current = false;
 					setRole(null);
+					// Back to "not yet checked", not "refused". Leaving a stale
+					// value here would have RequireAuth judge the next account
+					// on the last one's answer.
+					setAllowed(null);
 				}
 
 				setUser(session?.user ?? null);
@@ -144,20 +163,49 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 			}
 
 			try {
-				const { allowed, role, firstName, lastName } = await fetchWhitelistAndRole(email);
+				const {
+					allowed: isAllowed,
+					role,
+					firstName,
+					lastName,
+				} = await fetchWhitelistAndRole(email);
 				if (cancelled) return;
 
-				if (!allowed) {
-					pushAuthNotice("denied");
-					await supabase.auth.signOut().catch(() => {});
-					if (cancelled) return;
-					setUser(null);
+				setAllowed(isAllowed);
+
+				if (!isAllowed) {
+					// Not provisioned for the planner — but a valid Hakim tenant
+					// account, which is enough to read a landing page. The session
+					// is kept rather than torn down, and RequireAuth turns them
+					// away from everything else.
+					//
+					// Rejection used to happen here, unconditionally. It moved to
+					// RequireAuth so it can depend on where they are going: this
+					// code cannot know that, and signing them out here would make
+					// a shared /landing/… link unopenable for exactly the people
+					// it gets sent to.
 					setRole(null);
-					setFirstName(null);
-					setLastName(null);
-					lastCheckedUserIdRef.current = null;
-					linkedOnceRef.current = false;
-					navigate(AppRoutes.Login, { replace: true });
+					setFirstName(firstName);
+					setLastName(lastName);
+					justSignedInRef.current = false;
+
+					// Send them where they were headed. With nothing stored they
+					// came through the front door with no planner access, so the
+					// old refusal is still the right answer.
+					const returnTo = takeReturnTo();
+					sessionStorage.removeItem("oauth_just_signed_in");
+					if (returnTo) {
+						navigate(returnTo, { replace: true });
+					} else if (!isLandingPath(pathname)) {
+						pushAuthNotice("denied");
+						await supabase.auth.signOut().catch(() => {});
+						if (cancelled) return;
+						setUser(null);
+						setAllowed(null);
+						lastCheckedUserIdRef.current = null;
+						linkedOnceRef.current = false;
+						navigate(AppRoutes.Login, { replace: true });
+					}
 					return;
 				}
 
@@ -185,16 +233,24 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 					if (startedOAuthHere) {
 						sessionStorage.removeItem("oauth_just_signed_in");
 
+						// Somewhere they asked for before sign-in interrupted
+						// them — a shared /landing/… link, say — wins over the
+						// role's default landing spot. Null for anyone signing
+						// in from the front door, which is the common case.
+						// See shared/returnTo.ts for why this cannot ride on
+						// React Router state.
+						const returnTo = takeReturnTo();
+
 						const adminLike =
 							role === "admin" || role === "super_admin";
-						const target = adminLike
-							? AppRoutes.Admin
-							: AppRoutes.Dashboard;
+						const target =
+							returnTo ??
+							(adminLike ? AppRoutes.Admin : AppRoutes.Dashboard);
 
 						const alreadyOnAdmin = pathname.startsWith(
 							AppRoutes.Admin
 						);
-						if (!(adminLike && alreadyOnAdmin)) {
+						if (returnTo || !(adminLike && alreadyOnAdmin)) {
 							navigate(target, { replace: true });
 						}
 					}
@@ -245,6 +301,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 				isAdmin: role === "admin" || role === "super_admin",
 				firstName,
 				lastName,
+				allowed,
 			}}
 		>
 			{children}

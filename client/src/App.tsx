@@ -12,7 +12,7 @@ import Nav from "./components/nav/Nav";
 import Dashboard from "./pages/dashboard/Dashboard";
 import AppProvider from "./shared/AppProvider";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
-import { RequireAuth } from "./shared/RequireAuth";
+import { RequireAuth, RequireSignedIn } from "./shared/RequireAuth";
 import { PracticeProvider } from "./shared/PracticeProvider";
 import { PracticesOfInterestProvider } from "./shared/PracticesOfInterestProvider";
 import Faqs from "./pages/faqs/Faqs";
@@ -65,7 +65,15 @@ export default function App() {
       },
       { path: AppRoutes.FAQs, element: <Faqs /> },
       { path: AppRoutes.Landing, element: <LandingIndex /> },
-      { path: `${AppRoutes.Landing}/:slug`, element: <LandingPageRoute /> },
+      // Individual campaign pages are shareable across the Hakim tenant, so they
+      // carry the lighter gate. The /landing index above keeps the planner gate:
+      // it shows the Nav, which a viewer with no planner access cannot use.
+      // See shared/landingAccess.ts.
+      {
+        path: `${AppRoutes.Landing}/:slug`,
+        element: <LandingPageRoute />,
+        guard: "signed-in" as const,
+      },
     ],
     []
   );
@@ -105,7 +113,13 @@ export default function App() {
                       <Route
                         key={pg.path}
                         path={pg.path}
-                        element={<RequireAuth>{pg.element}</RequireAuth>}
+                        element={
+                          "guard" in pg && pg.guard === "signed-in" ? (
+                            <RequireSignedIn>{pg.element}</RequireSignedIn>
+                          ) : (
+                            <RequireAuth>{pg.element}</RequireAuth>
+                          )
+                        }
                       />
                     ))}
 
