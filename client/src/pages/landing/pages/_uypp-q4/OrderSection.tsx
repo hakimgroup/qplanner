@@ -27,11 +27,14 @@ function firstImage(r: Route): string | null {
 }
 
 export function OrderSection() {
-	const { routes, setActive, id, multi } = useCampaign();
+	const { routes, setActive, id, multi, campaign } = useCampaign();
 	const href = campaignLink(id);
 	// A campaign whose destination is an email has no planner entry yet, so the
-	// closing line must not promise one. Festive Windows is in that state.
+	// closing line must not promise one.
 	const byMail = isMail(href);
+	// Festive Windows is not ordered at all — the directions are starting points
+	// to adapt, so the section invites a conversation instead of a checkout.
+	const inspiration = campaign.inspiration === true;
 	const hasCarousel = routes.some((r) => (r.placements ?? []).length > 0);
 
 	return (
@@ -40,10 +43,16 @@ export function OrderSection() {
 				<div className="section-head reveal">
 					<div>
 						<h2 className="display section-head__title">
-							{multi ? "Choose your direction" : "Get this campaign"}
+							{inspiration
+								? "Like the look of one?"
+								: multi
+								? "Choose your direction"
+								: "Get this campaign"}
 						</h2>
 						<p className="lead">
-							{byMail
+							{inspiration
+								? "These are starting points rather than a fixed set — adapt them to your window, your space and whatever budget you have. If you would like to move in one of these directions, get in touch and the marketing team will help you make it happen."
+								: byMail
 								? multi
 									? "Pick the direction you want to run and email it over — this campaign is still being set up in the Marketing Planner. Not decided? Take another look at the artwork first."
 									: "Email the marketing team to order it — this campaign is still being set up in the Marketing Planner."
@@ -72,7 +81,11 @@ export function OrderSection() {
 									<h3 className="order__title">{r.name}</h3>
 									<div className="order__actions">
 										<Cta href={href} className="btn--block">
-											{multi ? "Select this direction" : "Select this campaign"}
+											{inspiration
+												? "Contact Marketing"
+												: multi
+												? "Select this direction"
+												: "Select this campaign"}
 										</Cta>
 										{hasCarousel ? (
 											<a
@@ -91,7 +104,17 @@ export function OrderSection() {
 				</div>
 
 				<div className="order__foot reveal">
-					{byMail ? (
+					{inspiration ? (
+						<>
+							<p className="order__foot-text">
+								Not sure which direction fits your practice? Marketing can talk it
+								through and help you shape something that works for your window.
+							</p>
+							<Cta href={href} className="btn--ghost-light">
+								Contact Marketing
+							</Cta>
+						</>
+					) : byMail ? (
 						<>
 							<p className="order__foot-text">
 								This campaign is being set up in the Marketing Planner. Until it is there,

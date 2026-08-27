@@ -68,4 +68,14 @@ export interface Brand {
 export interface Campaign {
 	routes: Route[];
 	brands?: Brand[];
+	/**
+	 * Offered as inspiration rather than ordered.
+	 *
+	 * Festive Windows has no planner campaign and is not really a thing you take
+	 * off a shelf — the directions are starting points for a practice to adapt.
+	 * So the ordering section asks the visitor to talk to marketing instead of
+	 * presenting a checkout. Kept separate from "the link happens to be an
+	 * email": another campaign could be mid-setup and still be a straight order.
+	 */
+	inspiration?: boolean;
 }

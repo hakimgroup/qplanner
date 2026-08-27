@@ -51,7 +51,7 @@ export default function FestiveWindows() {
 							Core KPI · Volume & Conversion
 						</span>
 						<span className="hero__pill hero__pill--ghost">
-							3 creative routes
+							2 creative routes
 						</span>
 					</div>
 				</div>
@@ -184,7 +184,25 @@ export default function FestiveWindows() {
 								gift with purchase
 							</strong>
 							{" "}
-							this December, and others are supporting other categories such as lenses and contact lenses. They are all set out under Supplier support below.
+							this December, and Thea is supporting party-season dry eye with counter display and training. They are all set out under Supplier support below.
+						</p>
+					</div>
+
+					<div className="panel panel--wide reveal">
+						<h3 className="panel__title">
+							Bringing suppliers into your window
+						</h3>
+						<p>
+							You do not have to fill the window on your own. Suppliers can contribute
+							pieces that carry their own branding and give the display more to look
+							at &mdash; branded gifts to sit alongside the frames, counter and
+							display units, point-of-sale cards, and product to build the display
+							around.
+						</p>
+						<p>
+							What is on offer varies by supplier, and most of it is first come, first
+							served. If something below suits the direction you have in mind, take it
+							up early &mdash; or speak to your rep about what else they can supply.
 						</p>
 					</div>
 					<p className="fineprint reveal">

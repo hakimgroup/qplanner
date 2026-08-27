@@ -7,6 +7,9 @@ import { img } from "../uypp-q4";
 import type { Campaign } from "../types";
 
 export const FESTIVE: Campaign = {
+	/* Offered as inspiration rather than ordered: there is no planner campaign,
+	   and the directions are starting points to talk through with marketing. */
+	"inspiration": true,
 	"routes": [
 		{
 			"id": "easy",
@@ -74,32 +77,6 @@ export const FESTIVE: Campaign = {
 					]
 				}
 			]
-		},
-		{
-			"id": "storytelling",
-			"name": "Window Storytelling",
-			"tagline": "Option 03",
-			"accent": "#8C6C55",
-			"visual": img("festive-storytelling.jpg"),
-			"body": "<p class='route__body'>Bring in a local illustrator, visual merchandiser or window dresser to create a fully bespoke festive installation. The biggest commitment of the three, and the one most likely to get your practice talked about locally.</p>",
-			"assets": [
-				"Local illustrator",
-				"Visual merchandiser",
-				"Window dresser",
-				"Bespoke installation"
-			],
-			"placements": [
-				{
-					"key": "install",
-					"label": "Installation",
-					"items": [
-						{
-							"img": img("festive-storytelling.jpg"),
-							"cap": "Fully bespoke festive installation"
-						}
-					]
-				}
-			]
 		}
 	],
 	"brands": [
@@ -116,8 +93,8 @@ export const FESTIVE: Campaign = {
 			"products": [
 				"BOSS frames"
 			],
-			"howto": "<p>The first 10 practices in the group to purchase 12 pieces or more in a single order during September and October receive a BOSS gift-with-purchase set.</p><p>Final design may vary from the artwork shown.</p>",
-			"cta": "How to qualify"
+			"howto": "<p>The first 10 practices in the group to purchase 12 pieces or more in a single order during September and October receive a BOSS gift-with-purchase set.</p><p>Sign up below to register your interest.</p><p>Final design may vary from the artwork shown.</p>",
+			"cta": "Sign up"
 		},
 		{
 			"id": "oakley",
@@ -132,8 +109,8 @@ export const FESTIVE: Campaign = {
 			"products": [
 				"Oakley frames"
 			],
-			"howto": "<p>Only selected practices can opt in. An email arrives from <a href=\"mailto:brand.activations@hakimgroup.co.uk\">brand.activations@hakimgroup.co.uk</a> if your practice has been chosen.</p><p>Artwork for this one is still to come from Luxottica.</p>",
-			"cta": "How selection works"
+			"howto": "<p>Only selected practices can successfully opt in. You will have received an email from <a href=\"mailto:brand.activations@hakimgroup.co.uk\">brand.activations@hakimgroup.co.uk</a> if you have been pre-selected. If you have received this email, please sign up below.</p><p>For any queries please email the brand activations inbox.</p><p>Artwork for this one is still to come from Luxottica.</p>",
+			"cta": "Sign up"
 		},
 		{
 			"id": "ted-baker",
@@ -148,7 +125,7 @@ export const FESTIVE: Campaign = {
 			"products": [
 				"Ted Baker frames"
 			],
-			"howto": "<p>The first 40 practices in the group to sign up will receive their gift-with-purchase set.</p><p>The sign-up form that collects your details for the supplier is being set up. Until it is live this button opens an email to the marketing team, who will add you to the list.</p><p>Final design may vary from the artwork shown.</p>",
+			"howto": "<p>The first 40 practices in the group to sign up will receive their gift-with-purchase set.</p><p>Final design may vary from the artwork shown.</p>",
 			"cta": "Sign up"
 		},
 		{
@@ -167,8 +144,8 @@ export const FESTIVE: Campaign = {
 				"Prodesign",
 				"Face a Face"
 			],
-			"howto": "<p>Qualifying is order-based and first come, first served — see the allocations above.</p>",
-			"cta": "How to qualify"
+			"howto": "<p>Qualifying is order-based and first come, first served — see the allocations above.</p><p>Sign up below to register your interest.</p>",
+			"cta": "Sign up"
 		},
 		{
 			"id": "thea",
@@ -190,33 +167,6 @@ export const FESTIVE: Campaign = {
 			],
 			"howto": "<p>Contact your Thea rep for information and product training.</p>",
 			"cta": "Contact your rep"
-		},
-		{
-			"id": "silhouette",
-			"name": "Silhouette",
-			"logo": img("logo-silhouette.png"),
-			"group": "Product and training support",
-			"status": "tbc",
-			"offer": "Christmas window support, held for the Festive Focus Toolkit",
-			"body": "<p>Silhouette are supporting Christmas windows, but it has been held back to launch with the wider Festive Focus Toolkit rather than with this campaign.</p>"
-		},
-		{
-			"id": "alcon",
-			"name": "Alcon",
-			"logo": img("logo-alcon.png"),
-			"group": "Product and training support",
-			"status": "tbc",
-			"offer": "Promotion detail not yet available",
-			"body": "<p>Listed against this campaign in the Q4 brief with no mechanics attached yet.</p>"
-		},
-		{
-			"id": "bausch-lomb",
-			"name": "Bausch + Lomb",
-			"logo": img("logo-bausch-lomb.png"),
-			"group": "Product and training support",
-			"status": "tbc",
-			"offer": "Still to be confirmed",
-			"body": "<p>Listed against this campaign in the Q4 brief, marked to be confirmed.</p>"
 		}
 	]
 };

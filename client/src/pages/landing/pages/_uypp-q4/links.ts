@@ -14,10 +14,13 @@
  *   `Cta` opens it in a new tab rather than routing in-app, so the visitor keeps
  *   the campaign page they were reading.
  *
+ *   Supplier sign-up forms, where the supplier collects the practice's details
+ *   itself. The festive gift-with-purchase brands work this way.
+ *
  *   Requests, which go to the marketing team with a subject line so they can be
- *   triaged without being opened. The Q4 brief shows brand take-up runs through a
- *   rep, a BDM, a supplier form or an allocation, none of which has a URL we hold,
- *   and Festive Windows has no planner campaign yet.
+ *   triaged without being opened. Used where take-up runs through a rep or an
+ *   allocation rather than a form, and for Festive Windows itself, which has no
+ *   planner campaign — it is offered as inspiration to discuss with marketing.
  *
  * A campaign's creative directions share its link: the planner has one entry per
  * campaign, not per direction, so the direction is chosen inside the planner.
@@ -59,7 +62,9 @@ const CAMPAIGN: Record<CampaignId, string> = {
 	"eye-exams-available": EYE_EXAMS,
 };
 
-/** Supplier add-ons. Every one is a request; see the note at the top. */
+/** Supplier add-ons: a sign-up form where the supplier has one, otherwise a
+ *  request to marketing. A brand with nothing to take up is left out entirely
+ *  rather than given a null — see the festive note below. */
 const BRANDS: Record<CampaignId, Record<string, string | null>> = {
 	presbyopia: {
 		hoya: ask("Hoya brand assets - Presbyopia"),
@@ -75,17 +80,19 @@ const BRANDS: Record<CampaignId, Record<string, string | null>> = {
 		scope: null,
 	},
 	"festive-windows": {
-		boss: ask("BOSS gift with purchase - Festive Windows"),
-		oakley: ask("Oakley gift with purchase - Festive Windows"),
-		"ted-baker": ask("Ted Baker gift with purchase - sign up"),
-		"design-eyewear": ask(
-			"Design Eyewear Group gift with purchase - Festive Windows"
-		),
+		// Supplier sign-up forms, supplied 27 August 2026. Each collects the
+		// practice's details for that supplier directly, so these are real
+		// destinations rather than a request to marketing.
+		boss: "https://form.jotform.com/262382567372363",
+		oakley: "https://form.jotform.com/262382059840359",
+		"ted-baker": "https://form.jotform.com/262371538489065",
+		"design-eyewear": "https://form.jotform.com/262382412556356",
+		// Thea is training and product support rather than a sign-up, so it
+		// stays a conversation with the rep.
 		thea: ask("Thea brand assets - Festive Windows"),
-		// Nothing confirmed yet — these render no button.
-		silhouette: null,
-		alcon: null,
-		"bausch-lomb": null,
+		// Alcon, Bausch + Lomb and Silhouette were dropped before launch —
+		// unconfirmed in time. Removed from the data rather than left as `tbc`
+		// rows, so nothing shows for them at all.
 	},
 	"outside-prescriptions": {},
 	"eye-exams-available": {},

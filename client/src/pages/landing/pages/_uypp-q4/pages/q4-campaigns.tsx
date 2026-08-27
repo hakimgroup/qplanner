@@ -19,7 +19,7 @@ export const meta: LandingPageMeta = {
 	slug: "q4-campaigns",
 	title: "Unlock Your Practice Potential — Q4 Campaigns",
 	description:
-		"Hakim Group Q4 2026 campaign hub. Featured campaigns, evergreen assets, supplier-funded brand add-ons and related CPD sessions, with the artwork for each.",
+		"Hakim Group Q4 2026 campaign hub. Featured campaigns, evergreen assets and supplier-funded brand add-ons, with the artwork for each.",
 	publishedAt: "2026-08-26",
 	thumbnail: `${ASSETS}/img/pres-adapt-posters-situ.jpg`,
 };
@@ -272,7 +272,7 @@ export default function Q4Campaigns() {
 								</p>
 								<p className="card__meta">
 									<span>
-										3 creative routes
+										2 creative routes
 									</span>
 								</p>
 								<span className="card__cta">
@@ -551,45 +551,6 @@ export default function Q4Campaigns() {
 											</span>
 											<span className="brandindex__with">
 												with Festive Windows
-											</span>
-										</Link>
-									</li>
-									<li>
-										<Link className="brandindex__item" to="/landing/festive-windows#brand-silhouette">
-											<span className="brandindex__logo">
-												<img src={img("logo-silhouette.png")} alt="Silhouette" loading="lazy" />
-											</span>
-											<span className="brandindex__with">
-												with Festive Windows
-												<span className="brandindex__tbc">
-													TBC
-												</span>
-											</span>
-										</Link>
-									</li>
-									<li>
-										<Link className="brandindex__item" to="/landing/festive-windows#brand-alcon">
-											<span className="brandindex__logo">
-												<img src={img("logo-alcon.png")} alt="Alcon" loading="lazy" />
-											</span>
-											<span className="brandindex__with">
-												with Festive Windows
-												<span className="brandindex__tbc">
-													TBC
-												</span>
-											</span>
-										</Link>
-									</li>
-									<li>
-										<Link className="brandindex__item" to="/landing/festive-windows#brand-bausch-lomb">
-											<span className="brandindex__logo">
-												<img src={img("logo-bausch-lomb.png")} alt="Bausch + Lomb" loading="lazy" />
-											</span>
-											<span className="brandindex__with">
-												with Festive Windows
-												<span className="brandindex__tbc">
-													TBC
-												</span>
 											</span>
 										</Link>
 									</li>
