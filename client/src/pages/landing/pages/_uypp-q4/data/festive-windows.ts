@@ -47,30 +47,6 @@ export const FESTIVE: Campaign = {
 							"cap": "Even Santa needs a clear view on an A-board"
 						}
 					]
-				},
-				{
-					"key": "decor",
-					"label": "Decor ideas",
-					"items": [
-						{
-							"img": img("festive-easy-1.jpg"),
-							"cap": "Stars, lights and hanging decor"
-						}
-					]
-				},
-				{
-					"key": "windows",
-					"label": "In-window",
-					"items": [
-						{
-							"img": img("festive-easy-2.jpg"),
-							"cap": "Window display example"
-						},
-						{
-							"img": img("festive-easy-3.jpg"),
-							"cap": "Window display example"
-						}
-					]
 				}
 			]
 		},
@@ -109,16 +85,6 @@ export const FESTIVE: Campaign = {
 						{
 							"img": img("festive-aboard-cookies.jpg"),
 							"cap": "Even Santa needs a clear view on an A-board"
-						}
-					]
-				},
-				{
-					"key": "pieces",
-					"label": "Display pieces",
-					"items": [
-						{
-							"img": img("festive-spark.jpg"),
-							"cap": "Bespoke display pieces"
 						}
 					]
 				}

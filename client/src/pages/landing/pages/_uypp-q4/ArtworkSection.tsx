@@ -88,20 +88,26 @@ export function ArtworkSection({
 				</div>
 
 				<div className="explorer">
-					<div className="explorer__tabs" id="placementTabs" role="tablist" aria-label="Placement types">
-						{placements.map((p, i) => (
-							<button
-								key={p.key}
-								className={`atab${i === current ? " atab--active" : ""}`}
-								type="button"
-								role="tab"
-								aria-selected={i === current}
-								onClick={() => select(i)}
-							>
-								{p.label}
-							</button>
-						))}
-					</div>
+					{/* One placement needs no tab bar: a single tab is always selected and
+					    switches to nothing, which reads as a control that does not work.
+					    Festive Windows is the only campaign in that state — its carousel is
+					    just the poster set. */}
+					{placements.length > 1 ? (
+						<div className="explorer__tabs" id="placementTabs" role="tablist" aria-label="Placement types">
+							{placements.map((p, i) => (
+								<button
+									key={p.key}
+									className={`atab${i === current ? " atab--active" : ""}`}
+									type="button"
+									role="tab"
+									aria-selected={i === current}
+									onClick={() => select(i)}
+								>
+									{p.label}
+								</button>
+							))}
+						</div>
+					) : null}
 
 					<div className="explorer__stage">
 						<button
