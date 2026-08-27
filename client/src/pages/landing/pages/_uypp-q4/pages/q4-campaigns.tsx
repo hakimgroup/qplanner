@@ -361,35 +361,6 @@ export default function Q4Campaigns() {
 								</span>
 							</div>
 						</Link>
-						<a className="card reveal" href="#" data-placeholder-link="">
-							<div className="card__tab">
-								<span className="card__badge card__badge--soon">
-									Coming soon
-								</span>
-							</div>
-							<div className="card__media">
-								<div className="ph-block">
-									<span>
-										More to come
-									</span>
-								</div>
-							</div>
-							<div className="card__body">
-								<h3 className="card__title">
-									More always-on assets
-								</h3>
-								<p>
-									Further evergreen assets are available to order in addition to those shown here. Categorisation is still being confirmed.
-								</p>
-								<span className="card__cta">
-									Coming soon
-									{" "}
-									<span aria-hidden="true">
-										→
-									</span>
-								</span>
-							</div>
-						</a>
 					</div>
 				</div>
 			</section>
