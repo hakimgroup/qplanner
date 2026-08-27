@@ -13,7 +13,7 @@ import {
 	useTypography,
 } from "../uypp-q4";
 import { CardCycle } from "../HomeBits";
-import { PLANNER_HOME } from "../links";
+import { PLANNER_HOME, MARKETING_LINK} from "../links";
 import "../uypp-q4-home.scss";
 
 export const meta: LandingPageMeta = {
@@ -557,7 +557,7 @@ export default function Q4Campaigns() {
 					</a>
 					<p className="cta__fine">
 						Any feedback? Email the marketing team at
-						<a href="mailto:marketing@hakimgroup.co.uk">
+						<a href={MARKETING_LINK}>
 							marketing@hakimgroup.co.uk
 						</a>
 					</p>

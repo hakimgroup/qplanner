@@ -1,5 +1,6 @@
 import type { LandingPageMeta } from "../../../registry";
 import { img } from "../uypp-q4";
+import { MARKETING_LINK } from "../links";
 import { CampaignShell, HUB } from "../CampaignShell";
 import { CreativeSection } from "../CreativeSection";
 import { ArtworkSection } from "../ArtworkSection";
@@ -213,7 +214,7 @@ export default function FestiveWindows() {
 						{" "}
 						covering in-practice events is being developed separately, launching to support exam volume through December and January. It will be added here once the creative is ready. Questions?
 						{" "}
-						<a href="mailto:marketing@hakimgroup.co.uk">
+						<a href={MARKETING_LINK}>
 							marketing@hakimgroup.co.uk
 						</a>
 					</p>
@@ -229,7 +230,7 @@ export default function FestiveWindows() {
 					<>
 						Building a custom window display? For advice on putting one together,
 						please get in touch with the marketing team at{" "}
-						<a href="mailto:marketing@hakimgroup.co.uk">marketing@hakimgroup.co.uk</a>.
+						<a href={MARKETING_LINK}>marketing@hakimgroup.co.uk</a>.
 						To order posters from the Festive collection, use the button below.
 					</>
 				}

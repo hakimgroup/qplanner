@@ -9,7 +9,7 @@
  * the right direction by the time the jump lands.
  */
 import { useCampaign } from "./CampaignShell";
-import { campaignLink, isMail } from "./links";
+import { campaignLink, isMail, MARKETING_LINK} from "./links";
 import { Cta } from "./Cta";
 import { isPlaceholder } from "./types";
 import type { Route } from "./types";
@@ -119,7 +119,7 @@ export function OrderSection({ note }: { note?: ReactNode } = {}) {
 							</Cta>
 							<p className="fineprint">
 								Trouble connecting? Email{" "}
-								<a href="mailto:marketing@hakimgroup.co.uk">marketing@hakimgroup.co.uk</a>
+								<a href={MARKETING_LINK}>marketing@hakimgroup.co.uk</a>
 							</p>
 						</>
 					)}

@@ -33,13 +33,38 @@ export type CampaignId =
 	| "outside-prescriptions"
 	| "eye-exams-available";
 
-const MAIL = "mailto:marketing@hakimgroup.co.uk";
-const ask = (subject: string) => `${MAIL}?subject=${encodeURIComponent(subject)}`;
+export const MARKETING = "marketing@hakimgroup.co.uk";
 
-/** An email to the marketing team with the subject filled in. Exported so a page
+/**
+ * Asking marketing something, as a link that actually opens.
+ *
+ * These were `mailto:` and silently did nothing for a lot of people. A mailto
+ * needs a mail client registered as the protocol handler, and on a managed
+ * machine — or for anyone living in Outlook on the web — there often is not one.
+ * The browser swallows the click with no error and no tab: the worst kind of
+ * broken, because it looks like the button is dead.
+ *
+ * An Outlook on the web compose link is an ordinary https URL, so it behaves
+ * like every other working link on these pages. Safe to assume here: the planner
+ * signs in through the Hakim Azure AD tenant, so everyone reaching this button
+ * already has a Microsoft account.
+ *
+ * `MARKETING` stays exported for the places that print the address as readable
+ * text — those are copyable whatever the browser does with protocols.
+ */
+const COMPOSE = "https://outlook.office.com/mail/deeplink/compose";
+const ask = (subject: string) =>
+	`${COMPOSE}?to=${encodeURIComponent(MARKETING)}&subject=${encodeURIComponent(subject)}`;
+
+/** A message to the marketing team with the subject filled in. Exported so a page
  *  can raise a conversation about one specific thing rather than the campaign as
  *  a whole. */
 export const marketingEmail = ask;
+
+/** The marketing team, for the places that print the address as the link text.
+ *  Same compose link, so those work too rather than being the only dead ones
+ *  left on the page. */
+export const MARKETING_LINK = ask("Marketing enquiry");
 
 const planner = (id: string) => `/dashboard?campaign=${id}`;
 
@@ -114,12 +139,22 @@ export function campaignLink(id: CampaignId): string {
  * rule rather than an edge case — `brandLink` never returns null.
  */
 export function brandLink(id: CampaignId, brandId: string): string {
-	return BRANDS[id]?.[brandId] ?? MAIL;
+	return BRANDS[id]?.[brandId] ?? ask("Brand assets enquiry");
 }
 
-/** True where a destination is a supplier's own sign-up form rather than an
- *  email. Drives the button label: a form is filled in, marketing is contacted. */
-export const isForm = (href: string) => /^https?:\/\//i.test(href);
+/** True where a destination is the marketing team rather than a supplier. */
+export const isMarketingContact = (href: string) => href.startsWith(COMPOSE);
+
+/**
+ * True where a destination is a supplier's own sign-up form. Drives the button
+ * label: a form is filled in, marketing is contacted.
+ *
+ * Note the exclusion. Contacting marketing is now an https link too, so testing
+ * the protocol alone would label it "Fill in form" — which is exactly the sort of
+ * button that lies about where it goes.
+ */
+export const isForm = (href: string) =>
+	/^https?:\/\//i.test(href) && !isMarketingContact(href);
 
 /**
  * True where a destination is an email rather than a page.

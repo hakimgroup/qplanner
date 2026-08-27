@@ -1,5 +1,6 @@
 import type { LandingPageMeta } from "../../../registry";
 import { img } from "../uypp-q4";
+import { MARKETING_LINK } from "../links";
 import { CampaignShell, HUB } from "../CampaignShell";
 import { CreativeSection } from "../CreativeSection";
 import { ArtworkSection } from "../ArtworkSection";
@@ -171,7 +172,7 @@ export default function EyeExamsAvailable() {
 					<p className="fineprint reveal">
 						Questions?
 						{" "}
-						<a href="mailto:marketing@hakimgroup.co.uk">
+						<a href={MARKETING_LINK}>
 							marketing@hakimgroup.co.uk
 						</a>
 					</p>

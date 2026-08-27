@@ -1,5 +1,6 @@
 import type { LandingPageMeta } from "../../../registry";
 import { img } from "../uypp-q4";
+import { MARKETING_LINK } from "../links";
 import { CampaignShell, HUB } from "../CampaignShell";
 import { CreativeSection } from "../CreativeSection";
 import { ArtworkSection } from "../ArtworkSection";
@@ -176,7 +177,7 @@ export default function Presbyopia() {
 					</p>
 					<p className="fineprint reveal">
 						A HelpHub page for this campaign is being prepared, the link will be added here once it's live. Questions in the meantime?
-						<a href="mailto:marketing@hakimgroup.co.uk">
+						<a href={MARKETING_LINK}>
 							marketing@hakimgroup.co.uk
 						</a>
 					</p>

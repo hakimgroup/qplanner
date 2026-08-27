@@ -1,5 +1,6 @@
 import type { LandingPageMeta } from "../../../registry";
 import { img } from "../uypp-q4";
+import { MARKETING_LINK } from "../links";
 import { CampaignShell, HUB } from "../CampaignShell";
 import { CreativeSection } from "../CreativeSection";
 import { ArtworkSection } from "../ArtworkSection";
@@ -169,7 +170,7 @@ export default function DryEyeMenopause() {
 					<p className="fineprint reveal">
 						To make sure you don’t miss out next year, let your marketing executive know and add it to your 2027 Marketing Planner, we’ll be in touch. Questions?
 						{" "}
-						<a href="mailto:marketing@hakimgroup.co.uk">
+						<a href={MARKETING_LINK}>
 							marketing@hakimgroup.co.uk
 						</a>
 					</p>
