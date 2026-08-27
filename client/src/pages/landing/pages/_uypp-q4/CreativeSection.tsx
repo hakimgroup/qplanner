@@ -66,19 +66,12 @@ export function CreativeSection({
 						<div className="route__actions">
 							<Cta href={campaignLink(id)}>{orderLabel}</Cta>
 							{active.contactSubject ? (
-								<>
-									{/* A plain anchor, not a Cta: this goes to another section of
-									    the same page, so it must not open a tab. */}
-									<a className="btn btn--ghost" href="#artwork">
-										See assets
-									</a>
-									<Cta
-										href={marketingEmail(active.contactSubject)}
-										className="btn--ghost"
-									>
-										Contact marketing
-									</Cta>
-								</>
+								<Cta
+									href={marketingEmail(active.contactSubject)}
+									className="btn--ghost"
+								>
+									Contact marketing
+								</Cta>
 							) : null}
 						</div>
 					</div>

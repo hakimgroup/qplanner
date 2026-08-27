@@ -157,7 +157,21 @@ export function useSmoothScroll() {
 export function useScrollToTop() {
 	const { pathname, hash } = useLocation();
 	useEffect(() => {
-		if (hash) return;
+		if (hash) {
+			// A browser only jumps to a fragment on a real document load. Arriving
+			// from another landing page is a client-side navigation, so nothing
+			// happened and #featured landed at the top of the hub instead.
+			//
+			// `#brand-…` and `#cpd-…` are left alone: those rows have to be opened
+			// before they are worth scrolling to, and the sections that own them
+			// already do both. Scrolling here as well would fight them.
+			if (/^#(brand|cpd)-/.test(hash)) return;
+			const el = document.getElementById(hash.slice(1));
+			if (!el) return;
+			// One frame, so the section exists before we try to reach it.
+			requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
+			return;
+		}
 		window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
 	}, [pathname, hash]);
 }

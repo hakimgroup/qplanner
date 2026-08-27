@@ -66,7 +66,7 @@ const CAMPAIGN: Record<CampaignId, string> = {
 /** Supplier add-ons: a sign-up form where the supplier has one, otherwise a
  *  request to marketing. A brand with nothing to take up is left out entirely
  *  rather than given a null — see the festive note below. */
-const BRANDS: Record<CampaignId, Record<string, string | null>> = {
+const BRANDS: Record<CampaignId, Record<string, string>> = {
 	presbyopia: {
 		hoya: ask("Hoya brand assets - Presbyopia"),
 		coopervision: ask("CooperVision brand assets - Presbyopia"),
@@ -77,8 +77,9 @@ const BRANDS: Record<CampaignId, Record<string, string | null>> = {
 		"body-doctor": ask("The Body Doctor opt-in - Dry Eye and Menopause"),
 	},
 	"black-friday": {
-		// Promotion details still to follow — the block renders no button.
-		scope: null,
+		// Promotion details still to follow, but the row still offers a way in —
+		// every brand does. See the note on brandLink.
+		scope: ask("Scope - Black Friday"),
 	},
 	"festive-windows": {
 		// Supplier sign-up forms, supplied 27 August 2026. Each collects the
@@ -104,10 +105,21 @@ export function campaignLink(id: CampaignId): string {
 	return CAMPAIGN[id] ?? PLANNER_HOME;
 }
 
-/** Supplier add-on destination, or null where there is nothing to take up yet. */
-export function brandLink(id: CampaignId, brandId: string): string | null {
-	return BRANDS[id]?.[brandId] ?? null;
+/**
+ * Where a supplier add-on is taken up.
+ *
+ * Every brand resolves to something: a sign-up form where the supplier runs one,
+ * otherwise an email to marketing. A brand that offered no way in at all left the
+ * visitor reading about an activation with nowhere to go, so the fallback is the
+ * rule rather than an edge case — `brandLink` never returns null.
+ */
+export function brandLink(id: CampaignId, brandId: string): string {
+	return BRANDS[id]?.[brandId] ?? MAIL;
 }
+
+/** True where a destination is a supplier's own sign-up form rather than an
+ *  email. Drives the button label: a form is filled in, marketing is contacted. */
+export const isForm = (href: string) => /^https?:\/\//i.test(href);
 
 /**
  * True where a destination is an email rather than a page.

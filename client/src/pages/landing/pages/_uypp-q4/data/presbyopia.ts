@@ -327,8 +327,7 @@ export const PRESBYOPIA: Campaign = {
 				"Social media templates to drive varifocal awareness",
 				"Product training, and help tailoring the message to your patients"
 			],
-			"howto": "<p>Select it in your Marketing Planner, where it is listed as <strong>HOYA Presbyopia</strong>. Your branded assets are requested with it.</p><p>This is not a discount campaign and there is no promotion attached — it is awareness, the same as the campaign it sits on.</p>",
-			"cta": "Request via the planner"
+			"howto": "<p>Select it in your Marketing Planner, where it is listed as <strong>HOYA Presbyopia</strong>. Your branded assets are requested with it.</p><p>This is not a discount campaign and there is no promotion attached — it is awareness, the same as the campaign it sits on.</p>"
 		},
 		{
 			"id": "coopervision",
@@ -347,8 +346,7 @@ export const PRESBYOPIA: Campaign = {
 				"MyDay&reg; multifocal",
 				"clariti&reg; 1 day multifocal 3 add"
 			],
-			"howto": "<p>Contact your CooperVision BDM for advice and training across the Cooper brands.</p>",
-			"cta": "Contact your BDM"
+			"howto": "<p>Contact your CooperVision BDM for advice and training across the Cooper brands.</p>"
 		},
 		{
 			"id": "bausch-lomb",
@@ -365,8 +363,7 @@ export const PRESBYOPIA: Campaign = {
 			"products": [
 				"B+L Ultra 1 Day Multifocal"
 			],
-			"howto": "<p>Contact your local BDM to plan the event and collect the assets, and link in with the HG Events team and the <em>Events Made Easy</em> local events toolkit.</p>",
-			"cta": "Contact your BDM"
+			"howto": "<p>Contact your local BDM to plan the event and collect the assets, and link in with the HG Events team and the <em>Events Made Easy</em> local events toolkit.</p>"
 		}
 	]
 };

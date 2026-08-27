@@ -15,7 +15,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useCampaign } from "./CampaignShell";
-import { brandLink, campaignLink } from "./links";
+import { brandLink, campaignLink, isForm } from "./links";
 import { Cta } from "./Cta";
 import type { Brand } from "./types";
 
@@ -83,6 +83,11 @@ export function SupplierSection({ lead }: { lead?: React.ReactNode }) {
 									const isOpen = !!open[b.id];
 									const tbc = b.status === "tbc";
 									const href = brandLink(id, b.id);
+									// One rule for every brand on every campaign: a supplier form
+									// is filled in, anything else is a conversation with marketing.
+									// Derived rather than stored per brand, so the two cannot drift
+									// apart as brands are added.
+									const label = isForm(href) ? "Fill in form" : "Contact marketing";
 									return (
 										<article
 											className={`supplier${tbc ? " supplier--tbc" : ""}${
@@ -144,15 +149,17 @@ export function SupplierSection({ lead }: { lead?: React.ReactNode }) {
 														</div>
 													) : null}
 													<div className="supplier__actions">
+														{/* A "to be confirmed" brand still gets a button. The
+														    detail is missing, not the interest — and marketing
+														    is exactly who can say more. */}
 														{tbc ? (
 															<p className="supplier__tbc">
 																Details still to be confirmed by the supplier.
 															</p>
-														) : (
-															<Cta href={href} className="btn--sm">
-																{b.cta ?? "Take up this add-on"}
-															</Cta>
-														)}
+														) : null}
+														<Cta href={href} className="btn--sm">
+															{label}
+														</Cta>
 													</div>
 												</div>
 											</div>

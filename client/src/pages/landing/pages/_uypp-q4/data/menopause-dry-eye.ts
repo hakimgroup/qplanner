@@ -268,8 +268,7 @@ export const DRY_EYE: Campaign = {
 				"The Eye Doctor Hypochlorous Eyelid Cleansing Spray",
 				"The Eye Doctor Advanced Triple Action Eye Drops"
 			],
-			"howto": "<p>Opt in through The Body Doctor's form. The link is still to be supplied.</p>",
-			"cta": "Opt in"
+			"howto": "<p>Opt in through The Body Doctor's form. The link is still to be supplied.</p>"
 		},
 		{
 			"id": "thea",
@@ -288,8 +287,7 @@ export const DRY_EYE: Campaign = {
 				"BLEPHADERM&reg;",
 				"THEALOZ DUO&reg; or THEALOZ DUO GEL"
 			],
-			"howto": "<p>Contact your Thea Area Sales Manager.</p>",
-			"cta": "Contact your ASM"
+			"howto": "<p>Contact your Thea Area Sales Manager.</p>"
 		}
 	]
 };

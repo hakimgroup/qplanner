@@ -105,8 +105,7 @@ export const FESTIVE: Campaign = {
 			"products": [
 				"BOSS frames"
 			],
-			"howto": "<p>The first 10 practices in the group to purchase 12 pieces or more in a single order during September and October receive a BOSS gift-with-purchase set.</p><p>Sign up below to register your interest.</p><p>Final design may vary from the artwork shown.</p>",
-			"cta": "Sign up"
+			"howto": "<p>The first 10 practices in the group to purchase 12 pieces or more in a single order during September and October receive a BOSS gift-with-purchase set.</p><p>Sign up below to register your interest.</p><p>Final design may vary from the artwork shown.</p>"
 		},
 		{
 			"id": "oakley",
@@ -121,8 +120,7 @@ export const FESTIVE: Campaign = {
 			"products": [
 				"Oakley frames"
 			],
-			"howto": "<p>Only selected practices can successfully opt in. You will have received an email from <a href=\"mailto:brand.activations@hakimgroup.co.uk\">brand.activations@hakimgroup.co.uk</a> if you have been pre-selected. If you have received this email, please sign up below.</p><p>For any queries please email the brand activations inbox.</p><p>Artwork for this one is still to come from Luxottica.</p>",
-			"cta": "Sign up"
+			"howto": "<p>Only selected practices can successfully opt in. You will have received an email from <a href=\"mailto:brand.activations@hakimgroup.co.uk\">brand.activations@hakimgroup.co.uk</a> if you have been pre-selected. If you have received this email, please sign up below.</p><p>For any queries please email the brand activations inbox.</p><p>Artwork for this one is still to come from Luxottica.</p>"
 		},
 		{
 			"id": "ted-baker",
@@ -137,8 +135,7 @@ export const FESTIVE: Campaign = {
 			"products": [
 				"Ted Baker frames"
 			],
-			"howto": "<p>The first 40 practices in the group to sign up will receive their gift-with-purchase set.</p><p>Final design may vary from the artwork shown.</p>",
-			"cta": "Sign up"
+			"howto": "<p>The first 40 practices in the group to sign up will receive their gift-with-purchase set.</p><p>Final design may vary from the artwork shown.</p>"
 		},
 		{
 			"id": "design-eyewear",
@@ -156,8 +153,7 @@ export const FESTIVE: Campaign = {
 				"Prodesign",
 				"Face a Face"
 			],
-			"howto": "<p>Qualifying is order-based and first come, first served — see the allocations above.</p><p>Sign up below to register your interest.</p>",
-			"cta": "Sign up"
+			"howto": "<p>Qualifying is order-based and first come, first served — see the allocations above.</p><p>Sign up below to register your interest.</p>"
 		},
 		{
 			"id": "thea",
@@ -177,8 +173,7 @@ export const FESTIVE: Campaign = {
 				"Blephasol Micellar Solution",
 				"Blephaderm Eyelid and Eye Contour Cream"
 			],
-			"howto": "<p>Contact your Thea rep for information and product training.</p>",
-			"cta": "Contact your rep"
+			"howto": "<p>Contact your Thea rep for information and product training.</p>"
 		}
 	]
 };

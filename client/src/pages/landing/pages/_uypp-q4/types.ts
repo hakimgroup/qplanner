@@ -69,7 +69,6 @@ export interface Brand {
 	products?: string[];
 	/** HTML string. */
 	howto?: string;
-	cta?: string;
 }
 
 export interface Campaign {
