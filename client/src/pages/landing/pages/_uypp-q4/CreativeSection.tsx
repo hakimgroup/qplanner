@@ -6,7 +6,7 @@
  * route name already says.
  */
 import { useCampaign } from "./CampaignShell";
-import { campaignLink } from "./links";
+import { campaignLink, marketingEmail } from "./links";
 import { Cta } from "./Cta";
 
 export function CreativeSection({
@@ -60,7 +60,27 @@ export function CreativeSection({
 						{active.body ? (
 							<div dangerouslySetInnerHTML={{ __html: active.body }} />
 						) : null}
-						<Cta href={campaignLink(id)}>Order this campaign</Cta>
+						{active.note ? (
+							<div dangerouslySetInnerHTML={{ __html: active.note }} />
+						) : null}
+						<div className="route__actions">
+							<Cta href={campaignLink(id)}>Order this campaign</Cta>
+							{active.contactSubject ? (
+								<>
+									{/* A plain anchor, not a Cta: this goes to another section of
+									    the same page, so it must not open a tab. */}
+									<a className="btn btn--ghost" href="#artwork">
+										See assets
+									</a>
+									<Cta
+										href={marketingEmail(active.contactSubject)}
+										className="btn--ghost"
+									>
+										Contact marketing
+									</Cta>
+								</>
+							) : null}
+						</div>
 					</div>
 				</div>
 			</div>

@@ -36,6 +36,11 @@ export type CampaignId =
 const MAIL = "mailto:marketing@hakimgroup.co.uk";
 const ask = (subject: string) => `${MAIL}?subject=${encodeURIComponent(subject)}`;
 
+/** An email to the marketing team with the subject filled in. Exported so a page
+ *  can raise a conversation about one specific thing rather than the campaign as
+ *  a whole. */
+export const marketingEmail = ask;
+
 const planner = (id: string) => `/dashboard?campaign=${id}`;
 
 const PRESBYOPIA = planner("49fc2f96-6e7c-4d95-a7cf-a97ce5bc5f4a");

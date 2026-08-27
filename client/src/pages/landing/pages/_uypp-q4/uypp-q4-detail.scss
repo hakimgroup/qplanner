@@ -256,7 +256,13 @@
 	   rules would hit the paragraphs too, and align-items:flex-start would shrink-wrap their
 	   text and change where every line breaks. */
 	.route > .route__body { display:flex; flex-direction:column; align-items:flex-start; }
-	.route > .route__body > .btn { margin-top:auto; }
+	/* The actions sit at the foot of the column whatever the copy length, so the
+	   two routes line up beside each other. */
+	.route > .route__body > .route__actions { margin-top:auto; }
+	.route__actions { display:flex; flex-wrap:wrap; gap:10px; padding-top:4px; }
+	/* The closing line under the route copy — quieter than body text, and it must
+	   not be pushed to the bottom, it belongs with the paragraph above it. */
+	.route__note { color:var(--muted); font-size:.98rem; }
 	.route__tagline { font-family:var(--display); letter-spacing:.14em; text-transform:uppercase; font-size:1rem; color:var(--muted); margin:0 0 .7em; }
 	/* Size and bottom margin come from the shared SECTION TYPOGRAPHY rule below. */
 	.route__title { }

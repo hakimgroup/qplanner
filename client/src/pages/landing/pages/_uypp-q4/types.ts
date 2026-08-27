@@ -37,6 +37,13 @@ export interface Route {
 	accent?: string;
 	/** Retained but not rendered — the placement carousel already lists everything. */
 	assets?: string[];
+	/** HTML string. A closing line under the route copy, where a route needs to say
+	 *  something the campaign-wide wording does not cover. */
+	note?: string;
+	/** Subject line for a "contact marketing" button on this route. Its presence is
+	 *  what renders that button and the jump to the artwork alongside it — a route
+	 *  that needs a conversation rather than only an order. */
+	contactSubject?: string;
 	placements?: Placement[];
 }
 

@@ -12,6 +12,8 @@ export const FESTIVE: Campaign = {
 			"id": "easy",
 			"name": "Festive Made Easy",
 			"tagline": "Option 01",
+			"note": "<p class='route__note'>To find out more about how to deliver a window like this, please get in touch with marketing, or have a look below at the festive posters you can order.</p>",
+			"contactSubject": "Festive Windows - Festive Made Easy",
 			"accent": "#C9A227",
 			"visual": img("festive-easy-1.jpg"),
 			"body": "<p class='route__body'>Simple, accessible decor using readily available products. Paper stars, fairy lights, hanging fans and miniature trees, everything here can be bought off the shelf and put up by the practice team in an afternoon.</p>",
@@ -23,6 +25,28 @@ export const FESTIVE: Campaign = {
 				"Window vinyl"
 			],
 			"placements": [
+				{
+					"key": "posters",
+					"label": "Festive posters",
+					"items": [
+						{
+							"img": img("festive-poster-sleigh.jpg"),
+							"cap": "Seeing is Believing — A4 poster"
+						},
+						{
+							"img": img("festive-poster-cookies.jpg"),
+							"cap": "Even Santa needs a clear view — A4 poster"
+						},
+						{
+							"img": img("festive-aboard-sleigh.jpg"),
+							"cap": "Seeing is Believing on an A-board"
+						},
+						{
+							"img": img("festive-aboard-cookies.jpg"),
+							"cap": "Even Santa needs a clear view on an A-board"
+						}
+					]
+				},
 				{
 					"key": "decor",
 					"label": "Decor ideas",
@@ -53,6 +77,8 @@ export const FESTIVE: Campaign = {
 			"id": "spark",
 			"name": "The Spark",
 			"tagline": "Option 02",
+			"note": "<p class='route__note'>To find out more about how to deliver a window like this, please get in touch with marketing, or have a look below at the festive posters you can order.</p>",
+			"contactSubject": "Festive Windows - The Spark",
 			"accent": "#AA9278",
 			"visual": img("festive-spark.jpg"),
 			"body": "<p class='route__body'>More considered, bespoke display pieces designed to create standout impact. A step up in production value, sculptural frames, gift displays and village scenes that reward a second look from the pavement.</p>",
@@ -63,6 +89,28 @@ export const FESTIVE: Campaign = {
 				"Village scenes"
 			],
 			"placements": [
+				{
+					"key": "posters",
+					"label": "Festive posters",
+					"items": [
+						{
+							"img": img("festive-poster-sleigh.jpg"),
+							"cap": "Seeing is Believing — A4 poster"
+						},
+						{
+							"img": img("festive-poster-cookies.jpg"),
+							"cap": "Even Santa needs a clear view — A4 poster"
+						},
+						{
+							"img": img("festive-aboard-sleigh.jpg"),
+							"cap": "Seeing is Believing on an A-board"
+						},
+						{
+							"img": img("festive-aboard-cookies.jpg"),
+							"cap": "Even Santa needs a clear view on an A-board"
+						}
+					]
+				},
 				{
 					"key": "pieces",
 					"label": "Display pieces",
