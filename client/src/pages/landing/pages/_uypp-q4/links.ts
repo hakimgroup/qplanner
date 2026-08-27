@@ -19,8 +19,7 @@
  *
  *   Requests, which go to the marketing team with a subject line so they can be
  *   triaged without being opened. Used where take-up runs through a rep or an
- *   allocation rather than a form, and for Festive Windows itself, which has no
- *   planner campaign — it is offered as inspiration to discuss with marketing.
+ *   allocation rather than a form.
  *
  * A campaign's creative directions share its link: the planner has one entry per
  * campaign, not per direction, so the direction is chosen inside the planner.
@@ -45,11 +44,7 @@ const BLACK_FRIDAY = planner("6e0839c3-674b-42b4-b586-205b2d9422ea");
 const OUTSIDE_RX = planner("d0780dcc-709e-4354-8fa2-fb8643c607bf");
 const EYE_EXAMS = planner("8d0c111d-a127-49b3-a142-22065517518a");
 
-/** Festive Windows has no planner campaign and is not ordered off a shelf: the
- *  directions are starting points a practice adapts, so every button on that page
- *  opens an email to marketing instead. The subject says enquiry rather than
- *  order so the inbox can tell the two apart at a glance. */
-const FESTIVE = ask("Festive Windows - enquiry");
+const FESTIVE = planner("729bef72-acf0-403f-8f4a-97003466fe46");
 
 /** The planner itself — the labelled fallback destination. */
 export const PLANNER_HOME = "/dashboard";

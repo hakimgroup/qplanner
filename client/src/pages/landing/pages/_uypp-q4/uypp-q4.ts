@@ -7,6 +7,7 @@
  * Deliberately kept separate from the Q3 `_uypp/uypp.ts`: Q3 is live and its
  * pages should not move when Q4 changes.
  */
+import { useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 
@@ -136,6 +137,29 @@ export function useSmoothScroll() {
 			root.style.scrollPaddingTop = prevPadding;
 		};
 	}, []);
+}
+
+/**
+ * Start a landing page at the top.
+ *
+ * React Router keeps the window's scroll position across a navigation, and
+ * nothing in the planner resets it. Clicking a campaign card near the bottom of
+ * the hub therefore opened that campaign already scrolled the same distance
+ * down — landing somewhere around the artwork rather than at the hero, which
+ * read as the link being wrong.
+ *
+ * A hash is left alone: `#brand-hoya` and the like are deep links into a
+ * specific row and are meant to land there, so only a plain navigation with no
+ * fragment is pulled back to the top. `instant` because the page has not been
+ * seen yet — smooth-scrolling up from a position the visitor never chose just
+ * shows them the whole page rushing past.
+ */
+export function useScrollToTop() {
+	const { pathname, hash } = useLocation();
+	useEffect(() => {
+		if (hash) return;
+		window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+	}, [pathname, hash]);
 }
 
 /** Sets document.title while mounted, restoring the previous title on unmount. */

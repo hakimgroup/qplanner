@@ -20,7 +20,7 @@ import { Cta } from "./Cta";
 import type { Brand } from "./types";
 
 export function SupplierSection({ lead }: { lead?: React.ReactNode }) {
-	const { campaign, id, inspiration } = useCampaign();
+	const { campaign, id } = useCampaign();
 	const brands = campaign.brands ?? [];
 	const [open, setOpen] = useState<Record<string, boolean>>({});
 	const [targeted, setTargeted] = useState<string | null>(null);
@@ -168,12 +168,12 @@ export function SupplierSection({ lead }: { lead?: React.ReactNode }) {
 				    rows. The add-on attaches to the campaign, so this is the other half. */}
 				<div className="suppliers__foot reveal">
 					<p className="suppliers__foot-text">
-						{inspiration
-							? "Brand assets sit on top of the campaign, they do not replace it. Take up any supplier add-on above, and get in touch about the window itself."
-							: "Brand assets sit on top of the campaign, they do not replace it. Order the campaign itself in your Marketing Planner, then take up any supplier add-on alongside it."}
+						Brand assets sit on top of the campaign, they do not replace it. Order the
+						campaign itself in your Marketing Planner, then take up any supplier add-on
+						alongside it.
 					</p>
 					<Cta href={campaignLink(id)} className="btn--ghost">
-						{inspiration ? "Contact Marketing" : "Order this campaign"}
+						Order this campaign
 					</Cta>
 				</div>
 			</div>

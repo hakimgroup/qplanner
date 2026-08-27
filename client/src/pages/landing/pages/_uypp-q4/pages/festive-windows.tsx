@@ -225,7 +225,16 @@ export default function FestiveWindows() {
 				lead="Brand assets are an add-on to this campaign, funded by the supplier, who provides the artwork, the training and the offer itself. Open one to see what it includes and how to take it up."
 			/>
 
-			<OrderSection />
+			<OrderSection
+				note={
+					<>
+						Building a custom window display? For advice on putting one together,
+						please get in touch with the marketing team at{" "}
+						<a href="mailto:marketing@hakimgroup.co.uk">marketing@hakimgroup.co.uk</a>.
+						To order posters from the Festive collection, use the button below.
+					</>
+				}
+			/>
 
 			{/* ============ OTHER CAMPAIGNS ============ */}
 

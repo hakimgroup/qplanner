@@ -7,6 +7,7 @@ import {
 	useDocTitle,
 	useReveal,
 	useScrollSpy,
+	useScrollToTop,
 	useSmoothScroll,
 	useStickyHeader,
 	useTypography,
@@ -34,6 +35,7 @@ export default function Q4Campaigns() {
 	const root = useRef<HTMLDivElement>(null);
 	const stuck = useStickyHeader();
 	const active = useScrollSpy(SPY_IDS);
+	useScrollToTop();
 	useReveal(root);
 	useSmoothScroll();
 	useTypography(root);

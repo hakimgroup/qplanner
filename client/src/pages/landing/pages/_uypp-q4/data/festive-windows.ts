@@ -7,9 +7,6 @@ import { img } from "../uypp-q4";
 import type { Campaign } from "../types";
 
 export const FESTIVE: Campaign = {
-	/* Offered as inspiration rather than ordered: there is no planner campaign,
-	   and the directions are starting points to talk through with marketing. */
-	"inspiration": true,
 	"routes": [
 		{
 			"id": "easy",

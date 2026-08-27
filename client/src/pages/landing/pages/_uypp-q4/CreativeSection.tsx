@@ -16,7 +16,7 @@ export function CreativeSection({
 	title?: string;
 	lead?: React.ReactNode;
 }) {
-	const { routes, active, setActive, id, multi, inspiration } = useCampaign();
+	const { routes, active, setActive, id, multi } = useCampaign();
 
 	return (
 		<section className="section section--tint" id="creative">
@@ -60,9 +60,7 @@ export function CreativeSection({
 						{active.body ? (
 							<div dangerouslySetInnerHTML={{ __html: active.body }} />
 						) : null}
-						<Cta href={campaignLink(id)}>
-							{inspiration ? "Contact Marketing" : "Order this campaign"}
-						</Cta>
+						<Cta href={campaignLink(id)}>Order this campaign</Cta>
 					</div>
 				</div>
 			</div>
