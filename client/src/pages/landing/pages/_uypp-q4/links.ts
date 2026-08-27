@@ -45,10 +45,11 @@ const BLACK_FRIDAY = planner("6e0839c3-674b-42b4-b586-205b2d9422ea");
 const OUTSIDE_RX = planner("d0780dcc-709e-4354-8fa2-fb8643c607bf");
 const EYE_EXAMS = planner("8d0c111d-a127-49b3-a142-22065517518a");
 
-/** Festive Windows is still being set up in the planner, now that Christmas
- *  gifting and party season has folded into it. Until it exists, ordering is a
- *  request. Replace this one constant when the campaign id arrives. */
-const FESTIVE = ask("Festive Windows - campaign order");
+/** Festive Windows has no planner campaign and is not ordered off a shelf: the
+ *  directions are starting points a practice adapts, so every button on that page
+ *  opens an email to marketing instead. The subject says enquiry rather than
+ *  order so the inbox can tell the two apart at a glance. */
+const FESTIVE = ask("Festive Windows - enquiry");
 
 /** The planner itself — the labelled fallback destination. */
 export const PLANNER_HOME = "/dashboard";

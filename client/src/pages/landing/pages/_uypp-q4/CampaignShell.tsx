@@ -33,6 +33,10 @@ interface Ctx {
 	setActive: (r: Route) => void;
 	campaign: Campaign;
 	multi: boolean;
+	/** Offered as inspiration rather than ordered — see the Campaign type. Every
+	 *  campaign-level button reads this, so the page speaks with one voice
+	 *  instead of half of it offering an order and half a conversation. */
+	inspiration: boolean;
 }
 
 const CampaignCtx = createContext<Ctx | null>(null);
@@ -73,6 +77,7 @@ export function CampaignShell({
 			active,
 			setActive,
 			multi: campaign.routes.length > 1,
+			inspiration: campaign.inspiration === true,
 		}),
 		[id, campaign, active]
 	);
