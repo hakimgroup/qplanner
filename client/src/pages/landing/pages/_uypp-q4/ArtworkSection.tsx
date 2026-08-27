@@ -25,7 +25,7 @@ export function ArtworkSection({
 	title?: string;
 	lead?: React.ReactNode;
 }) {
-	const { active, id } = useCampaign();
+	const { active, id, orderLabel } = useCampaign();
 	const placements = useMemo<Placement[]>(() => active.placements ?? [], [active]);
 	const [current, setCurrent] = useState(0);
 	const track = useRef<HTMLDivElement>(null);
@@ -155,7 +155,7 @@ export function ArtworkSection({
 					</div>
 
 					<div className="explorer__cta">
-						<Cta href={campaignLink(id)}>Order this campaign</Cta>
+						<Cta href={campaignLink(id)}>{orderLabel}</Cta>
 					</div>
 				</div>
 			</div>

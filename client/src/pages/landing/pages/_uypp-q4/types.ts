@@ -75,4 +75,13 @@ export interface Brand {
 export interface Campaign {
 	routes: Route[];
 	brands?: Brand[];
+	/**
+	 * What the ordering buttons call the thing being ordered.
+	 *
+	 * Defaults to "Order this campaign", which is right where the campaign and
+	 * the order are the same thing. Festive Windows is not: the campaign is a
+	 * window you build, and what the planner actually supplies is the poster set,
+	 * so its buttons say "Order Festive posters" instead of promising the window.
+	 */
+	orderLabel?: string;
 }

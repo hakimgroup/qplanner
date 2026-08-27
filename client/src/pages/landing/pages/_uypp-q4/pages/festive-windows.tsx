@@ -85,14 +85,13 @@ export default function FestiveWindows() {
 				title="How far do you want to go?"
 			/>
 
+			<ArtworkSection />
+
 			{/* Audience and "best for" used to be two separate sections, which read as a wall of
 			    copy stacked under the intro. One heading now, two panels: who the work speaks to
-			    on the left, what it does for the practice on the right.
-			    Plain background on this page only. Everywhere else this section is tinted, but the
-			    dark placement carousel that used to sit above it has gone, which left two tinted
-			    sections touching and the join disappeared. */}
+			    on the left, what it does for the practice on the right. */}
 
-			<section className="section">
+			<section className="section section--tint">
 				<div className="wrap">
 					<div className="section-head reveal">
 						<div>

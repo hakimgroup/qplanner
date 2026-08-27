@@ -34,6 +34,8 @@ interface Ctx {
 	setActive: (r: Route) => void;
 	campaign: Campaign;
 	multi: boolean;
+	/** Label for every ordering button on the page — see Campaign.orderLabel. */
+	orderLabel: string;
 }
 
 const CampaignCtx = createContext<Ctx | null>(null);
@@ -75,6 +77,7 @@ export function CampaignShell({
 			active,
 			setActive,
 			multi: campaign.routes.length > 1,
+			orderLabel: campaign.orderLabel ?? "Order this campaign",
 		}),
 		[id, campaign, active]
 	);

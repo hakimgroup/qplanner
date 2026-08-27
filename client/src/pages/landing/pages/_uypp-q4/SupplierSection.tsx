@@ -20,7 +20,7 @@ import { Cta } from "./Cta";
 import type { Brand } from "./types";
 
 export function SupplierSection({ lead }: { lead?: React.ReactNode }) {
-	const { campaign, id } = useCampaign();
+	const { campaign, id, orderLabel } = useCampaign();
 	const brands = campaign.brands ?? [];
 	const [open, setOpen] = useState<Record<string, boolean>>({});
 	const [targeted, setTargeted] = useState<string | null>(null);
@@ -173,7 +173,7 @@ export function SupplierSection({ lead }: { lead?: React.ReactNode }) {
 						alongside it.
 					</p>
 					<Cta href={campaignLink(id)} className="btn--ghost">
-						Order this campaign
+						{orderLabel}
 					</Cta>
 				</div>
 			</div>

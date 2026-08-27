@@ -7,6 +7,7 @@ import { img } from "../uypp-q4";
 import type { Campaign } from "../types";
 
 export const FESTIVE: Campaign = {
+	"orderLabel": "Order Festive posters",
 	"routes": [
 		{
 			"id": "easy",

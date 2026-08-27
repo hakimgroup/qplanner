@@ -16,7 +16,7 @@ export function CreativeSection({
 	title?: string;
 	lead?: React.ReactNode;
 }) {
-	const { routes, active, setActive, id, multi } = useCampaign();
+	const { routes, active, setActive, id, multi, orderLabel } = useCampaign();
 
 	return (
 		<section className="section section--tint" id="creative">
@@ -64,7 +64,7 @@ export function CreativeSection({
 							<div dangerouslySetInnerHTML={{ __html: active.note }} />
 						) : null}
 						<div className="route__actions">
-							<Cta href={campaignLink(id)}>Order this campaign</Cta>
+							<Cta href={campaignLink(id)}>{orderLabel}</Cta>
 							{active.contactSubject ? (
 								<>
 									{/* A plain anchor, not a Cta: this goes to another section of
