@@ -156,25 +156,55 @@ export function useSmoothScroll() {
  */
 export function useScrollToTop() {
 	const { pathname, hash } = useLocation();
+
+	// The browser restores the previous scroll position on a history navigation,
+	// and it does so asynchronously — landing after anything an effect does and
+	// silently undoing it. That is why a campaign opened partway down the page
+	// even with a scroll-to-top in place. While these pages are mounted, where
+	// the visitor lands is decided here.
 	useEffect(() => {
-		if (hash) {
-			// A browser only jumps to a fragment on a real document load. Arriving
-			// from another landing page is a client-side navigation, so nothing
-			// happened and #featured landed at the top of the hub instead.
-			//
-			// `#brand-…` and `#cpd-…` are left alone: those rows have to be opened
-			// before they are worth scrolling to, and the sections that own them
-			// already do both. Scrolling here as well would fight them.
-			if (/^#(brand|cpd)-/.test(hash)) return;
+		if (!("scrollRestoration" in history)) return;
+		const previous = history.scrollRestoration;
+		history.scrollRestoration = "manual";
+		return () => {
+			history.scrollRestoration = previous;
+		};
+	}, []);
+
+	useEffect(() => {
+		// `#brand-…` and `#cpd-…` are left alone: those rows have to be opened
+		// before they are worth scrolling to, and the sections that own them
+		// already do both. Scrolling here as well would fight them.
+		if (hash && /^#(brand|cpd)-/.test(hash)) return;
+
+		let frames = 0;
+		let raf = 0;
+
+		const settle = () => {
+			if (!hash) {
+				window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+				return;
+			}
 			const el = document.getElementById(hash.slice(1));
-			if (!el) return;
-			// One frame, so the section exists before we try to reach it.
-			requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
-			return;
-		}
-		window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+			if (!el) {
+				// A section arrived at from another landing page is not in the DOM
+				// on the first frame. Checking once and giving up is what made the
+				// first click do nothing and the second one work — by then the page
+				// was already there.
+				if (frames++ < 20) raf = requestAnimationFrame(settle);
+				return;
+			}
+			// "instant" on purpose. useSmoothScroll sets scroll-behavior: smooth for
+			// in-page clicks, and a smooth scroll started while the page is still
+			// mounting gets cut short, leaving the visitor near the top.
+			el.scrollIntoView({ block: "start", behavior: "instant" as ScrollBehavior });
+		};
+
+		raf = requestAnimationFrame(settle);
+		return () => cancelAnimationFrame(raf);
 	}, [pathname, hash]);
 }
+
 
 /** Sets document.title while mounted, restoring the previous title on unmount. */
 export function useDocTitle(title: string) {
