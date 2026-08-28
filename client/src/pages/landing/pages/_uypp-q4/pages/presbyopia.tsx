@@ -230,13 +230,30 @@ export default function Presbyopia() {
 							<span>
 								Thu 29 October · 18:30–20:00
 							</span>
+							<span>
+								Optometrists, dispensing and contact lens opticians
+							</span>
 						</p>
 						<p className="cpd__standfirst">
 							Multifocal contact lenses for the modern presbyope.
 						</p>
 						<p>
-							This session covers the latest research-driven definition of presbyopia and its relevance to both emerging and established presbyopes, with a focus on the psychological and physiological impact on patients. Featuring real patient video testimonials and peer-to-peer insight from an experienced ECP, delegates will take away practical fitting tips for maximising success with MyDay multifocal and clariti 1 day multifocal.
+							Presbyopia may be a natural part of ageing, but it doesn't stop people wanting to live active, fulfilling and adventurous lives. This session explores its real-world impact, from the everyday frustrations of blurred near vision to the psychological effects on confidence, independence and self-perception.
 						</p>
+						<p>
+							Through patient stories, lifestyle examples and practitioner insight, it examines why multifocal contact lenses remain underutilised despite their potential to transform patients' lives. It challenges common misconceptions and highlights the commercial opportunity for practice.
+						</p>
+						<p>
+							Delegates take away practical fitting tips and success strategies from experienced clinicians, including for MyDay multifocal and clariti 1 day multifocal, alongside real patient video testimonials and peer-to-peer insight from an experienced ECP.
+						</p>
+						<dl className="cpd__spec">
+							<dt>
+								Domain
+							</dt>
+							<dd>
+								Clinical Practice, Professionalism
+							</dd>
+						</dl>
 						<p className="cpd__note">
 							Please note: BDMs may follow up with practices after this session to offer support and discuss any relevant opportunities.
 						</p>
@@ -244,6 +261,11 @@ export default function Presbyopia() {
 							Register
 						</a>
 					</CpdSession>
+					{/* Held back to next month, 27 August 2026 — releasing separately, not
+					    cancelled. Commented rather than deleted because it is coming back and
+					    the detail below is the version to restore. Delete this block instead if
+					    it is still sitting here once Q4 is over.
+
 											<CpdSession
 						id="patient-journey"
 						name="Embracing technology to supercharge your patient journey"
@@ -288,6 +310,7 @@ export default function Presbyopia() {
 							Register on Teams
 						</a>
 					</CpdSession>
+					*/}
 					</div>
 				</div>
 			</section>
