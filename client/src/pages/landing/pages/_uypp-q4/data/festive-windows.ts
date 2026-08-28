@@ -53,17 +53,15 @@ export const FESTIVE: Campaign = {
 		},
 		{
 			"id": "spark",
-			"name": "The Spark",
+			"name": "Festive Posters",
 			"tagline": "Option 02",
-			"note": "<p class='route__note'>There are also some more standard festive posters available to order below.</p>",
 			"accent": "#AA9278",
-			"visual": img("festive-spark.jpg"),
-			"body": "<p class='route__body'>More considered, bespoke display pieces designed to create standout impact. A step up in production value, sculptural frames, gift displays and village scenes that reward a second look from the pavement.</p>",
+			"visual": img("festive-aboard-sleigh.jpg"),
+			"body": "<p class='route__body'>A ready-made set of festive posters, printed and delivered, for the window and the A-board. The simplest way to mark the season, with nothing to build and nothing to source.</p>",
 			"assets": [
-				"Bespoke display pieces",
-				"Frame sculptures",
-				"Gift displays",
-				"Village scenes"
+				"A4 posters",
+				"A-board artwork",
+				"Window display"
 			],
 			"placements": [
 				{
