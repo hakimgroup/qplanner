@@ -13,7 +13,7 @@ import {
 	useTypography,
 } from "../uypp-q4";
 import { CardCycle } from "../HomeBits";
-import { FEEDBACK_FORM } from "../links";
+import { FeedbackSection } from "../FeedbackSection";
 import "../uypp-q4-home.scss";
 
 export const meta: LandingPageMeta = {
@@ -536,25 +536,7 @@ export default function Q4Campaigns() {
 
 			{/* ============ FOOTER CTA ============ */}
 
-			<section className="cta" id="cta">
-				<div className="wrap cta__inner reveal">
-					<h2 className="display cta__title">
-						Let us know what you think
-					</h2>
-					<p>
-						We've changed how Unlock Your Practice Potential works this quarter. We'd like to know what's working, what isn't, and how it could be better.
-					</p>
-					<a
-						className="btn"
-						href={FEEDBACK_FORM}
-						data-cta="feedback"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						Share your feedback
-					</a>
-				</div>
-			</section>
+			<FeedbackSection id="cta" />
 			</main>
 
 			<footer className="foot">

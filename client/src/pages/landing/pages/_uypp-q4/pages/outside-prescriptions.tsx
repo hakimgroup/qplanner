@@ -2,6 +2,7 @@ import type { LandingPageMeta } from "../../../registry";
 import { img } from "../uypp-q4";
 import { MARKETING_LINK } from "../links";
 import { CampaignShell, HUB } from "../CampaignShell";
+import { FeedbackSection } from "../FeedbackSection";
 import { CreativeSection } from "../CreativeSection";
 import { ArtworkSection } from "../ArtworkSection";
 import { SupplierSection } from "../SupplierSection";
@@ -241,19 +242,7 @@ export default function OutsidePrescriptions() {
 
 			{/* ============ FOOTER CTA ============ */}
 
-			<section className="cta">
-				<div className="wrap cta__inner reveal">
-					<h2 className="display cta__title">
-						Tell us what you think
-					</h2>
-					<p>
-						Please share your thoughts with us, we'd really appreciate your feedback.
-					</p>
-					<Link className="btn btn--ghost" to={`${HUB}#featured`}>
-						Back to our campaign overview
-					</Link>
-				</div>
-			</section>
+			<FeedbackSection />
 		</CampaignShell>
 	);
 }

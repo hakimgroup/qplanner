@@ -541,8 +541,11 @@
 	.cta__inner { text-align:center; padding-block:clamp(44px,6vw,84px); }
 	.cta__title { font-size:clamp(2.6rem,7vw,5rem); margin-bottom:.2em; }
 	.cta__inner p { font-size:1.15rem; margin-bottom:1.6em; }
-	.cta .btn--ghost { color:#fff; border-color:rgba(255,255,255,.6); }
-	.cta .btn--ghost:hover { background:#fff; color:var(--ink); border-color:#fff; }
+	/* Same solid accent button as the hub's closing bar. Both pages share the
+	   component now, so they have to agree on how its button looks — the ghost
+	   variant that used to sit here went with the "back to overview" link. */
+	.cta .btn { background:var(--accent); color:#fff; border-color:var(--accent); }
+	.cta .btn:hover { background:#fff; color:var(--deck); border-color:#fff; }
 	.foot { background:var(--ink); color:var(--bg); }
 	.foot__inner { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-block:28px; flex-wrap:wrap; font-size:1.05rem; color:rgba(247,246,242,.7); }
 
