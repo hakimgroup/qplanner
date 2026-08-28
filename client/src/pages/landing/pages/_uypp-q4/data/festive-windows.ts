@@ -5,6 +5,7 @@
  */
 import { img } from "../uypp-q4";
 import type { Campaign } from "../types";
+import { FESTIVE_INSPIRATION } from "../links";
 
 export const FESTIVE: Campaign = {
 	"orderLabel": "Order Festive posters",
@@ -13,8 +14,8 @@ export const FESTIVE: Campaign = {
 			"id": "easy",
 			"name": "Festive Made Easy",
 			"tagline": "Option 01",
-			"note": "<p class='route__note'>To find out more about how to deliver a window like this, please get in touch with marketing, or have a look below at the festive posters you can order.</p>",
-			"contactSubject": "Festive Windows - Festive Made Easy",
+			"note": "<p class='route__note'>See the inspiration behind this display, and the pieces you can buy to bring it to life.</p>",
+			"action": { "label": "See Inspiration", "href": FESTIVE_INSPIRATION },
 			"accent": "#C9A227",
 			"visual": img("festive-easy-1.jpg"),
 			"body": "<p class='route__body'>Simple, accessible decor using readily available products. Paper stars, fairy lights, hanging fans and miniature trees, everything here can be bought off the shelf and put up by the practice team in an afternoon.</p>",
@@ -54,8 +55,7 @@ export const FESTIVE: Campaign = {
 			"id": "spark",
 			"name": "The Spark",
 			"tagline": "Option 02",
-			"note": "<p class='route__note'>To find out more about how to deliver a window like this, please get in touch with marketing, or have a look below at the festive posters you can order.</p>",
-			"contactSubject": "Festive Windows - The Spark",
+			"note": "<p class='route__note'>There are also some more standard festive posters available to order below.</p>",
 			"accent": "#AA9278",
 			"visual": img("festive-spark.jpg"),
 			"body": "<p class='route__body'>More considered, bespoke display pieces designed to create standout impact. A step up in production value, sculptural frames, gift displays and village scenes that reward a second look from the pavement.</p>",

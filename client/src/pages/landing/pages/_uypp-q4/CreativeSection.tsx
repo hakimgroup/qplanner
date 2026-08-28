@@ -6,7 +6,7 @@
  * route name already says.
  */
 import { useCampaign } from "./CampaignShell";
-import { campaignLink, marketingEmail } from "./links";
+import { campaignLink } from "./links";
 import { Cta } from "./Cta";
 
 export function CreativeSection({
@@ -65,12 +65,9 @@ export function CreativeSection({
 						) : null}
 						<div className="route__actions">
 							<Cta href={campaignLink(id)}>{orderLabel}</Cta>
-							{active.contactSubject ? (
-								<Cta
-									href={marketingEmail(active.contactSubject)}
-									className="btn--ghost"
-								>
-									Contact marketing
+							{active.action ? (
+								<Cta href={active.action.href} className="btn--ghost">
+									{active.action.label}
 								</Cta>
 							) : null}
 						</div>

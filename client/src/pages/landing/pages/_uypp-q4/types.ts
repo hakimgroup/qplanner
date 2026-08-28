@@ -40,10 +40,11 @@ export interface Route {
 	/** HTML string. A closing line under the route copy, where a route needs to say
 	 *  something the campaign-wide wording does not cover. */
 	note?: string;
-	/** Subject line for a "contact marketing" button on this route. Its presence is
-	 *  what renders that button and the jump to the artwork alongside it — a route
-	 *  that needs a conversation rather than only an order. */
-	contactSubject?: string;
+	/** An optional second button beside the order button, where a route offers
+	 *  somewhere useful to go that ordering does not cover. Was a fixed "contact
+	 *  marketing"; a label and a destination instead, because what is useful
+	 *  differs by route — one wants a shopping list, another wants nothing. */
+	action?: { label: string; href: string };
 	placements?: Placement[];
 }
 
