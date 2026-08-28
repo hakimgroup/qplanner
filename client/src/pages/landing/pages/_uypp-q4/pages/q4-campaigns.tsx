@@ -13,7 +13,7 @@ import {
 	useTypography,
 } from "../uypp-q4";
 import { CardCycle } from "../HomeBits";
-import { PLANNER_HOME, MARKETING_LINK} from "../links";
+import { FEEDBACK_FORM } from "../links";
 import "../uypp-q4-home.scss";
 
 export const meta: LandingPageMeta = {
@@ -539,28 +539,20 @@ export default function Q4Campaigns() {
 			<section className="cta" id="cta">
 				<div className="wrap cta__inner reveal">
 					<h2 className="display cta__title">
-						Ready to activate?
+						Let us know what you think
 					</h2>
 					<p>
-						Add campaigns to your Marketing Planner with your Hakim Microsoft login.
-						<br />
-						We'll send artwork and print choices shortly after you choose.
+						We've changed how Unlock Your Practice Potential works this quarter. We'd like to know what's working, what isn't, and how it could be better.
 					</p>
 					<a
 						className="btn"
-						href={PLANNER_HOME}
-						data-cta="planner-home"
+						href={FEEDBACK_FORM}
+						data-cta="feedback"
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						Open the Marketing Planner
+						Share your feedback
 					</a>
-					<p className="cta__fine">
-						Any feedback? Email the marketing team at
-						<a href={MARKETING_LINK}>
-							marketing@hakimgroup.co.uk
-						</a>
-					</p>
 				</div>
 			</section>
 			</main>

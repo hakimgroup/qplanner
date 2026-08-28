@@ -79,6 +79,10 @@ const FESTIVE = planner("729bef72-acf0-403f-8f4a-97003466fe46");
 /** The planner itself — the labelled fallback destination. */
 export const PLANNER_HOME = "/dashboard";
 
+/** Feedback on Q4 as a whole, supplied 27 August 2026. A form rather than an
+ *  email so replies arrive in one place and in one shape. */
+export const FEEDBACK_FORM = "https://form.jotform.com/262372678819068";
+
 const CAMPAIGN: Record<CampaignId, string> = {
 	presbyopia: PRESBYOPIA,
 	"menopause-dry-eye": DRY_EYE,
