@@ -33,7 +33,11 @@ function firstImage(r: Route): string | null {
  * practice might want: advice on a custom window, which is a conversation, and
  * ordering posters, which is a button.
  */
-export function OrderSection({ note }: { note?: ReactNode } = {}) {
+export function OrderSection({
+	note,
+	footText,
+	title,
+}: { note?: ReactNode; footText?: ReactNode; title?: string } = {}) {
 	const { routes, setActive, id, multi } = useCampaign();
 	const href = campaignLink(id);
 	// A campaign whose destination is an email has no planner entry yet, so the
@@ -47,7 +51,7 @@ export function OrderSection({ note }: { note?: ReactNode } = {}) {
 				<div className="section-head reveal">
 					<div>
 						<h2 className="display section-head__title">
-							{multi ? "Choose your direction" : "Get this campaign"}
+							{title ?? (multi ? "Choose your direction" : "Get this campaign")}
 						</h2>
 						<p className="lead">
 							{note ?? (byMail
@@ -64,6 +68,9 @@ export function OrderSection({ note }: { note?: ReactNode } = {}) {
 				<div className="order__grid" data-count={routes.length > 3 ? "3" : String(routes.length)}>
 					{routes.map((r) => {
 						const shot = r.visual ?? firstImage(r);
+						// A toolkit route orders itself; a Q4 creative route orders the
+						// campaign it belongs to. See Route.order.
+						const routeHref = r.order?.href ?? href;
 						return (
 							<article className="order__card reveal" key={r.id}>
 								<div className="order__media">
@@ -78,8 +85,9 @@ export function OrderSection({ note }: { note?: ReactNode } = {}) {
 								<div className="order__body">
 									<h3 className="order__title">{r.name}</h3>
 									<div className="order__actions">
-										<Cta href={href} className="btn--block">
-											{multi ? "Select this direction" : "Select this campaign"}
+										<Cta href={routeHref} className="btn--block">
+											{r.order?.label ??
+												(multi ? "Select this direction" : "Select this campaign")}
 										</Cta>
 										{hasCarousel ? (
 											<a
@@ -111,8 +119,8 @@ export function OrderSection({ note }: { note?: ReactNode } = {}) {
 					) : (
 						<>
 							<p className="order__foot-text">
-								Already know what you want? Go straight to this campaign in your Marketing
-								Planner.
+								{footText ??
+									"Already know what you want? Go straight to this campaign in your Marketing Planner."}
 							</p>
 							<Cta href={href} className="btn--ghost-light">
 								Open in the planner

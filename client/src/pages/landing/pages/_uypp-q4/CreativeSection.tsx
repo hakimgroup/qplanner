@@ -64,7 +64,11 @@ export function CreativeSection({
 							<div dangerouslySetInnerHTML={{ __html: active.note }} />
 						) : null}
 						<div className="route__actions">
-							<Cta href={campaignLink(id)}>{orderLabel}</Cta>
+							{/* A route may name its own destination — see Route.order. Falls back
+							    to the campaign's, which is how every Q4 campaign works. */}
+							<Cta href={active.order?.href ?? campaignLink(id)}>
+								{active.order?.label ?? orderLabel}
+							</Cta>
 							{active.action ? (
 								<Cta href={active.action.href} className="btn--ghost">
 									{active.action.label}

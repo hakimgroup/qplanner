@@ -31,7 +31,17 @@ export type CampaignId =
 	| "black-friday"
 	| "festive-windows"
 	| "outside-prescriptions"
-	| "eye-exams-available";
+	| "eye-exams-available"
+	// The Festive Focus Toolkit. These are not Q4 campaigns in the same sense —
+	// each one is a *group* of festive activities a practice stacks rather than a
+	// single campaign with creative routes, so the planner destination usually sits
+	// on the route rather than the group. See `Route.order` in types.ts.
+	| "festive-volume-drivers"
+	| "festive-events"
+	| "festive-retail-moments"
+	| "festive-in-practice"
+	| "festive-gifting"
+	| "festive-local-pr";
 
 export const MARKETING = "marketing@hakimgroup.co.uk";
 
@@ -88,6 +98,41 @@ export const FESTIVE_INSPIRATION = "https://amzn.eu/0gf7VUPa";
  *  email so replies arrive in one place and in one shape. */
 export const FEEDBACK_FORM = "https://form.jotform.com/262372678819068";
 
+/** Local PR, Give the Gift of Sight. The HQ PR team collects practice details
+ *  itself, so this is the real destination rather than a planner card — and it
+ *  has a hard deadline, which the page states. */
+export const GIFT_OF_SIGHT = "https://form.jotform.com/261973872410360";
+
+/** Where a selected practice hears about the Oakley gift with purchase. Printed
+ *  as readable text on the gifting page, so it needs to be copyable. */
+export const BRAND_ACTIVATIONS = "brand.activations@hakimgroup.co.uk";
+
+/**
+ * Festive Focus Toolkit destinations, keyed by the route that orders them.
+ *
+ * Four of these already exist as planner cards, because the toolkit repackages
+ * Q4 work rather than creating new campaigns — the festive "eye exams available"
+ * and "outside prescriptions" posters are the same cards the evergreen pages
+ * order, and the window is the Festive card.
+ *
+ * The rest have no card yet. They resolve to the planner itself rather than
+ * nowhere: a practice that lands on their own dashboard can still find the
+ * activity and raise it, whereas a dead button teaches them the page is broken.
+ * Replace each `PLANNER_HOME` below with `planner("<uuid>")` as the cards are
+ * created — that is the only edit needed, the pages read from here.
+ */
+export const FESTIVE_ORDER = {
+	eyeExams: EYE_EXAMS,
+	outsideRx: OUTSIDE_RX,
+	blackFriday: BLACK_FRIDAY,
+	window: FESTIVE,
+	multiPair: PLANNER_HOME,
+	twelveDays: PLANNER_HOME,
+	lateNightVip: PLANNER_HOME,
+	decemberSale: PLANNER_HOME,
+	merryChristmas: PLANNER_HOME,
+} as const;
+
 const CAMPAIGN: Record<CampaignId, string> = {
 	presbyopia: PRESBYOPIA,
 	"menopause-dry-eye": DRY_EYE,
@@ -95,6 +140,16 @@ const CAMPAIGN: Record<CampaignId, string> = {
 	"festive-windows": FESTIVE,
 	"outside-prescriptions": OUTSIDE_RX,
 	"eye-exams-available": EYE_EXAMS,
+	// Toolkit groups. The group-level link is the fallback for a route that does
+	// not name its own destination — see FESTIVE_ORDER above and `Route.order`.
+	"festive-volume-drivers": PLANNER_HOME,
+	"festive-events": PLANNER_HOME,
+	"festive-retail-moments": PLANNER_HOME,
+	"festive-in-practice": PLANNER_HOME,
+	"festive-gifting": PLANNER_HOME,
+	// The only toolkit group whose destination is not the planner at all: the PR
+	// team collects the details itself, on a deadline.
+	"festive-local-pr": GIFT_OF_SIGHT,
 };
 
 /** Supplier add-ons: a sign-up form where the supplier has one, otherwise a
@@ -132,6 +187,27 @@ const BRANDS: Record<CampaignId, Record<string, string>> = {
 	},
 	"outside-prescriptions": {},
 	"eye-exams-available": {},
+	"festive-volume-drivers": {},
+	"festive-events": {},
+	"festive-retail-moments": {},
+	"festive-in-practice": {},
+	"festive-local-pr": {},
+	"festive-gifting": {
+		// The same four supplier forms as Festive Windows — one gift-with-purchase
+		// programme, reached from two places. Deliberately repeated rather than
+		// aliased: if one campaign's form changes, the other should not change with
+		// it silently.
+		boss: "https://form.jotform.com/262382567372363",
+		oakley: "https://form.jotform.com/262382059840359",
+		"ted-baker": "https://form.jotform.com/262371538489065",
+		"design-eyewear": "https://form.jotform.com/262382412556356",
+		// Brand activations rather than gifts with purchase: training and product
+		// support run through the rep, so these are conversations, not sign-ups.
+		thea: ask("Thea brand support - Festive Focus Toolkit"),
+		alcon: ask("Alcon brand activation - Festive Focus Toolkit"),
+		"bausch-lomb": ask("Bausch + Lomb brand activation - Festive Focus Toolkit"),
+		silhouette: ask("Silhouette brand activation - Festive Focus Toolkit"),
+	},
 };
 
 /** Campaign-level destination, shared by that campaign's creative directions. */

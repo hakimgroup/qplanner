@@ -534,6 +534,40 @@ export default function Q4Campaigns() {
 				</div>
 			</section>
 
+			{/* ============ FESTIVE FOCUS TOOLKIT ============ */}
+			{/* The toolkit is a separate index with its own pages, but a practice looking
+			    for December activity looks here first. One band, deliberately tinted
+			    rather than dark, so it does not compete with the closing CTA below it. */}
+
+			<section className="section section--tint" id="festive-toolkit">
+				<div className="wrap">
+					<div className="section-head reveal">
+						<h2 className="display section-head__title">
+							Planning December?
+						</h2>
+						<p className="lead lead--narrow">
+							The
+							{" "}
+							<strong>
+								Festive Focus Toolkit
+							</strong>
+							{" "}
+							sits alongside this quarter: festive posters, in-practice events, window displays, supplier gifting and local PR, built to support exam volume through December and January. Several of them are campaigns you already know, seen from a festive angle.
+						</p>
+					</div>
+					<div className="quicklinks">
+						<Link to="/landing/festive-toolkit" className="quicklink reveal">
+							<span className="quicklink__label">
+								Open the Festive Focus Toolkit
+							</span>
+							<span className="quicklink__arrow" aria-hidden="true">
+								→
+							</span>
+						</Link>
+					</div>
+				</div>
+			</section>
+
 			{/* ============ FOOTER CTA ============ */}
 
 			<FeedbackSection id="cta" />

@@ -501,6 +501,11 @@
 	.ph-block span { font-family:var(--display); letter-spacing:.14em; text-transform:uppercase; font-size:clamp(.85rem,1.3vw,1.05rem);
 	  color:rgba(255,255,255,.34); border:1px solid rgba(255,255,255,.2); padding:.5em 1.1em; border-radius:999px; text-align:center; }
 	.is-lorem { color:var(--muted); }
+	/* A placeholder filling a box that already has a height — a cross-link's 16:10
+	   media well, say. The base .ph-block sets its own min-height, which is right for
+	   a route panel standing on its own and wrong inside a fixed-ratio frame, where it
+	   would push the card out of shape. */
+	.ph-block--fill { width:100%; height:100%; min-height:0; border-radius:0; }
 
 	/* ===================== SPLIT ===================== */
 	.split { display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,3.6vw,52px); align-items:center; }

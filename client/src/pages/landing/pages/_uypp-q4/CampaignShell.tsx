@@ -24,8 +24,23 @@ import type { Campaign, Route } from "./types";
 import type { CampaignId } from "./links";
 import "./uypp-q4-detail.scss";
 
-/** Hub slug — every campaign page links back here. */
+/** Hub slug — every Q4 campaign page links back here. */
 export const HUB = "/landing/q4-campaigns";
+
+/** One chip in the sticky nav. `suffix` is dropped on narrow screens by CSS, so
+ *  the label alone has to make sense on a phone: "Volume" / " drivers". */
+export interface NavLink {
+	href: string;
+	label: string;
+	suffix?: string;
+}
+
+/** The Q4 nav — three sections of the campaign hub. */
+const Q4_NAV: NavLink[] = [
+	{ href: `${HUB}#featured`, label: "Featured", suffix: " campaigns" },
+	{ href: `${HUB}#evergreen`, label: "Evergreen", suffix: " assets" },
+	{ href: `${HUB}#brand-assets`, label: "Brand", suffix: " assets" },
+];
 
 interface Ctx {
 	id: CampaignId;
@@ -36,6 +51,8 @@ interface Ctx {
 	multi: boolean;
 	/** Label for every ordering button on the page — see Campaign.orderLabel. */
 	orderLabel: string;
+	/** The index this page belongs to, for sections that link back to it. */
+	hub: string;
 }
 
 const CampaignCtx = createContext<Ctx | null>(null);
@@ -46,15 +63,28 @@ export function useCampaign(): Ctx {
 	return ctx;
 }
 
+/**
+ * `hub`, `nav` and `footNote` exist for the Festive Focus Toolkit, whose pages
+ * share every section and style with Q4 but belong to a different index — a
+ * toolkit page whose logo and chips led back to the Q4 campaign hub would keep
+ * ejecting the reader out of the toolkit they were working through. Omitted
+ * everywhere in Q4, so those pages are byte-for-byte unchanged.
+ */
 export function CampaignShell({
 	id,
 	title,
 	campaign,
+	hub = HUB,
+	nav = Q4_NAV,
+	footNote = "Unlock Your Practice Potential \u00b7 Q4 2026",
 	children,
 }: {
 	id: CampaignId;
 	title: string;
 	campaign: Campaign;
+	hub?: string;
+	nav?: NavLink[];
+	footNote?: string;
 	children: ReactNode;
 }) {
 	const root = useRef<HTMLDivElement>(null);
@@ -78,8 +108,9 @@ export function CampaignShell({
 			setActive,
 			multi: campaign.routes.length > 1,
 			orderLabel: campaign.orderLabel ?? "Order this campaign",
+			hub,
 		}),
-		[id, campaign, active]
+		[id, campaign, active, hub]
 	);
 
 	return (
@@ -92,7 +123,7 @@ export function CampaignShell({
 			>
 				<header className={`topbar${stuck ? " is-stuck" : ""}`}>
 					<div className="wrap topbar__inner">
-						<Link className="brand" to={HUB}>
+						<Link className="brand" to={hub}>
 							<img
 								className="brand__logo"
 								src={`${ASSETS}/img/hg-logo.png`}
@@ -100,15 +131,14 @@ export function CampaignShell({
 							/>
 						</Link>
 						<nav className="topnav" aria-label="Campaign types">
-							<Link to={`${HUB}#featured`} className="chip">
-								Featured<span className="chip__suffix"> campaigns</span>
-							</Link>
-							<Link to={`${HUB}#evergreen`} className="chip">
-								Evergreen<span className="chip__suffix"> assets</span>
-							</Link>
-							<Link to={`${HUB}#brand-assets`} className="chip">
-								Brand<span className="chip__suffix"> assets</span>
-							</Link>
+							{nav.map((n) => (
+								<Link key={n.href} to={n.href} className="chip">
+									{n.label}
+									{n.suffix ? (
+										<span className="chip__suffix">{n.suffix}</span>
+									) : null}
+								</Link>
+							))}
 						</nav>
 					</div>
 				</header>
@@ -122,7 +152,7 @@ export function CampaignShell({
 							src={`${ASSETS}/img/hg-logo-white.png`}
 							alt="Hakim Group"
 						/>
-						<span>Unlock Your Practice Potential · Q4 2026</span>
+						<span>{footNote}</span>
 					</div>
 				</footer>
 			</div>

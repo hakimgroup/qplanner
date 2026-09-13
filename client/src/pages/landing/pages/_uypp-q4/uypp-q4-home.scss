@@ -454,4 +454,83 @@
 	.brandindex__tbc { display:inline-block; margin-left:.5em; font-family:var(--display);
 	  letter-spacing:.1em; font-size:.72rem; color:var(--muted);
 	  border:1px solid var(--line); border-radius:999px; padding:.15em .6em; vertical-align:middle; }
+
+	/* ===================== FESTIVE FOCUS TOOLKIT =====================
+	   Blocks used only by the toolkit hub. They live in this stylesheet rather than
+	   one of their own because the toolkit is the same design system — same tokens,
+	   same bands, same type — and a second file would end up redefining all of it.
+
+	   None of these class names appear in any Q4 page's markup, so nothing here can
+	   reach the campaign hub even though it shares the `.uypp-q4-home` scope. Keep
+	   that true: if a Q4 page ever needs one of these, promote it out of this block
+	   rather than styling it twice.
+
+	   .panel and .tier are deliberate ports of the same-named blocks in
+	   uypp-q4-detail.scss — identical rules, because the toolkit hub needs a panel
+	   and a numbered step and the campaign pages already settled what those look
+	   like. If either changes, change both. */
+
+	/* ---- Panels ---- */
+	.panel { background:var(--bg); border:1px solid var(--line); border-radius:var(--radius); padding:clamp(22px,3vw,34px);
+	  transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease); }
+	.panel:hover { transform:translateY(-5px); box-shadow:0 24px 46px -28px rgba(0,0,0,.32); border-color:transparent; }
+	.panel__title { font-family:var(--display); font-weight:700; text-transform:uppercase;
+	  font-size:clamp(1.5rem,2.2vw,1.9rem); line-height:1; margin:.3em 0 .6em; }
+	.panel p:last-child { margin-bottom:0; }
+	.panel--flag { border-left:3px solid var(--deck); }
+	.panel--wide { margin-top:clamp(22px,3vw,34px); }
+	.panel .btn { margin-top:.4em; }
+
+	/* ---- Numbered steps ----
+	   Two columns, not the detail page's three: the toolkit's steps carry no imagery,
+	   so a media column would only be an empty box. */
+	.tiers { display:grid; gap:clamp(20px,2.6vw,30px); }
+	.tier { display:grid; grid-template-columns:auto 1fr; gap:clamp(20px,3vw,44px); align-items:start;
+	  background:var(--bg); border:1px solid var(--line); border-radius:var(--radius); padding:clamp(22px,3vw,34px);
+	  transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease); }
+	.tier:hover { transform:translateY(-4px); box-shadow:0 26px 50px -30px rgba(0,0,0,.32); border-color:transparent; }
+	.tier__step { font-family:var(--display); font-weight:700; text-transform:uppercase;
+	  font-size:clamp(2.4rem,4vw,3.6rem); line-height:1; color:var(--accent); }
+	.tier__title { font-family:var(--display); font-weight:700; text-transform:uppercase;
+	  font-size:clamp(1.6rem,2.4vw,2.2rem); line-height:1; margin:0 0 .35em; }
+	.tier__body p { color:#3a3640; margin:0; }
+	/* The step's link on its own line rather than trailing the paragraph, where it
+	   read as part of the sentence and was easy to miss. */
+	.tier__link { margin:.9em 0 0; }
+	.tier__link a { font-family:var(--display); font-weight:500; letter-spacing:.1em; text-transform:uppercase;
+	  font-size:1.02rem; color:var(--deck); border-bottom:1px solid transparent; transition:border-color .2s, color .2s; }
+	.tier__link a:hover { color:var(--accent); border-bottom-color:var(--accent); }
+	@media (max-width:640px){
+	  .tier { grid-template-columns:1fr; gap:10px; }
+	}
+
+	/* ---- Evidence figures ----
+	   Three numbers from last year's activity. Large enough to be read before the
+	   sentence under them, which is the whole point of putting them above the menu:
+	   the figure earns the paragraph. */
+	/* Every layer on the toolkit hub holds exactly two pages. The shared .cards grid
+	   is three columns, which left an empty third column in all three sections and
+	   read as something failing to load rather than as a deliberate pair. */
+	.cards--two { grid-template-columns:repeat(2,1fr); }
+	/* .quarter__note carries a mail link under the December plan, and the base rule
+	   gives anchors no colour at all — it was written for plain prose. */
+	.quarter__note a { color:var(--deck); border-bottom:1px solid transparent; transition:border-color .2s; }
+	.quarter__note a:hover { border-bottom-color:var(--deck); }
+	@media (max-width:760px){
+	  .cards--two { grid-template-columns:1fr; }
+	}
+
+	.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(16px,2.4vw,28px); }
+	.stat { background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
+	  padding:clamp(22px,3vw,34px); border-top:3px solid var(--accent);
+	  transition:transform .35s var(--ease), box-shadow .35s var(--ease); }
+	.stat:hover { transform:translateY(-4px); box-shadow:0 24px 46px -28px rgba(0,0,0,.32); }
+	.stat__figure { font-family:var(--display); font-weight:700; line-height:.85; margin:0;
+	  font-size:clamp(3.4rem,7vw,5.4rem); color:var(--deck); }
+	.stat__label { font-family:var(--display); font-weight:500; letter-spacing:.1em; text-transform:uppercase;
+	  font-size:1.02rem; color:var(--ink); margin:.5em 0 .6em; line-height:1.25; }
+	.stat__note { font-size:1.02rem; color:var(--muted); margin:0; line-height:1.45; }
+	@media (max-width:900px){
+	  .stats { grid-template-columns:1fr; }
+	}
 }

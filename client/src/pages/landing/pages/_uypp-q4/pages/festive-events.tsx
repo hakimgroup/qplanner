@@ -1,0 +1,98 @@
+import type { LandingPageMeta } from "../../../registry";
+import { FestivePage } from "../FestivePage";
+import { MARKETING_LINK } from "../links";
+import { FESTIVE_EVENTS } from "../data/festive-events";
+
+export const meta: LandingPageMeta = {
+	slug: "festive-events",
+	title: "Events — Festive Focus Toolkit",
+	description:
+		"A reason to come on a particular day. 12 Days of Christmas across the month, or a single late-night VIP evening.",
+	publishedAt: "2026-09-29",
+	hidden: true,
+};
+
+export default function FestiveEvents() {
+	return (
+		<FestivePage
+			id="festive-events"
+			slug={meta.slug}
+			docTitle={meta.title}
+			campaign={FESTIVE_EVENTS}
+			heroTitle={
+				<>
+					Festive
+					<br />
+					Events
+				</>
+			}
+			pills={["December", "Core KPI · Conversion", "2 formats"]}
+			hook="A poster says you are open. An event says come on Thursday."
+			standfirst="Practices running a targeted festive event often report record days and record weeks."
+			body="The difference is a date. Everything else in this toolkit tells people they could come in; an event tells them when, and gives them a reason that expires. Both formats below do the same job — one spreads it across twelve days, the other concentrates it into a single evening."
+			points={[
+				"Appointments around an event convert more strongly",
+				"Average dispense value runs higher on the night",
+				"Gives you a legitimate reason to contact lapsed patients",
+				"Works hardest with a gift with purchase to hand out",
+				"A styling follow-up converts the people who did not buy",
+				"December shoppers already expect late openings elsewhere",
+			]}
+			creativeTitle="Two formats"
+			creativeLead="Twelve days of small reasons, or one evening of a big one. Pick the one your team can actually staff."
+			artworkLead="Artwork is still in production. The placements below show what each format needs."
+			orderTitle="Add an event to your plan"
+			orderNote="Both formats are still being set up in the Marketing Planner. The buttons open your planner — if you cannot find the event yet, your marketing executive can add it to your plan."
+			orderFootText="Events need a date before they need artwork. Pick the date first, then order."
+		>
+			{/* The running order sits after the artwork rather than in the route copy:
+			    it is identical for both formats, and repeating it inside each route
+			    would be the third time the same six lines appeared on one page. */}
+			<section className="section">
+				<div className="wrap">
+					<div className="section-head reveal">
+						<div>
+							<h2 className="display section-head__title">Running it</h2>
+							<p className="lead">
+								The same sequence whichever format you choose. Most of it happens
+								before the day.
+							</p>
+						</div>
+					</div>
+					<div className="panels">
+						<article className="panel panel--flag reveal">
+							<span className="panel__no">Before</span>
+							<h3 className="panel__title">Date and audience</h3>
+							<p>
+								Set a date and decide who it is for — VIPs, lapsed patients,
+								partners. Then two invitations and one reminder, by email or SMS.
+							</p>
+						</article>
+						<article className="panel panel--flag reveal">
+							<span className="panel__no">On the night</span>
+							<h3 className="panel__title">A bookings desk</h3>
+							<p>
+								A styling rota, light refreshments, point of sale up, and a simple
+								offer that exists only that evening. Someone on the door whose job
+								is booking the next appointment.
+							</p>
+						</article>
+						<article className="panel panel--flag reveal">
+							<span className="panel__no">Afterwards</span>
+							<h3 className="panel__title">The follow-up</h3>
+							<p>
+								Thank everyone who came, reserve the frames people liked, and book
+								the styling revisits. This is where most of the conversion
+								actually lands.
+							</p>
+						</article>
+					</div>
+					<p className="fineprint reveal">
+						Planning one and want a hand?{" "}
+						<a href={MARKETING_LINK}>marketing@hakimgroup.co.uk</a>
+					</p>
+				</div>
+			</section>
+		</FestivePage>
+	);
+}

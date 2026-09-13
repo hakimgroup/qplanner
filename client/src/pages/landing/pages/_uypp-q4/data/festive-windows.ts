@@ -118,7 +118,7 @@ export const FESTIVE: Campaign = {
 			"products": [
 				"Oakley frames"
 			],
-			"howto": "<p>Only selected practices can successfully opt in. You will have received an email from <a href=\"mailto:brand.activations@hakimgroup.co.uk\">brand.activations@hakimgroup.co.uk</a> if you have been pre-selected. If you have received this email, please sign up below.</p><p>For any queries please email the brand activations inbox.</p><p>Artwork for this one is still to come from Luxottica.</p>"
+			"howto": "<p>Only selected practices can successfully opt in. You will have received an email from <strong>brand.activations@hakimgroup.co.uk</strong> if you have been pre-selected. If you have received this email, please sign up below.</p><p>For any queries please email the brand activations inbox.</p><p>Artwork for this one is still to come from Luxottica.</p>"
 		},
 		{
 			"id": "ted-baker",

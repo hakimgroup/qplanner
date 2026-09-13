@@ -45,6 +45,19 @@ export interface Route {
 	 *  marketing"; a label and a destination instead, because what is useful
 	 *  differs by route — one wants a shopping list, another wants nothing. */
 	action?: { label: string; href: string };
+	/**
+	 * Where this route is ordered, when that differs from the campaign's own
+	 * destination.
+	 *
+	 * A Q4 campaign has one planner card shared by its creative routes, because
+	 * the route is chosen inside the planner. The Festive Focus Toolkit inverts
+	 * that: a toolkit page is a *group* of separate activities — 12 Days of
+	 * Christmas and a Late-night VIP evening are not two treatments of one thing —
+	 * so each route carries its own destination and its own button wording.
+	 *
+	 * Unset everywhere in Q4, so the campaign-level link stays the default.
+	 */
+	order?: { label?: string; href: string };
 	placements?: Placement[];
 }
 

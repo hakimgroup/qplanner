@@ -161,7 +161,9 @@ export function ArtworkSection({
 					</div>
 
 					<div className="explorer__cta">
-						<Cta href={campaignLink(id)}>{orderLabel}</Cta>
+						<Cta href={active.order?.href ?? campaignLink(id)}>
+							{active.order?.label ?? orderLabel}
+						</Cta>
 					</div>
 				</div>
 			</div>
