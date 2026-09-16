@@ -1,5 +1,7 @@
 import type { LandingPageMeta } from "../../../registry";
+import { Link } from "react-router-dom";
 import { FestivePage } from "../FestivePage";
+import { SupplierSection } from "../SupplierSection";
 import { MARKETING_LINK } from "../links";
 import { FESTIVE_EVENTS } from "../data/festive-events";
 
@@ -34,7 +36,7 @@ export default function FestiveEvents() {
 				"Appointments around an event convert more strongly",
 				"Average dispense value runs higher on the night",
 				"Gives you a legitimate reason to contact lapsed patients",
-				"Works hardest with a gift with purchase to hand out",
+				"A brand gift with purchase gives the team something to hand over",
 				"A styling follow-up converts the people who did not buy",
 				"December shoppers already expect late openings elsewhere",
 			]}
@@ -48,7 +50,7 @@ export default function FestiveEvents() {
 			{/* The running order sits after the artwork rather than in the route copy:
 			    it is identical for both formats, and repeating it inside each route
 			    would be the third time the same six lines appeared on one page. */}
-			<section className="section">
+			<section className="section section--tint">
 				<div className="wrap">
 					<div className="section-head reveal">
 						<div>
@@ -91,6 +93,32 @@ export default function FestiveEvents() {
 						Planning one and want a hand?{" "}
 						<a href={MARKETING_LINK}>marketing@hakimgroup.co.uk</a>
 					</p>
+				</div>
+			</section>
+
+			{/* The brands, at the foot. An event is where a gift with purchase works
+			    hardest — there is already a reason to buy in the room — so the forms
+			    are reachable from the page a practice is planning on, rather than
+			    only from the gifting page. */}
+			<SupplierSection
+				lead="Every format above works better with something to hand over on the day, and four suppliers are funding gifts this December. Opt in here and pair one with your event — the full qualifying criteria are on the gifting page."
+				foot="A supplier gift does not replace the event, it gives it something to hand over. Get the date in your plan first, then opt in alongside it."
+			/>
+
+			<section className="section section--tint">
+				<div className="wrap">
+					<div className="panel panel--flag panel--wide reveal">
+						<h3 className="panel__title">More gifting for the night</h3>
+						<p>
+							Accessories do the same job without a form or an allocation. COTI
+							chains, Theia cloths and multi-frame cases all gift well, and an
+							event is the easiest evening of the year to put them front and
+							centre with a prompt about stocking fillers.
+						</p>
+						<Link className="btn btn--ghost" to="/landing/festive-gifting">
+							Gifting &amp; brand support
+						</Link>
+					</div>
 				</div>
 			</section>
 		</FestivePage>

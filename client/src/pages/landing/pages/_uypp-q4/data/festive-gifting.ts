@@ -33,16 +33,29 @@ export const FESTIVE_GIFTING: Campaign = {
 			id: "gifting",
 			name: "Gifting & gifts with purchase",
 			accent: "#A8802B",
-			body: `<p>December is the one month of the year when eyewear is bought for other people. A gift with purchase turns that to your advantage twice over: it is either a treat for the customer, or — more usefully — one less present they have to go and buy for someone else.</p>
-				<p>Four suppliers are funding gifts this season, each against a qualifying order and each capped. Alongside them, accessories do quiet work: COTI chains and Theia cloths are natural festive gifts and need no sign-up at all.</p>
-				<p>Brand activations sit underneath all of it, driving awareness across lenses and contact lenses, and they can be used across windows and in-practice touchpoints rather than only at the dispensing table.</p>`,
-			note: `<p><strong>These are add-ons, not a campaign.</strong> Take one up alongside whatever else you are running this December — the supplier funds the gift, you provide the conversation.</p>`,
+			visual: img("festive-easy-3.jpg"),
+			body: `<p>December is the one month of the year when eyewear and accessories are bought for other people. Patients walk in already in a gifting mindset — the opportunity is to inspire them to tick a few stocking fillers off the list while they are with you.</p>
+				<p>Two different purchases sit inside that. <strong>Accessories are the impulse buy</strong>: seen on the way past the till, picked up without much deliberation, and the easiest incremental revenue in the toolkit. <strong>Plano sun is the considered one</strong> — a fantastic gift, but a decision rather than a reflex, so it needs the conversation.</p>
+				<p>On top of both, four suppliers are funding gifts with purchase this season. Each is capped, each is first come first served, and each needs a form.</p>`,
+			note: `<p><strong>Accessories first.</strong> They need no sign-up, no allocation and no deadline — only a prompt and a good position in the practice. Everything else on this page is an add-on to that.</p>`,
 			placements: [
 				{
 					key: "instore",
 					label: "In practice",
 					items: [
-						{ ph: true, cap: "Gift with purchase display — artwork to come" },
+						{
+							img: img("festive-easy-3.jpg"),
+							cap: "Gifting front and centre in the window",
+						},
+						{ ph: true, cap: "Accessories display — artwork to come" },
+						{ ph: true, cap: "Stocking filler prompt — artwork to come" },
+					],
+				},
+				{
+					key: "gwp",
+					label: "Gift with purchase",
+					items: [
+						{ ph: true, cap: "Supplier gift display — artwork to come" },
 						{ ph: true, cap: "Strut card — artwork to come" },
 					],
 				},
@@ -145,3 +158,53 @@ export const FESTIVE_GIFTING: Campaign = {
 		},
 	],
 };
+
+/**
+ * Accessories, from Lorna, September 2026.
+ *
+ * These moved to the front of the gifting page after the team's review: COTI
+ * chains had been the last bullet of a list, which put the one thing every
+ * practice can act on today — no form, no allocation, no deadline — below eight
+ * supplier programmes that most practices cannot take up at all.
+ *
+ * Held as data rather than markup because the range changes yearly and the
+ * merchandising advice does not.
+ */
+export const ACCESSORIES: { name: string; price?: string; body: string }[] = [
+	{
+		name: "COTI chains",
+		body: "Bright, modern and thoroughly practical. A chain is the accessory people did not know they wanted until they saw one, which is exactly what makes it an impulse purchase.",
+	},
+	{
+		name: "Theia cleaning cloths",
+		price: "£15 each",
+		body: "Newly introduced, and they turn a humble accessory into a fashion statement. Bag charms are hugely popular right now, and these have all of that style with the considerable bonus of being useful. Patients see them and want to give them to friends and family.",
+	},
+	{
+		name: "Multi-frame cases",
+		body: "If you stock them, they make a genuinely good gift — practical, a bit more considered, and an easy step up in value from a chain or a cloth.",
+	},
+	{
+		name: "Plano sun",
+		body: "A fantastic gift, but usually a more considered purchase rather than an impulse one. Worth the conversation with anyone browsing, rather than relying on the display to do the work.",
+	},
+];
+
+/**
+ * How to merchandise them. Also Lorna's: the products matter less than the
+ * position and the prompt.
+ */
+export const ACCESSORY_TACTICS: { title: string; body: string }[] = [
+	{
+		title: "Front and centre",
+		body: "Every patient should walk past them. An accessory that lives behind the dispensing desk sells to nobody — the whole category depends on being seen without being looked for.",
+	},
+	{
+		title: "Say the word Christmas",
+		body: "A prompt about gifting and stocking fillers next to the display. People are actively looking for gift solutions in December, so position accessories as one rather than leaving patients to make the leap.",
+	},
+	{
+		title: "Try a bundle price",
+		body: "Multiples drive volume. One Theia cloth is £15 — consider two for £28 or three for £36, so a patient buying for one person ends up buying for three.",
+	},
+];

@@ -1,5 +1,6 @@
 import type { LandingPageMeta } from "../../../registry";
 import { FestivePage } from "../FestivePage";
+import { img } from "../uypp-q4";
 import { MARKETING_LINK } from "../links";
 import { FESTIVE_VOLUME_DRIVERS } from "../data/festive-volume-drivers";
 
@@ -9,6 +10,7 @@ export const meta: LandingPageMeta = {
 	description:
 		"Festive editions of the posters that fill a quiet diary: eye exams available, outside prescriptions welcome, and multi pair.",
 	publishedAt: "2026-09-29",
+	thumbnail: img("festive-easy-2.jpg"),
 	// Toolkit sub-pages render at their URL but stay off the /landing index — the
 	// toolkit hub is the way in, exactly as the Q4 campaign pages do it.
 	hidden: true,
@@ -28,6 +30,8 @@ export default function FestiveVolumeDrivers() {
 					Drivers
 				</>
 			}
+			heroImage={img("festive-easy-2.jpg")}
+			heroAlt="Festive practice window carrying an eye exams available poster"
 			pills={["December – January", "Core KPI · Volume and conversion", "3 assets"]}
 			hook="The diary is quiet. The high street is not."
 			standfirst="December and January are the two months when footfall and appointments move in opposite directions."
@@ -42,7 +46,7 @@ export default function FestiveVolumeDrivers() {
 			]}
 			creativeTitle="Three assets"
 			creativeLead="Not alternatives. Put all three up — they answer three different reasons someone has for not coming in."
-			artworkLead="Artwork is still in production. The placements below show where each asset is designed to sit."
+			artworkLead="The festive window treatments are shown below. A-board and multi-pair artwork is still in production."
 			orderTitle="Order the posters"
 			orderNote="Eye exams available and outside prescriptions welcome are already in your Marketing Planner as festive editions. Multi pair is still being set up — the button opens your planner."
 			orderFootText="Two of the three order directly from the planner. If you cannot find multi pair yet, speak to your marketing executive."

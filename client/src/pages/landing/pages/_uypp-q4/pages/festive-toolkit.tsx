@@ -58,10 +58,7 @@ export const meta: LandingPageMeta = {
 	description:
 		"Festive assets, events and brand gifting for December and January. Built to support exam volume through the quieter period, and routed through your Marketing Planner.",
 	publishedAt: "2026-09-29",
-	// No toolkit photography exists yet, and every image on these pages is a
-	// placeholder. The index card still needs something rather than a blank box,
-	// so it borrows the Q4 festive window shot — replace this when the toolkit's
-	// own artwork arrives.
+	// The same shot as the hero, so the index card and the page agree.
 	thumbnail: img("festive-easy-1.jpg"),
 };
 
@@ -79,9 +76,13 @@ function ToolkitCard({ page }: { page: ToolkitPage }) {
 				<span className="card__month">{page.when}</span>
 			</div>
 			<div className="card__media">
-				<div className="ph-block">
-					<span>Artwork to come</span>
-				</div>
+				{page.image ? (
+					<img src={img(page.image)} alt="" loading="lazy" />
+				) : (
+					<div className="ph-block">
+						<span>Artwork to come</span>
+					</div>
+				)}
 			</div>
 			<div className="card__body">
 				<h3 className="card__title">{page.name}</h3>
@@ -137,9 +138,12 @@ export default function FestiveToolkit() {
 				{/* ============ HERO ============ */}
 
 				<section className="hero">
-					<div className="hero__ph">
-						<span className="hero__ph-label">Artwork to come</span>
-					</div>
+					<img
+						className="hero__img is-active"
+						src={img("festive-easy-1.jpg")}
+						alt=""
+						aria-hidden="true"
+					/>
 					<div className="hero__overlay"></div>
 					<div className="wrap hero__content">
 						<p className="eyebrow eyebrow--light reveal">
@@ -242,22 +246,22 @@ export default function FestiveToolkit() {
 								<p className="stat__figure">23</p>
 								<p className="stat__label">practices chose 12 Days of Christmas</p>
 								<p className="stat__note">
-									Easily the most requested event format, and the one that needs the
-									most planning before it is announced.
+									Easily the most requested event format, and the one worth starting
+									on earliest.
 								</p>
 							</div>
 						</div>
 						<div className="panel panel--flag panel--wide reveal">
-							<h3 className="panel__title">The one thing to avoid</h3>
+							<h3 className="panel__title">One to start early</h3>
 							<p>
-								Ten practices signed up to 12 Days of Christmas and then dropped out,
-								because the twelve daily offers were not committed to in time.
-								Nothing else in last year's activity failed this way.
+								Several practices found 12 Days of Christmas harder to land than
+								expected, mostly because the twelve daily offers had not been settled
+								by the time the event came round.
 							</p>
 							<p>
-								If you are running it,{" "}
-								<strong>decide all twelve offers before you announce it</strong>.
-								Twelve is not many in October and it is a great deal in December.
+								So if it is on your list,{" "}
+								<strong>it is worth agreeing all twelve before you announce it</strong>
+								. Twelve is not many in October, and quite a lot come December.
 							</p>
 						</div>
 					</div>
@@ -377,9 +381,11 @@ export default function FestiveToolkit() {
 						<div className="section-head reveal">
 							<h2 className="display section-head__title">Gifting &amp; goodwill</h2>
 							<p className="lead lead--narrow">
-								<strong>Layer three.</strong> Supplier-funded gifts with purchase,
-								the brand activations behind them, and the local PR campaign HQ runs
-								on your behalf. All of it costs the practice nothing but the
+								<strong>Layer three.</strong> Accessories and stocking fillers
+								first — COTI chains, Theia cloths and multi-frame cases need no form
+								and no allocation. Then supplier-funded gifts with purchase, the
+								brand activations behind them, and the local PR campaign HQ runs on
+								your behalf. All of it costs the practice nothing but the
 								conversation.
 							</p>
 						</div>
@@ -440,7 +446,12 @@ export default function FestiveToolkit() {
 												Pick an event date and audience
 											</Link>
 										</li>
-										<li className="is-tbc">Decide all twelve daily offers</li>
+										<li>
+											<Link to="/landing/festive-gifting#accessories">
+												Accessories front and centre
+											</Link>
+										</li>
+										<li className="is-tbc">Agree all twelve daily offers</li>
 									</ul>
 								</div>
 							</article>
@@ -475,6 +486,11 @@ export default function FestiveToolkit() {
 										<li>
 											<Link to="/landing/festive-events">
 												Your event — 12 Days or late-night VIP
+											</Link>
+										</li>
+										<li>
+											<Link to="/landing/festive-gifting#accessories">
+												Stocking fillers on the counter
 											</Link>
 										</li>
 										<li>

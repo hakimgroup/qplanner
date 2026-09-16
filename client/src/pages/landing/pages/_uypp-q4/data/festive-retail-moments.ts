@@ -10,6 +10,7 @@
  * This page is the festive framing of it and links there for the artwork rather
  * than duplicating it.
  */
+import { img } from "../uypp-q4";
 import { FESTIVE_ORDER } from "../links";
 import type { Campaign } from "../types";
 
@@ -20,6 +21,7 @@ export const FESTIVE_RETAIL_MOMENTS: Campaign = {
 			id: "black-friday",
 			name: "Black Friday",
 			accent: "#15131A",
+			visual: img("bf-strip-window-situ.jpg"),
 			body: `<p>Black Friday is the biggest retail moment of the year and patients are actively looking for value. The campaign positions the practice to capture that demand and encourages people to act now rather than delay a purchase they were going to make anyway.</p>
 				<p>Clear, time-limited messaging creates the urgency. It is also the easiest month to showcase frame ranges, sunglasses and lens upgrades, which is where the average transaction value comes from.</p>
 				<p>The mechanic is yours. Discontinued frames to clear, a multi-pair offer, a lens upgrade — Black Friday is the lever, the promotion behind it is a local decision.</p>`,
@@ -36,7 +38,11 @@ export const FESTIVE_RETAIL_MOMENTS: Campaign = {
 				{
 					key: "window",
 					label: "Window",
-					items: [{ ph: true, cap: "Three poster treatments — see the Q4 campaign page" }],
+					items: [
+						{ img: img("bf-strip-window-situ.jpg"), cap: "Strip treatment" },
+						{ img: img("bf-arrow-window-situ.jpg"), cap: "Arrow treatment" },
+						{ img: img("bf-block-window-situ.jpg"), cap: "Block treatment" },
+					],
 				},
 			],
 		},

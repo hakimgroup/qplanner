@@ -1,15 +1,21 @@
 import type { LandingPageMeta } from "../../../registry";
 import { FestivePage } from "../FestivePage";
 import { SupplierSection } from "../SupplierSection";
+import { img } from "../uypp-q4";
 import { BRAND_ACTIVATIONS, MARKETING_LINK } from "../links";
-import { FESTIVE_GIFTING } from "../data/festive-gifting";
+import {
+	ACCESSORIES,
+	ACCESSORY_TACTICS,
+	FESTIVE_GIFTING,
+} from "../data/festive-gifting";
 
 export const meta: LandingPageMeta = {
 	slug: "festive-gifting",
 	title: "Gifting & Brand Support — Festive Focus Toolkit",
 	description:
-		"Supplier-funded gifts with purchase on BOSS, Oakley, Ted Baker and Design Eyewear, plus the brand activations behind them.",
+		"Accessories and stocking fillers front and centre, plus supplier-funded gifts with purchase on BOSS, Oakley, Ted Baker and Design Eyewear.",
 	publishedAt: "2026-09-29",
+	thumbnail: img("festive-easy-3.jpg"),
 	hidden: true,
 };
 
@@ -27,19 +33,76 @@ export default function FestiveGifting() {
 					Brand Support
 				</>
 			}
-			pills={["December", "Core KPI · Volume and conversion", "4 gifts, 4 activations"]}
-			hook="One less present to go and buy."
-			standfirst="December is the only month of the year when eyewear is bought for someone else."
-			body="A gift with purchase works twice over: it is either a treat for the customer, or — far more persuasively — a gift they now do not have to go out and find for somebody else. Four suppliers are funding gifts this season. Each is capped, each is first come first served, and each needs a form."
+			heroImage={img("festive-easy-3.jpg")}
+			heroAlt="Festive practice window with wrapped gifts and an eye exams available poster"
+			pills={["December", "Core KPI · Volume and conversion", "Accessories + 8 brands"]}
+			hook="Your patients are already shopping for someone else."
+			standfirst="December is the only month of the year when eyewear and accessories are bought as gifts."
+			body="Let's not miss the chance to help them tick a few things off the list while they are in the practice. Accessories are the impulse purchase and the easiest place to start; a supplier gift with purchase is what secures the dispense on top."
 			pointsTitle="Why it converts"
 			points={[
-				"Secures the dispense at the moment the decision is being made",
-				"Lifts a lower-spend dispense into a more premium range",
-				"Costs the practice nothing — the supplier funds the gift",
-				"Gives the team something specific to say rather than a discount",
+				"Patients arrive in a gifting mindset — the prompt does most of the work",
+				"Accessories are an impulse buy, so they add value to a visit already happening",
+				"A gift with purchase secures the dispense at the moment of decision",
+				"It can lift a lower-spend dispense into a more premium range",
+				"Supplier gifts cost the practice nothing — the brand funds them",
 				"Works hardest at an event, where there is already a reason to buy",
-				"COTI chains and Theia cloths gift well with no sign-up at all",
 			]}
+			afterPoints={
+				/* Accessories lead the page. They were the last bullet of a list in the
+				   first cut, which buried the one thing every practice can act on today
+				   under eight supplier programmes most of them cannot take up at all. */
+				<section
+					className="section section--imagebg"
+					id="accessories"
+					style={
+						{ "--section-img": `url(${img("festive-easy-3.jpg")})` } as React.CSSProperties
+					}
+				>
+					<div className="wrap">
+						<div className="section-head reveal">
+							<div>
+								<p className="eyebrow">Start here</p>
+								<h2 className="display section-head__title">
+									Accessories &amp; stocking fillers
+								</h2>
+								<p className="lead">
+									No form, no allocation and no deadline. The whole category needs a
+									good position and a prompt — which makes it the fastest thing on
+									this page to act on, and the only part that works for every
+									practice.
+								</p>
+							</div>
+						</div>
+
+						<div className="panels panels--four">
+							{ACCESSORIES.map((a) => (
+								<article className="panel reveal" key={a.name}>
+									<h3 className="panel__title">{a.name}</h3>
+									{a.price ? <p className="panel__price">{a.price}</p> : null}
+									<p>{a.body}</p>
+								</article>
+							))}
+						</div>
+
+						<div className="panel panel--flag panel--wide reveal">
+							<h3 className="panel__title">Getting it right in the practice</h3>
+							<ul className="gift-tactics">
+								{ACCESSORY_TACTICS.map((t) => (
+									<li key={t.title}>
+										<strong>{t.title}.</strong> {t.body}
+									</li>
+								))}
+							</ul>
+						</div>
+
+						<p className="fineprint reveal">
+							Not sure what you can order?{" "}
+							<a href={MARKETING_LINK}>marketing@hakimgroup.co.uk</a>
+						</p>
+					</div>
+				</section>
+			}
 			creativeTitle="How gifting fits"
 			creativeLead="An add-on rather than a campaign. It attaches to whatever else you are already running this December."
 			artworkLead="Point-of-sale artwork is still in production. Most suppliers provide their own."
@@ -47,10 +110,9 @@ export default function FestiveGifting() {
 			orderNote="Each supplier collects practice details itself, so these are taken up on the supplier's form rather than through the planner. Open a brand above to see what it includes and how to opt in."
 			orderFootText="Gifting sits on top of a campaign, it does not replace one. Order the campaign in your planner, then opt in alongside it."
 		>
-			{/* Supplier rows first, then the caveats. The rows are why anyone opened
-			    this page; the allocation rules only matter once a brand has been
-			    chosen. */}
-			<SupplierSection lead="Four gifts with purchase and four brand activations. The gifts are finite and allocated first come first served against a qualifying order, so the deadline is real. The activations are training and product support from the rep, with nothing to run out of." />
+			{/* Supplier rows, then the caveats. The rows are why anyone scrolled this
+			    far; the allocation rules only matter once a brand has been chosen. */}
+			<SupplierSection lead="Four gifts with purchase and four brand activations, on top of the accessories above. The gifts are finite and allocated first come first served against a qualifying order, so the deadline is real. The activations are training and product support from the rep, with nothing to run out of." />
 
 			<section className="section section--tint">
 				<div className="wrap">

@@ -1,6 +1,7 @@
 import type { LandingPageMeta } from "../../../registry";
 import { Link } from "react-router-dom";
 import { FestivePage } from "../FestivePage";
+import { img } from "../uypp-q4";
 import { MARKETING_LINK } from "../links";
 import { FESTIVE_RETAIL_MOMENTS } from "../data/festive-retail-moments";
 
@@ -10,6 +11,7 @@ export const meta: LandingPageMeta = {
 	description:
 		"Black Friday and the December sale. The same mechanic four weeks apart, and both are yours to set locally.",
 	publishedAt: "2026-09-29",
+	thumbnail: img("bf-strip-window-situ.jpg"),
 	hidden: true,
 };
 
@@ -27,6 +29,8 @@ export default function FestiveRetailMoments() {
 					Moments
 				</>
 			}
+			heroImage={img("bf-strip-window-situ.jpg")}
+			heroAlt="Black Friday poster in a practice window"
 			pills={["November – December", "Core KPI · Volume and conversion", "2 moments"]}
 			hook="One lever, pulled twice."
 			standfirst="Black Friday and the December sale are the same mechanic four weeks apart: a reason to buy now rather than in January."

@@ -11,6 +11,7 @@
  * rather than creating new campaigns, so these order the same cards the evergreen
  * pages order. Multi-pair has no card yet — see FESTIVE_ORDER in links.ts.
  */
+import { img } from "../uypp-q4";
 import { FESTIVE_ORDER } from "../links";
 import type { Campaign } from "../types";
 
@@ -26,6 +27,7 @@ export const FESTIVE_VOLUME_DRIVERS: Campaign = {
 			id: "eye-exams",
 			name: "Eye Exams Available",
 			accent: "#9E1F3D",
+			visual: img("festive-easy-2.jpg"),
 			body: `<p>${WHY_DECEMBER}</p>
 				<p>The simplest message a practice can put on the pavement, in a festive edition. No offer, no clinical language — just an open door and appointments available today. It fills quiet diary slots without ever reaching for a discount, and it works hardest in exactly the weeks the diary looks lightest.</p>
 				<p>Alongside well-executed offers and brand activations, it supports conversion as well as volume: it brings both new and existing patients in while the high street is already busy.</p>`,
@@ -36,17 +38,23 @@ export const FESTIVE_VOLUME_DRIVERS: Campaign = {
 			},
 			placements: [
 				{
+					key: "window",
+					label: "Window",
+					items: [
+						{
+							img: img("festive-easy-2.jpg"),
+							cap: "Festive window, eye exams available",
+						},
+						{
+							img: img("festive-easy-3.jpg"),
+							cap: "Dot-matrix treatment, with gifting alongside",
+						},
+					],
+				},
+				{
 					key: "aboard",
 					label: "A-board",
 					items: [{ ph: true, cap: "Festive A-board — artwork to come" }],
-				},
-				{
-					key: "poster",
-					label: "Poster",
-					items: [
-						{ ph: true, cap: "Window poster — artwork to come" },
-						{ ph: true, cap: "In-practice poster — artwork to come" },
-					],
 				},
 			],
 		},

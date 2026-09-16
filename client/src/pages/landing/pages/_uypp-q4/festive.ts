@@ -63,6 +63,15 @@ export interface ToolkitPage {
 	layer: "drivers" | "reasons" | "gifting";
 	/** How many separate activities the page covers, shown under the blurb. */
 	count: string;
+	/**
+	 * Festive photography for the card, the cross-links and the page's own hero —
+	 * a filename under `landing-assets/uypp-q4/img`, passed through `img()`.
+	 *
+	 * Only where a shot genuinely shows what the page is about. Events and local
+	 * PR have none yet and keep the striped placeholder, which is more honest than
+	 * borrowing a window display to illustrate a press release.
+	 */
+	image?: string;
 }
 
 export const TOOLKIT_PAGES: ToolkitPage[] = [
@@ -73,6 +82,7 @@ export const TOOLKIT_PAGES: ToolkitPage[] = [
 		blurb: "Festive editions of the posters that fill a quiet diary: eye exams available, outside prescriptions welcome, and multi pair.",
 		layer: "drivers",
 		count: "3 assets",
+		image: "festive-easy-2.jpg",
 	},
 	{
 		slug: "festive-in-practice",
@@ -81,12 +91,13 @@ export const TOOLKIT_PAGES: ToolkitPage[] = [
 		blurb: "What the practice looks and sounds like in December — the window display, and the Merry Christmas message from the team.",
 		layer: "drivers",
 		count: "2 activities",
+		image: "festive-easy-1.jpg",
 	},
 	{
 		slug: "festive-events",
 		name: "Events",
 		when: "December",
-		blurb: "A reason to come on a particular day. 12 Days of Christmas across the month, or a single late-night VIP evening.",
+		blurb: "A reason to come on a particular day. 12 Days of Christmas across the month, or a single late-night VIP evening — both stronger with a brand gift to hand out.",
 		layer: "reasons",
 		count: "2 formats",
 	},
@@ -97,14 +108,16 @@ export const TOOLKIT_PAGES: ToolkitPage[] = [
 		blurb: "Black Friday and the December sale. The same mechanic four weeks apart, and both are yours to set locally.",
 		layer: "reasons",
 		count: "2 moments",
+		image: "bf-strip-window-situ.jpg",
 	},
 	{
 		slug: "festive-gifting",
 		name: "Gifting & brand support",
 		when: "December",
-		blurb: "Supplier-funded gifts with purchase on BOSS, Oakley, Ted Baker and Design Eyewear, plus the brand activations behind them.",
+		blurb: "Accessories and stocking fillers front and centre, then supplier-funded gifts with purchase on BOSS, Oakley, Ted Baker and Design Eyewear.",
 		layer: "gifting",
-		count: "4 gifts, 4 activations",
+		count: "Accessories + 4 gifts, 4 activations",
+		image: "festive-easy-3.jpg",
 	},
 	{
 		slug: "festive-local-pr",

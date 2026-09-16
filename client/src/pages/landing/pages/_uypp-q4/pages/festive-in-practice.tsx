@@ -1,6 +1,7 @@
 import type { LandingPageMeta } from "../../../registry";
 import { Link } from "react-router-dom";
 import { FestivePage } from "../FestivePage";
+import { img } from "../uypp-q4";
 import { FESTIVE_INSPIRATION, MARKETING_LINK } from "../links";
 import { FESTIVE_IN_PRACTICE } from "../data/festive-in-practice";
 
@@ -10,6 +11,7 @@ export const meta: LandingPageMeta = {
 	description:
 		"What the practice looks and sounds like in December — the window display, and the Merry Christmas message from the team.",
 	publishedAt: "2026-09-29",
+	thumbnail: img("festive-easy-1.jpg"),
 	hidden: true,
 };
 
@@ -27,6 +29,8 @@ export default function FestiveInPractice() {
 					Practice
 				</>
 			}
+			heroImage={img("festive-easy-1.jpg")}
+			heroAlt="Festive practice window dressed with paper decorations and frames on plinths"
 			pills={["December", "Core KPI · Volume and conversion", "2 activities"]}
 			hook="Be part of the local Christmas, not just open during it."
 			standfirst="Independent practices are a pillar of their communities. December is the month that is easiest to prove and easiest to waste."
@@ -41,7 +45,7 @@ export default function FestiveInPractice() {
 			]}
 			creativeTitle="Two activities"
 			creativeLead="One outward-facing, one straight to the patients you already have. Neither takes the place of the other."
-			artworkLead="Photography and artwork are still in production. The placements below show what each activity needs."
+			artworkLead="Window photography is below. The Merry Christmas email artwork is still in production."
 			orderTitle="Add these to your plan"
 			orderNote="Festive posters order straight from the planner. The Merry Christmas HTML is still being set up — the button opens your planner."
 			orderFootText="The window needs lead time and the decor needs ordering. Start this one first."
@@ -70,9 +74,11 @@ export default function FestiveInPractice() {
 								</p>
 							</div>
 							<figure className="tier__media">
-								<div className="ph-block">
-									<span>Photography to come</span>
-								</div>
+								<img
+									src={img("festive-easy-1.jpg")}
+									alt="Off-the-shelf festive window display"
+									loading="lazy"
+								/>
 							</figure>
 						</article>
 						<article className="tier reveal">
@@ -87,9 +93,11 @@ export default function FestiveInPractice() {
 								</p>
 							</div>
 							<figure className="tier__media">
-								<div className="ph-block">
-									<span>Photography to come</span>
-								</div>
+								<img
+									src={img("festive-storytelling.jpg")}
+									alt="Hand-painted shopfront window and an oversized ribbon installation"
+									loading="lazy"
+								/>
 							</figure>
 						</article>
 					</div>

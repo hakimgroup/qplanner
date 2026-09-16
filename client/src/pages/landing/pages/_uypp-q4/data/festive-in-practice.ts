@@ -9,6 +9,7 @@
  * The window route is the Q4 Festive Windows campaign seen from the toolkit, so
  * it orders the same planner card and points at the same shopping list.
  */
+import { img } from "../uypp-q4";
 import { FESTIVE_INSPIRATION, FESTIVE_ORDER } from "../links";
 import type { Campaign } from "../types";
 
@@ -19,6 +20,7 @@ export const FESTIVE_IN_PRACTICE: Campaign = {
 			id: "window",
 			name: "Festive Window",
 			accent: "#2F5D45",
+			visual: img("festive-easy-1.jpg"),
 			body: `<p>An impactful window display in December can set a practice up for the whole season. Standing out on a busy high street is the point, and a window that stops people is what connects the practice to everyone walking past it.</p>
 				<p>There are two ways to get there. Off-the-shelf decor dresses the window quickly and cheaply — our creative team has put a premium display together as a shopping list you can order in one go. Or you can approach a local vendor and commission a bespoke design, which is how you end up being the talk of the high street.</p>
 				<p>Either way it works hardest next to something to buy: a gift with purchase, a brand activation, whatever offer is already live. The window earns the footfall; the offer converts it.</p>`,
@@ -36,8 +38,18 @@ export const FESTIVE_IN_PRACTICE: Campaign = {
 					key: "window",
 					label: "Window",
 					items: [
-						{ ph: true, cap: "Off-the-shelf window — photography to come" },
-						{ ph: true, cap: "Bespoke window — photography to come" },
+						{
+							img: img("festive-easy-1.jpg"),
+							cap: "Off-the-shelf decor, dressed in an afternoon",
+						},
+						{
+							img: img("festive-spark.jpg"),
+							cap: "Four directions for a festive window",
+						},
+						{
+							img: img("festive-storytelling.jpg"),
+							cap: "Bespoke, made with a local vendor",
+						},
 					],
 				},
 				{

@@ -507,6 +507,30 @@
 	   would push the card out of shape. */
 	.ph-block--fill { width:100%; height:100%; min-height:0; border-radius:0; }
 
+	/* ===================== FESTIVE TOOLKIT =====================
+	   Used only by the Festive Focus Toolkit pages. Class names appear in no Q4
+	   page's markup, so nothing here can reach a campaign page even though it
+	   shares the `.uypp-q4-detail` scope. */
+
+	/* Four accessories, so the shared three-column .panels grid leaves an orphan on
+	   the second row. Two-by-two instead: four across was tried first and gave each
+	   card roughly 25 characters a line, which is a newspaper column, not a card. */
+	.panels--four { grid-template-columns:repeat(2,1fr); }
+	@media (max-width:760px){ .panels--four { grid-template-columns:1fr; } }
+
+	/* A price under an accessory's name. Small and quiet — it is a fact about the
+	   product, not the reason to stock it. */
+	.panel__price { font-family:var(--display); font-weight:500; letter-spacing:.1em;
+	  text-transform:uppercase; font-size:1rem; color:var(--accent); margin:-.3em 0 .7em; }
+
+	/* The merchandising points. A list rather than three more panels: they are
+	   instructions that run in order, and panels would imply a choice between
+	   them. */
+	.gift-tactics { list-style:none; margin:0; padding:0; display:grid; gap:14px; }
+	.gift-tactics li { position:relative; padding-left:28px; color:#3a3640; }
+	.gift-tactics li::before { content:""; position:absolute; left:0; top:.55em;
+	  width:12px; height:12px; border-radius:3px; background:var(--accent); }
+
 	/* ===================== SPLIT ===================== */
 	.split { display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,3.6vw,52px); align-items:center; }
 	.split--top { align-items:start; }

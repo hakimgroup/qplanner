@@ -35,11 +35,14 @@ export function FestivePage({
 	campaign,
 	heroTitle,
 	pills,
+	heroImage,
+	heroAlt,
 	hook,
 	standfirst,
 	body,
 	pointsTitle = "Why it works",
 	points,
+	afterPoints,
 	creativeTitle,
 	creativeLead,
 	artworkTitle = "See it across your practice",
@@ -55,11 +58,24 @@ export function FestivePage({
 	campaign: Campaign;
 	heroTitle: ReactNode;
 	pills: string[];
+	heroImage?: string;
+	heroAlt?: string;
 	hook: string;
 	standfirst: string;
 	body: string;
 	pointsTitle?: string;
 	points: string[];
+	/**
+	 * A section between the bullets and the creative block, for the one thing a
+	 * page needs to say before anything else on it.
+	 *
+	 * `children` lands after the artwork, which is the right place for detail a
+	 * reader wants once they have decided. It is the wrong place for something
+	 * they should see whether or not they read that far — accessories on the
+	 * gifting page being the case that forced this. Note the band immediately
+	 * below is tinted, so anything here must not be.
+	 */
+	afterPoints?: ReactNode;
 	creativeTitle: string;
 	creativeLead?: ReactNode;
 	artworkTitle?: string;
@@ -78,7 +94,7 @@ export function FestivePage({
 			nav={TOOLKIT_NAV}
 			footNote={TOOLKIT_FOOT}
 		>
-			<ToolkitHero title={heroTitle} pills={pills} />
+			<ToolkitHero title={heroTitle} pills={pills} image={heroImage} alt={heroAlt} />
 
 			{/* The hook: the problem in display type, the turn in bold, then what this
 			    group of the toolkit does about it. Three levels of type, centred, no
@@ -107,6 +123,8 @@ export function FestivePage({
 					</ul>
 				</div>
 			</section>
+
+			{afterPoints}
 
 			<CreativeSection title={creativeTitle} lead={creativeLead} />
 

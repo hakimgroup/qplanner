@@ -8,29 +8,44 @@
  * TOOLKIT_PAGES rather than typed out.
  */
 import { Link } from "react-router-dom";
+import { img } from "./uypp-q4";
 import { TOOLKIT_HUB, TOOLKIT_PAGES, TOOLKIT_PREMISE } from "./festive";
 import type { ReactNode } from "react";
 
 /**
  * The page header.
  *
- * No photography anywhere in the toolkit yet, so this uses the striped
- * placeholder treatment rather than the plain indigo fallback — indigo would sit
- * directly above the indigo hook band below it and the two would read as one
- * strip. Swap `.hero--placeholder` for an `<img className="hero__img">` when the
- * artwork arrives; nothing else has to change.
+ * `image` is the festive photography where a page has some that genuinely shows
+ * what the page is about — a window carrying the eye-exams poster on the volume
+ * drivers page, and so on. Where it does not, the striped placeholder stands in
+ * rather than the plain indigo fallback: indigo would sit directly above the
+ * indigo hook band below it and the two would read as one strip.
+ *
+ * Deliberately not defaulted to a generic festive shot. A hero that shows
+ * something other than the page's subject is worse than one that admits the
+ * artwork is still coming.
  */
 export function ToolkitHero({
 	title,
 	pills,
+	image,
+	alt,
 	children,
 }: {
 	title: ReactNode;
 	pills: string[];
+	image?: string;
+	alt?: string;
 	children?: ReactNode;
 }) {
 	return (
-		<section className="hero hero--placeholder">
+		<section className={`hero${image ? "" : " hero--placeholder"}`}>
+			{image ? (
+				<>
+					<img className="hero__img" src={image} alt={alt ?? ""} />
+					<div className="hero__overlay" />
+				</>
+			) : null}
 			<div className="wrap hero__content">
 				<Link className="back-link back-link--hero reveal" to={TOOLKIT_HUB}>
 					← Back to the Festive Focus Toolkit
@@ -81,9 +96,13 @@ export function ToolkitCrosslinks({ exclude }: { exclude: string }) {
 					{others.map((p) => (
 						<Link className="crosslink reveal" key={p.slug} to={`/landing/${p.slug}`}>
 							<span className="crosslink__media">
-								<span className="ph-block ph-block--fill">
-									<span>Artwork to come</span>
-								</span>
+								{p.image ? (
+									<img src={img(p.image)} alt="" loading="lazy" />
+								) : (
+									<span className="ph-block ph-block--fill">
+										<span>Artwork to come</span>
+									</span>
+								)}
 							</span>
 							<span className="crosslink__month">{p.when}</span>
 							<h3 className="crosslink__title">{p.name}</h3>

@@ -188,7 +188,16 @@ const BRANDS: Record<CampaignId, Record<string, string>> = {
 	"outside-prescriptions": {},
 	"eye-exams-available": {},
 	"festive-volume-drivers": {},
-	"festive-events": {},
+	"festive-events": {
+		// The same four gift-with-purchase forms as the gifting page. An event is
+		// where a GWP works hardest — there is already a reason to buy in the room —
+		// so a practice planning one should be able to opt in from here rather than
+		// being sent somewhere else to find the link.
+		boss: "https://form.jotform.com/262382567372363",
+		oakley: "https://form.jotform.com/262382059840359",
+		"ted-baker": "https://form.jotform.com/262371538489065",
+		"design-eyewear": "https://form.jotform.com/262382412556356",
+	},
 	"festive-retail-moments": {},
 	"festive-in-practice": {},
 	"festive-local-pr": {},

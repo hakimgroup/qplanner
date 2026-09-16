@@ -19,7 +19,15 @@ import { brandLink, campaignLink, isForm } from "./links";
 import { Cta } from "./Cta";
 import type { Brand } from "./types";
 
-export function SupplierSection({ lead }: { lead?: React.ReactNode }) {
+export function SupplierSection({
+	lead,
+	foot,
+}: {
+	lead?: React.ReactNode;
+	/** The closing line. The default talks about ordering "the campaign", which is
+	 *  wrong on a page where the thing being ordered is an event. */
+	foot?: React.ReactNode;
+}) {
 	const { campaign, id, orderLabel } = useCampaign();
 	const brands = campaign.brands ?? [];
 	const [open, setOpen] = useState<Record<string, boolean>>({});
@@ -175,9 +183,8 @@ export function SupplierSection({ lead }: { lead?: React.ReactNode }) {
 				    rows. The add-on attaches to the campaign, so this is the other half. */}
 				<div className="suppliers__foot reveal">
 					<p className="suppliers__foot-text">
-						Brand assets sit on top of the campaign, they do not replace it. Order the
-						campaign itself in your Marketing Planner, then take up any supplier add-on
-						alongside it.
+						{foot ??
+							"Brand assets sit on top of the campaign, they do not replace it. Order the campaign itself in your Marketing Planner, then take up any supplier add-on alongside it."}
 					</p>
 					<Cta href={campaignLink(id)} className="btn--ghost">
 						{orderLabel}
