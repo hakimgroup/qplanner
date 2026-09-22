@@ -27,6 +27,26 @@ import {
 	signFeedbackToken,
 	verifyFeedbackToken,
 } from "../lib/feedbackToken";
+import {
+	ensureUberallUser,
+	syncUserScope,
+	deprovisionUser,
+	resolvePractice,
+	reconcileUberall,
+	uberallEnabled,
+	ssoLoginToken,
+	ssoRedirectUrl,
+} from "./uberall";
+
+// Trigger-called Uberall endpoints (sync-user, deprovision-user) are invoked
+// server-to-server by DB triggers via pg_net. They carry the shared secret.
+const uberallTriggerAuthed = (req: Request): boolean => {
+	const bearer = (req.headers.authorization as string | undefined)?.replace(
+		"Bearer ",
+		""
+	);
+	return !!process.env.CRON_SECRET && bearer === process.env.CRON_SECRET;
+};
 
 interface EmailBody {
 	to: string;
@@ -3424,6 +3444,238 @@ app.get("/preview-email/:logId", async (req: Request, res: Response): Promise<an
 		return res.status(500).json({ error: error.message });
 	}
 });
+
+// =====================================================================
+// Uberall integration — Phase 2 (provisioning)
+// =====================================================================
+
+// Provision (or adopt) an Uberall account for a single Planner user. Idempotent.
+// Called fire-and-forget from the client when a user is added, and by backfill.
+app.post("/uberall/provision-user", async (req: Request, res: Response) => {
+	if (!uberallEnabled())
+		return res.status(503).json({ success: false, error: "Uberall not configured" });
+	const { email, source } = req.body || {};
+	if (!email) return res.status(400).json({ success: false, error: "email required" });
+	try {
+		const result = await ensureUberallUser(supabase, email, source || "server");
+		return res.status(result.success ? 200 : 502).json(result);
+	} catch (e: any) {
+		console.error("[uberall/provision-user]", e?.message);
+		return res.status(500).json({ success: false, error: e?.message });
+	}
+});
+
+// "Open Uberall" — mint a silent-login token for the caller and return the
+// dashboard redirect URL. The caller is identified by their Supabase session
+// JWT (so a user can only open their OWN Uberall); a super-admin may open
+// another user's ("open-as") via targetEmail. The token is never logged.
+app.post("/uberall/sso", async (req: Request, res: Response) => {
+	if (!uberallEnabled())
+		return res.status(503).json({ success: false, error: "Uberall not configured" });
+
+	const jwt = (req.headers.authorization as string | undefined)?.replace("Bearer ", "");
+	if (!jwt) return res.status(401).json({ success: false, error: "missing session token" });
+
+	// Verify the caller's Supabase session.
+	const { data: userData, error: uErr } = await supabase.auth.getUser(jwt);
+	const callerEmail = userData?.user?.email?.toLowerCase();
+	if (uErr || !callerEmail)
+		return res.status(401).json({ success: false, error: "invalid session" });
+
+	let targetEmail = String(req.body?.targetEmail || callerEmail).toLowerCase();
+	let source = "self";
+	if (targetEmail !== callerEmail) {
+		// open-as → super-admin only.
+		const { data: caller } = await supabase
+			.from("allowed_users")
+			.select("role")
+			.eq("email", callerEmail)
+			.maybeSingle();
+		if (caller?.role !== "super_admin")
+			return res
+				.status(403)
+				.json({ success: false, error: "only super admins can open another user's Uberall" });
+		source = "admin-open-as";
+	}
+
+	try {
+		// Sync-on-open: refresh the target's Location scope to their CURRENT
+		// practice access before launching, so the dashboard always reflects
+		// reality even if a trigger/cron sync was missed. (Provisions if needed;
+		// skips adopted accounts.) SSO also requires a pre-existing Uberall user.
+		const ens = await syncUserScope(supabase, targetEmail, "sso");
+		if (!ens.success || !ens.uberallUserId)
+			return res
+				.status(502)
+				.json({ success: false, error: ens.error || "could not resolve Uberall user" });
+
+		const token = await ssoLoginToken(ens.uberallUserId);
+		if (!token)
+			return res.status(502).json({ success: false, error: "could not mint SSO token" });
+
+		// Audit the launch (never store the token itself).
+		await supabase.from("uberall_sync_log").insert({
+			user_email: targetEmail,
+			uberall_user_id: ens.uberallUserId,
+			action: "sso",
+			status: "synced",
+			source,
+			attempted_at: new Date().toISOString(),
+		});
+
+		return res.json({ success: true, redirectUrl: ssoRedirectUrl(token) });
+	} catch (e: any) {
+		console.error("[uberall/sso]", e?.message);
+		return res.status(500).json({ success: false, error: e?.message });
+	}
+});
+
+// Sync a single user's Uberall Location access to their current practice access
+// (adds + removes; provisions first if needed; skips protected admins).
+// Called by the practice_members DB trigger and by the reconcile cron.
+app.post("/uberall/sync-user", async (req: Request, res: Response) => {
+	if (!uberallEnabled())
+		return res.status(503).json({ success: false, error: "Uberall not configured" });
+	if (!uberallTriggerAuthed(req))
+		return res.status(401).json({ success: false, error: "unauthorized" });
+	const { email, source } = req.body || {};
+	if (!email) return res.status(400).json({ success: false, error: "email required" });
+	try {
+		const result = await syncUserScope(supabase, email, source || "server");
+		return res.status(result.success ? 200 : 502).json(result);
+	} catch (e: any) {
+		console.error("[uberall/sync-user]", e?.message);
+		return res.status(500).json({ success: false, error: e?.message });
+	}
+});
+
+// Resolve a practice's Uberall identifier → numeric Location id (and store it).
+// Called by the practices INSERT / uberall_business_id-change trigger. Storing
+// the numeric id then fires the location-change trigger, which re-syncs members.
+app.post("/uberall/resolve-practice", async (req: Request, res: Response) => {
+	if (!uberallEnabled())
+		return res.status(503).json({ success: false, error: "Uberall not configured" });
+	if (!uberallTriggerAuthed(req))
+		return res.status(401).json({ success: false, error: "unauthorized" });
+	const { practice_id, source } = req.body || {};
+	if (!practice_id)
+		return res.status(400).json({ success: false, error: "practice_id required" });
+	try {
+		const r = await resolvePractice(supabase, practice_id, source || "trigger");
+		return res.json({ success: true, ...r });
+	} catch (e: any) {
+		console.error("[uberall/resolve-practice]", e?.message);
+		return res.status(500).json({ success: false, error: e?.message });
+	}
+});
+
+// Deprovision (deactivate) a deleted user's Uberall account. Called by the
+// allowed_users DELETE trigger (server-to-server, shared secret). Only fires
+// for CREATED accounts — adopted accounts are never deactivated.
+app.post("/uberall/deprovision-user", async (req: Request, res: Response) => {
+	if (!uberallEnabled())
+		return res.status(503).json({ success: false, error: "Uberall not configured" });
+	if (!uberallTriggerAuthed(req))
+		return res.status(401).json({ success: false, error: "unauthorized" });
+	const { email, uberall_user_id, source } = req.body || {};
+	try {
+		const r = await deprovisionUser(
+			supabase,
+			{ email, uberallUserId: uberall_user_id },
+			source || "trigger"
+		);
+		return res.status(r.success ? 200 : 502).json(r);
+	} catch (e: any) {
+		console.error("[uberall/deprovision-user]", e?.message);
+		return res.status(500).json({ success: false, error: e?.message });
+	}
+});
+
+// Bulk-provision every not-yet-linked Planner user. Bearer CRON_SECRET gated.
+// Defaults to dryRun; respects Uberall's 10-creations/10s throttle.
+// NOTE: do not run without dryRun until the Uberall seat allowance is confirmed.
+app.all(["/uberall/backfill", "/api/uberall/backfill"], async (req: Request, res: Response) => {
+	const authHeader = req.headers.authorization as string | undefined;
+	const cronSecretHeader = req.headers["x-cron-secret"] as string | undefined;
+	const provided = authHeader?.replace("Bearer ", "") || cronSecretHeader;
+	if (!process.env.CRON_SECRET || provided !== process.env.CRON_SECRET)
+		return res.status(401).json({ error: "unauthorized" });
+	if (!uberallEnabled())
+		return res.status(503).json({ error: "Uberall not configured" });
+
+	const dryRun = String(req.query.dryRun ?? req.body?.dryRun ?? "true") !== "false";
+	const limit = Math.min(Number(req.query.limit ?? req.body?.limit ?? 50), 1000);
+
+	const { data: users, error } = await supabase
+		.from("allowed_users")
+		.select("email")
+		.is("uberall_user_id", null)
+		.limit(limit);
+	if (error) return res.status(500).json({ error: error.message });
+
+	if (dryRun)
+		return res.json({
+			dryRun: true,
+			wouldProvision: users?.length ?? 0,
+			sample: (users || []).slice(0, 10).map((u) => u.email),
+		});
+
+	const out = { provisioned: 0, adopted: 0, failed: 0, errors: [] as any[] };
+	let i = 0;
+	for (const u of users || []) {
+		const r = await ensureUberallUser(supabase, u.email, "backfill");
+		if (r.success) out[r.outcome === "adopted" ? "adopted" : "provisioned"]++;
+		else {
+			out.failed++;
+			out.errors.push({ email: u.email, error: r.error });
+		}
+		// Stay under the 10-creations/10s cap: burst 8, then pause 10s.
+		if (++i % 8 === 0) await new Promise((r) => setTimeout(r, 10000));
+	}
+	return res.json(out);
+});
+
+// Daily reconcile — the safety net for the trigger + sync-on-open. Provisions
+// missing users, retries failures, and fixes scope drift (guarantees removals
+// land for users who never open Uberall). Accepts GET (cron-job.org, Bearer
+// CRON_SECRET) or POST (super-admin Health page button, Supabase session JWT).
+// dryRun reports what WOULD change without touching Uberall.
+const uberallReconcileHandler = async (req: Request, res: Response): Promise<any> => {
+	if (!uberallEnabled())
+		return res.status(503).json({ error: "Uberall not configured" });
+
+	const authHeader = (req.headers.authorization as string | undefined) ?? "";
+	const bearer = authHeader.replace("Bearer ", "");
+	let authorized = false;
+	if (process.env.CRON_SECRET && bearer === process.env.CRON_SECRET) {
+		authorized = true; // cron
+	} else if (bearer) {
+		const { data } = await supabase.auth.getUser(bearer);
+		const email = data?.user?.email?.toLowerCase();
+		if (email) {
+			const { data: caller } = await supabase
+				.from("allowed_users")
+				.select("role")
+				.eq("email", email)
+				.maybeSingle();
+			authorized = caller?.role === "super_admin";
+		}
+	}
+	if (!authorized) return res.status(401).json({ error: "unauthorized" });
+
+	const dryRun = String(req.query.dryRun ?? req.body?.dryRun ?? "false") === "true";
+	const limit = Math.min(Number(req.query.limit ?? req.body?.limit ?? 1000), 5000);
+
+	try {
+		const summary = await reconcileUberall(supabase, { dryRun, limit });
+		return res.json(summary);
+	} catch (e: any) {
+		console.error("[reconcile-uberall]", e?.message);
+		return res.status(500).json({ error: e?.message });
+	}
+};
+app.get(["/reconcile-uberall", "/api/reconcile-uberall"], uberallReconcileHandler);
+app.post(["/reconcile-uberall", "/api/reconcile-uberall"], uberallReconcileHandler);
 
 app.use("/", (req, res) => {
 	res.send("Server is running.");

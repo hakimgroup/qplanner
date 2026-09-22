@@ -27,6 +27,7 @@ import {
 	IconLogs,
 	IconBolt,
 	IconMail,
+	IconMapPin,
 	IconStar,
 	IconWand,
 	IconBug,
@@ -162,6 +163,12 @@ export default function AdminSidebar({
 					to: `${AppRoutes.Admin}/${AppRoutes.EmailHealth}`,
 					label: "Email Health",
 					icon: <IconMail size={18} color={T.colors.red[6]} />,
+					accent: "red",
+				},
+				{
+					to: `${AppRoutes.Admin}/${AppRoutes.UberallHealth}`,
+					label: "Uberall Health",
+					icon: <IconMapPin size={18} color={T.colors.red[6]} />,
 					accent: "red",
 				},
 				{

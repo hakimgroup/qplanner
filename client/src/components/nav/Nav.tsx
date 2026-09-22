@@ -18,11 +18,16 @@ import {
 	IconArrowLeft,
 	IconBell,
 	IconBook,
+	IconChevronDown,
 	IconHelp,
 	IconLogout,
+	IconMapPin,
 	IconSettings,
 	IconUser,
 	IconUserShield} from "@tabler/icons-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { openUberall, uberallEnabledClient } from "@/api/uberall";
 import cl from "./nav.module.scss";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/shared/AuthProvider";
@@ -60,7 +65,132 @@ const Nav = () => {
 	const [drawerOpen, { open: openDrawer, close: closeDrawer }] =
 		useDisclosure(false);
 
+	const [helpOpen, { open: openHelp, close: closeHelp }] = useDisclosure(false);
+
+	const [openingUberall, setOpeningUberall] = useState(false);
+	const handleOpenUberall = async () => {
+		if (openingUberall) return;
+		setOpeningUberall(true);
+		try {
+			await openUberall();
+		} catch (e: any) {
+			toast.error(e?.message ?? "Could not open Uberall.");
+		} finally {
+			setOpeningUberall(false);
+		}
+	};
+
 	//Components
+	const OpenUberallButton = () =>
+		uberallEnabledClient() ? (
+			<Button
+				variant="gradient"
+				gradient={{ from: "teal", to: "cyan", deg: 135 }}
+				radius={10}
+				size="xs"
+				fw={700}
+				leftSection={<IconMapPin size={14} />}
+				loading={openingUberall}
+				onClick={handleOpenUberall}
+			>
+				Open Uberall
+			</Button>
+		) : null;
+
+	const AccountMenu = ({ onLogout }: { onLogout: () => void }) => {
+		const [menuOpen, setMenuOpen] = useState(false);
+		return (
+		<Menu
+			shadow="md"
+			position="bottom-end"
+			opened={menuOpen}
+			onChange={setMenuOpen}
+		>
+			<Menu.Target>
+				<Group
+					gap={8}
+					wrap="nowrap"
+					className={cl.accountTrigger}
+					data-open={menuOpen}
+				>
+					<Avatar name={name} size="sm" variant="filled" color="blue.3" />
+					<Stack gap={0}>
+						<Text size="sm" fw={600} lh={1.15}>
+							{name}
+						</Text>
+						<Badge color={userRoleColors[role]}>{startCase(role)}</Badge>
+					</Stack>
+					<IconChevronDown
+						size={16}
+						stroke={2.2}
+						color={T.colors.gray[6]}
+						className={cl.chevron}
+					/>
+				</Group>
+			</Menu.Target>
+
+			<Menu.Dropdown>
+				<Menu.Label>
+					<Text fw={700} size="sm" c={"gray.9"}>
+						My Account
+					</Text>
+				</Menu.Label>
+
+				{isAdmin && (
+					<Menu.Item
+						onClick={() =>
+							navigate(`${AppRoutes.Admin}/${AppRoutes.Settings}`)
+						}
+						leftSection={<IconUser size={14} />}
+					>
+						Profile Settings
+					</Menu.Item>
+				)}
+
+				{isAdmin && (
+					<Menu.Item
+						onClick={() =>
+							navigate(`${AppRoutes.Admin}/${AppRoutes.Help}`)
+						}
+						leftSection={<IconSettings size={14} />}
+					>
+						Help & Support
+					</Menu.Item>
+				)}
+
+				{role === UserRoles.SuperAdmin && (
+					<Menu.Item
+						component="a"
+						href="https://qplanner-docs.vercel.app/"
+						target="_blank"
+						rel="noopener noreferrer"
+						leftSection={<IconBook size={14} />}
+					>
+						Documentation
+					</Menu.Item>
+				)}
+
+				{!isAdmin && (
+					<Menu.Item
+						onClick={openHelp}
+						leftSection={<IconHelp size={14} />}
+					>
+						Tutorial
+					</Menu.Item>
+				)}
+
+				<Menu.Item
+					color="red"
+					onClick={onLogout}
+					leftSection={<IconLogout size={14} />}
+				>
+					Logout
+				</Menu.Item>
+			</Menu.Dropdown>
+		</Menu>
+		);
+	};
+
 	const AdminNavigate = () => (
 		<Button
 			variant="gradient"
@@ -171,6 +301,22 @@ const Nav = () => {
 				</Button>
 			)}
 
+			{uberallEnabledClient() && (
+				<Button
+					variant="subtle"
+					color="teal"
+					justify="start"
+					loading={openingUberall}
+					leftSection={<IconMapPin size={16} />}
+					onClick={() => {
+						closeDrawer();
+						handleOpenUberall();
+					}}
+				>
+					Open Uberall
+				</Button>
+			)}
+
 			<GradientDivider />
 
 			<Button
@@ -249,61 +395,30 @@ const Nav = () => {
 
 					{/* ---- Desktop right side (user view) ---- */}
 					{isUserView && !isMobile && (
-						<Flex align={"center"} gap={15}>
-							{isAdmin && <AdminNavigate />}
+						<Group gap={10}>
+							<OpenUberallButton />
 
-							<Badge
-								variant="light"
-								color="gray.6"
-								size="lg"
-								radius={10}
-								p={17}
-							>
-								<Text size="xs" fw={600} c={"gray.9"}>
-									{name}
-								</Text>
-							</Badge>
+							{isAdmin && <AdminNavigate />}
 
 							{!notDashboard && (
 								<>
-									<Help />
 									<CommentBell />
 									<Notification />
 								</>
 							)}
 
-							{role === UserRoles.SuperAdmin && (
-								<Button
-									component="a"
-									href="https://qplanner-docs.vercel.app/"
-									target="_blank"
-									rel="noopener noreferrer"
-									radius={10}
-									variant="subtle"
-									color="gray"
-									c="gray.8"
-									leftSection={<IconBook size={18} />}
-								>
-									Docs
-								</Button>
-							)}
+							<AccountMenu onLogout={() => signout()} />
 
-							<Button
-								radius={10}
-								variant="subtle"
-								color="violet"
-								c="gray.8"
-								leftSection={<IconLogout size={18} />}
-								onClick={() => signout()}
-							>
-								Logout
-							</Button>
-						</Flex>
+							{!isAdmin && (
+								<Help opened={helpOpen} onClose={closeHelp} />
+							)}
+						</Group>
 					)}
 
 					{/* ---- Desktop right side (admin view) ---- */}
 					{isAdmin && !isUserView && !isMobile && (
 						<Group gap={10}>
+							<OpenUberallButton />
 							<AdminNavigate />
 							{pathname !== AppRoutes.NotificationsCenter && (
 								<>
@@ -311,93 +426,7 @@ const Nav = () => {
 									<Notification />
 								</>
 							)}
-							<Menu shadow="md" position="bottom-end">
-								<Menu.Target>
-									<Group
-										gap={8}
-										style={{ cursor: "pointer" }}
-									>
-										<Avatar
-											name={name}
-											size={"sm"}
-											variant="filled"
-											color="blue.3"
-										/>
-										<Stack gap={0}>
-											<Text size="sm" fw={600}>
-												{name}
-											</Text>
-											<Badge
-												color={userRoleColors[role]}
-											>
-												{startCase(role)}
-											</Badge>
-										</Stack>
-									</Group>
-								</Menu.Target>
-
-								<Menu.Dropdown>
-									<Menu.Label>
-										<Text
-											fw={700}
-											size="sm"
-											c={"gray.9"}
-										>
-											My Account
-										</Text>
-									</Menu.Label>
-
-									<Menu.Item
-										onClick={() =>
-											navigate(
-												`${AppRoutes.Admin}/${AppRoutes.Settings}`
-											)
-										}
-										leftSection={
-											<IconUser size={14} />
-										}
-									>
-										Profile Settings
-									</Menu.Item>
-
-									<Menu.Item
-										onClick={() =>
-											navigate(
-												`${AppRoutes.Admin}/${AppRoutes.Help}`
-											)
-										}
-										leftSection={
-											<IconSettings size={14} />
-										}
-									>
-										Help & Support
-									</Menu.Item>
-
-									{role === UserRoles.SuperAdmin && (
-										<Menu.Item
-											component="a"
-											href="https://qplanner-docs.vercel.app/"
-											target="_blank"
-											rel="noopener noreferrer"
-											leftSection={
-												<IconBook size={14} />
-											}
-										>
-											Documentation
-										</Menu.Item>
-									)}
-
-									<Menu.Item
-										color="red"
-										onClick={() => signOutSafe()}
-										leftSection={
-											<IconLogout size={14} />
-										}
-									>
-										Logout
-									</Menu.Item>
-								</Menu.Dropdown>
-							</Menu>
+							<AccountMenu onLogout={() => signOutSafe()} />
 						</Group>
 					)}
 

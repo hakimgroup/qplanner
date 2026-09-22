@@ -25,11 +25,21 @@ import { AppRoutes } from "@/shared/shared.models";
 import { VideoThumbnailModal } from "../videoPlayer/VideoThumbnailModal";
 import { useIsMobile } from "@/shared/shared.hooks";
 
-const Help = () => {
+interface HelpProps {
+	/** When provided, the drawer is controlled by the parent and the icon
+	 *  trigger is hidden (e.g. opened from a dropdown menu item). */
+	opened?: boolean;
+	onClose?: () => void;
+}
+
+const Help = ({ opened: openedProp, onClose }: HelpProps = {}) => {
 	const T = useMantineTheme();
 	const isMobile = useIsMobile();
 	const navigate = useNavigate();
-	const [opened, { open, close }] = useDisclosure(false);
+	const [internalOpened, { open, close: closeInternal }] = useDisclosure(false);
+	const controlled = openedProp !== undefined;
+	const opened = controlled ? openedProp : internalOpened;
+	const close = controlled ? onClose ?? (() => {}) : closeInternal;
 
 	const topics = [
 		"Navigating between Plan catalogue and My selections",
@@ -100,15 +110,17 @@ const Help = () => {
 				</Text>
 			</Drawer>
 
-			<ActionIcon
-				variant="subtle"
-				size="lg"
-				radius={10}
-				color="violet"
-				onClick={open}
-			>
-				<IconHelp color={T.colors.gray[9]} size={18} />
-			</ActionIcon>
+			{!controlled && (
+				<ActionIcon
+					variant="subtle"
+					size="lg"
+					radius={10}
+					color="violet"
+					onClick={open}
+				>
+					<IconHelp color={T.colors.gray[9]} size={18} />
+				</ActionIcon>
+			)}
 		</>
 	);
 };

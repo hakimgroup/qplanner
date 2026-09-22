@@ -29,6 +29,7 @@ import Settings from "./pages/admin/adminPages/settings/Settings";
 import GodMode from "./pages/admin/adminPages/godMode/GodMode";
 import SendEmail from "./pages/admin/adminPages/sendEmail/SendEmail";
 import EmailHealth from "./pages/admin/adminPages/emailHealth/EmailHealth";
+import UberallHealth from "./pages/admin/adminPages/uberallHealth/UberallHealth";
 import PracticesOfInterest from "./pages/admin/adminPages/practicesOfInterest/PracticesOfInterest";
 import RequireSuperAdmin from "./shared/RequireSuperAdmin";
 import CommentDrawerProvider from "./components/comments/CommentDeepLinkDrawer";
@@ -168,6 +169,14 @@ export default function App() {
                         element={
                           <RequireSuperAdmin>
                             <EmailHealth />
+                          </RequireSuperAdmin>
+                        }
+                      />
+                      <Route
+                        path={AppRoutes.UberallHealth}
+                        element={
+                          <RequireSuperAdmin>
+                            <UberallHealth />
                           </RequireSuperAdmin>
                         }
                       />

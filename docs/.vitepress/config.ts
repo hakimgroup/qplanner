@@ -43,6 +43,7 @@ export default defineConfig({
           { text: 'God Mode', link: '/admin/god-mode' },
           { text: 'Practices of Interest', link: '/admin/practices-of-interest' },
           { text: 'Bug Reports', link: '/admin/bug-reports' },
+          { text: 'Uberall Integration', link: '/admin/uberall' },
         ],
       },
       {
