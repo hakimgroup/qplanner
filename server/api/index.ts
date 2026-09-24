@@ -3504,10 +3504,14 @@ app.post("/uberall/sso", async (req: Request, res: Response) => {
 		// reality even if a trigger/cron sync was missed. (Provisions if needed;
 		// skips adopted accounts.) SSO also requires a pre-existing Uberall user.
 		const ens = await syncUserScope(supabase, targetEmail, "sso");
-		if (!ens.success || !ens.uberallUserId)
+		if (!ens.success || !ens.uberallUserId) {
+			// "no_scope" is a user-state condition (no mapped locations), not a
+			// gateway failure — surface it as 422 with its friendly message.
+			const status = ens.outcome === "no_scope" ? 422 : 502;
 			return res
-				.status(502)
+				.status(status)
 				.json({ success: false, error: ens.error || "could not resolve Uberall user" });
+		}
 
 		const token = await ssoLoginToken(ens.uberallUserId);
 		if (!token)

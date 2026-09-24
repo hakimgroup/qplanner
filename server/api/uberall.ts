@@ -176,7 +176,7 @@ export interface EnsureResult {
 	email: string;
 	uberallUserId?: string;
 	scope?: number[];
-	outcome?: "created" | "adopted" | "existing" | "synced" | "skipped";
+	outcome?: "created" | "adopted" | "existing" | "synced" | "skipped" | "no_scope";
 	protectedRole?: boolean;
 	error?: string;
 }
@@ -205,6 +205,32 @@ export async function ensureUberallUser(
 	}
 
 	const scope = await computeDesiredScope(supabase, email);
+
+	// Uberall rejects creating a user with no locations ("MISSING_PARAMETER:
+	// managedLocations or locationGroupIds missing"). A Planner user with no
+	// practice that maps to an Uberall Location has nothing to provision yet —
+	// fail clearly instead of firing a doomed POST. They provision automatically
+	// once a mapped practice is assigned (membership trigger / reconcile / next
+	// open). Note: super_admins are scoped by explicit practice_members too, not
+	// by their global "sees all practices" role.
+	if (scope.length === 0) {
+		await logSync(supabase, {
+			user_email: email,
+			action: "provision",
+			status: "skipped",
+			source,
+			requested_scope: [],
+			error_message: "no mapped Uberall locations — provisioning deferred",
+		});
+		return {
+			success: false,
+			email,
+			outcome: "no_scope",
+			error:
+				"You don't have any practices linked to an Uberall location yet, so there's nothing to open. Ask an admin to add you to a practice that's connected to Uberall.",
+		};
+	}
+
 	const firstName = au.first_name || email.split("@")[0];
 	const lastName = au.last_name || "User";
 
@@ -341,6 +367,29 @@ export async function syncUserScope(
 		}
 
 		const desired = await computeDesiredScope(supabase, email);
+
+		// Uberall rejects an empty managedLocations PATCH the same way it rejects
+		// an empty create. A previously-scoped user who has since lost all mapped
+		// locations should be offboarded via the deprovision path (status=INACTIVE),
+		// not emptied here — leave their current scope and skip. Their existing
+		// Uberall user is still valid, so callers (e.g. SSO) can proceed.
+		if (desired.length === 0) {
+			await logSync(supabase, {
+				user_email: email,
+				uberall_user_id: au.uberall_user_id,
+				action: "sync",
+				status: "skipped",
+				source,
+				error_message: "no mapped Uberall locations — scope left unchanged",
+			});
+			return {
+				success: true,
+				email,
+				uberallUserId: au.uberall_user_id,
+				outcome: "skipped",
+			};
+		}
+
 		await patchUser(au.uberall_user_id, { managedLocations: desired });
 		await supabase
 			.from("allowed_users")
