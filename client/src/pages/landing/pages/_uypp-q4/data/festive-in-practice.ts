@@ -82,6 +82,14 @@ export const FESTIVE_IN_PRACTICE: Campaign = {
 							img: img("festive-aboard-sleigh.jpg"),
 							cap: "Sleigh A-board",
 						},
+						{
+							img: img("festive-poster-cookies.jpg"),
+							cap: "Santa\u2019s cookies poster artwork",
+						},
+						{
+							img: img("festive-poster-sleigh.jpg"),
+							cap: "Sleigh poster artwork",
+						},
 					],
 				},
 			],
