@@ -288,9 +288,9 @@ export default function FestiveToolkit() {
 									<h3 className="tier__title">Get them through the door</h3>
 									<p>
 										Posters that say you are open, you can see them, and you will
-										take their prescription. No offer, no planning, no lead time.
-										The cheapest volume in the toolkit and the first thing to put
-										up.
+										take their prescription — then an offer on additional pairs
+										once they are inside. No planning, no lead time. The cheapest
+										volume in the toolkit and the first thing to put up.
 									</p>
 									<p className="tier__link">
 										<Link to="/landing/festive-volume-drivers">Volume drivers →</Link>

@@ -53,7 +53,8 @@ export const FESTIVE_RETAIL_MOMENTS: Campaign = {
 			accent: "#5E2750",
 			body: `<p>The sale period now runs on through December rather than stopping when Black Friday does. That is a month of shoppers who have left it late, and a sale is the simplest way to convert them.</p>
 				<p>Run alongside the volume drivers elsewhere in this toolkit, it makes the most of last-minute gift shoppers who are already on the high street. It works particularly well with later opening times and an in-practice event, which together make the practice a destination for gifting rather than somewhere people pass.</p>`,
-			note: `<p><strong>Still being set up in the Marketing Planner.</strong> The button below opens your planner — or speak to your marketing executive and they will add it to your plan.</p>`,
+			note: `<p><strong>Running a multi-pair offer?</strong> The festive 33% and 50% off additional pairs posters, and See Now Pay Later, are ready on the <a href="/landing/festive-volume-drivers">Volume drivers</a> page. A general sale poster is still to come.</p>
+				<p><strong>Still being set up in the Marketing Planner.</strong> The button below opens your planner — or speak to your marketing executive and they will add it to your plan.</p>`,
 			order: {
 				label: "Open your planner",
 				href: FESTIVE_ORDER.decemberSale,

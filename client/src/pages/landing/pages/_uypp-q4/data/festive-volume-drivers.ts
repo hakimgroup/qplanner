@@ -181,24 +181,87 @@ export const FESTIVE_VOLUME_DRIVERS: Campaign = {
 			id: "multi-pair",
 			name: "Multi Pair",
 			accent: "#A8802B",
+			// Flat artwork, not a photograph, so it stays contained rather than
+			// cropped — and a portrait poster fills the tall frame on its own.
+			visual: img("festive-offer-fairisle-33.png"),
 			body: `<p>${WHY_DECEMBER}</p>
 				<p>A second pair is an easier conversation in December than at any other point in the year, because one of them can be a gift. The same visit, the same sight test, a materially larger dispense.</p>
 				<p>It sits naturally on top of the other two: someone who came in because the A-board said appointments were available, or because you accept an outside prescription, is already in the chair.</p>`,
-			note: `<p><strong>Still being set up in the Marketing Planner.</strong> The button below opens your planner — search for the multi-pair assets there, or ask marketing and they will add it to your plan.</p>`,
+			note: `<p><strong>Two offers, four designs.</strong> 33% off additional pairs, or 50% off with a minimum spend of £200 — either way the discount applies to the cheapest pair. The designs match the eye exams and outside prescriptions posters, so the whole window reads as one. <strong>See Now Pay Later</strong> is the companion for the dispensing table: interest-free payment options, terms and conditions apply.</p>
+				<p><strong>Still being set up in the Marketing Planner.</strong> The button below opens your planner — search for the multi-pair assets there, or ask marketing and they will add it to your plan.</p>`,
 			order: {
 				label: "Open your planner",
 				href: FESTIVE_ORDER.multiPair,
 			},
+			// Supplied 25 September 2026 as "festive-offers". Captions use the same
+			// design names as the eye exams and outside prescriptions tiles — the
+			// team's files call them fairisle, tree, scallop and glasses.
 			placements: [
 				{
-					key: "poster",
-					label: "Poster",
-					items: [{ ph: true, cap: "Multi-pair poster — artwork to come" }],
+					key: "33",
+					label: "33% off",
+					items: [
+						{
+							img: img("festive-offer-fairisle-33.png"),
+							cap: "Cross-stitch \u2014 33% off additional pairs",
+						},
+						{
+							img: img("festive-offer-tree-33.png"),
+							cap: "Star \u2014 33% off additional pairs",
+						},
+						{
+							img: img("festive-offer-scallop-33.png"),
+							cap: "Red \u2014 33% off additional pairs",
+						},
+						{
+							img: img("festive-offer-glasses-33.png"),
+							cap: "Frames \u2014 33% off additional pairs",
+						},
+					],
 				},
 				{
-					key: "instore",
-					label: "In practice",
-					items: [{ ph: true, cap: "Dispensing-table support — artwork to come" }],
+					key: "50",
+					label: "50% off",
+					items: [
+						{
+							img: img("festive-offer-fairisle-50.png"),
+							cap: "Cross-stitch \u2014 50% off additional pairs, £200 minimum spend",
+						},
+						{
+							img: img("festive-offer-tree-50.png"),
+							cap: "Star \u2014 50% off additional pairs, £200 minimum spend",
+						},
+						{
+							img: img("festive-offer-scallop-50.png"),
+							cap: "Red \u2014 50% off additional pairs, £200 minimum spend",
+						},
+						{
+							img: img("festive-offer-glasses-50.png"),
+							cap: "Frames \u2014 50% off additional pairs, £200 minimum spend",
+						},
+					],
+				},
+				{
+					key: "pay-later",
+					label: "See Now Pay Later",
+					items: [
+						{
+							img: img("festive-offer-fairisle-pay-later.png"),
+							cap: "Cross-stitch \u2014 See Now Pay Later",
+						},
+						{
+							img: img("festive-offer-tree-pay-later.png"),
+							cap: "Star \u2014 See Now Pay Later",
+						},
+						{
+							img: img("festive-offer-scallop-pay-later.png"),
+							cap: "Red \u2014 See Now Pay Later",
+						},
+						{
+							img: img("festive-offer-glasses-pay-later.png"),
+							cap: "Frames \u2014 See Now Pay Later",
+						},
+					],
 				},
 			],
 		},

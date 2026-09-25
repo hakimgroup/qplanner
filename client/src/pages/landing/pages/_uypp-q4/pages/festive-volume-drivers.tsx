@@ -35,9 +35,9 @@ export default function FestiveVolumeDrivers() {
 			pills={["December – January", "Core KPI · Volume and conversion", "3 assets"]}
 			hook="The diary is quiet. The high street is not."
 			standfirst="December and January are the two months when footfall and appointments move in opposite directions."
-			body="These three posters exist to close that gap. They carry no offer and no clinical language — they simply tell the people already walking past that they can be seen here, that a prescription from elsewhere is welcome, and that a second pair is worth having. The cheapest volume in the toolkit, and the first thing to put up."
+			body="These three posters exist to close that gap. No clinical language — they simply tell the people already walking past that they can be seen here, that a prescription from elsewhere is welcome, and that a second pair is worth having, with an offer on additional pairs to back it. The cheapest volume in the toolkit, and the first thing to put up."
 			points={[
-				"Fills quiet diary slots without discounting",
+				"Two of the three fill quiet diary slots without discounting",
 				"Works on the pavement, where December footfall already is",
 				"Nothing to plan, brief or schedule — they go straight up",
 				"Two are new festive editions of assets you already know",
@@ -46,7 +46,7 @@ export default function FestiveVolumeDrivers() {
 			]}
 			creativeTitle="Three assets"
 			creativeLead="Not alternatives. Put all three up — they answer three different reasons someone has for not coming in."
-			artworkLead="Two festive designs each for eye exams and outside prescriptions, across window, A-board, poster and social. Multi-pair artwork is still in production."
+			artworkLead="Two festive designs each for eye exams and outside prescriptions, across window, A-board, poster and social. Multi pair comes in all four designs at 33% or 50% off additional pairs, with See Now Pay Later alongside."
 			orderTitle="Order the posters"
 			orderNote="Eye exams available and outside prescriptions welcome are already in your Marketing Planner as festive editions. Multi pair is still being set up — the button opens your planner."
 			orderFootText="Two of the three order directly from the planner. If you cannot find multi pair yet, speak to your marketing executive."
@@ -81,7 +81,9 @@ export default function FestiveVolumeDrivers() {
 							<p>
 								Multi pair belongs inside, where the conversation is already
 								happening. A second pair is an easier ask in December than at any
-								other point in the year, because one of them can be a gift.
+								other point in the year, because one of them can be a gift. Put
+								See Now Pay Later beside it, so the price of two pairs is not the
+								reason someone leaves with one.
 							</p>
 						</article>
 					</div>
