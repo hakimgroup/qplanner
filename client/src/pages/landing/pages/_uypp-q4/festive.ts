@@ -79,9 +79,9 @@ export const TOOLKIT_PAGES: ToolkitPage[] = [
 		slug: "festive-volume-drivers",
 		name: "Volume drivers",
 		when: "December – January",
-		blurb: "Festive editions of the posters that fill a quiet diary: eye exams available, outside prescriptions welcome, and multi pair.",
+		blurb: "Festive editions of the posters that fill a quiet diary and grow the dispense: eye exams available, outside prescriptions welcome, multi pair and split payment.",
 		layer: "drivers",
-		count: "3 assets",
+		count: "4 assets",
 		image: "festive-easy-2.jpg",
 	},
 	{
@@ -97,9 +97,10 @@ export const TOOLKIT_PAGES: ToolkitPage[] = [
 		slug: "festive-events",
 		name: "Events",
 		when: "December",
-		blurb: "A reason to come on a particular day. 12 Days of Christmas across the month, or a single late-night VIP evening — both stronger with a brand gift to hand out.",
+		blurb: "A reason to come on a particular day. 12 Days of Christmas across the month, or a single Late Night Shopping evening — both stronger with a brand gift to hand out.",
 		layer: "reasons",
 		count: "2 formats",
+		image: "festive-events-card.jpg",
 	},
 	{
 		slug: "festive-retail-moments",

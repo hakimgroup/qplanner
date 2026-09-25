@@ -110,25 +110,27 @@ export const BRAND_ACTIVATIONS = "brand.activations@hakimgroup.co.uk";
 /**
  * Festive Focus Toolkit destinations, keyed by the route that orders them.
  *
- * Four of these already exist as planner cards, because the toolkit repackages
- * Q4 work rather than creating new campaigns — the festive "eye exams available"
- * and "outside prescriptions" posters are the same cards the evergreen pages
- * order, and the window is the Festive card.
+ * Christmas cards, supplied 25 September 2026. Eye exams available and outside
+ * prescriptions have their own Christmas cards rather than the evergreen ones:
+ * the planner would not let a practice that had already run the evergreen
+ * campaign order it again, so the festive refresh needed a card of its own.
+ * Multi pair and split payment are separate cards, as are the two events.
  *
- * The rest have no card yet. They resolve to the planner itself rather than
+ * Two still have no card. They resolve to the planner itself rather than
  * nowhere: a practice that lands on their own dashboard can still find the
  * activity and raise it, whereas a dead button teaches them the page is broken.
  * Replace each `PLANNER_HOME` below with `planner("<uuid>")` as the cards are
  * created — that is the only edit needed, the pages read from here.
  */
 export const FESTIVE_ORDER = {
-	eyeExams: EYE_EXAMS,
-	outsideRx: OUTSIDE_RX,
+	eyeExams: planner("0dfb6374-ab4b-42a1-b2f5-2dfbc3d34907"),
+	outsideRx: planner("9f20cfee-d467-4776-9ca1-e17903bbe849"),
+	multiPair: planner("1af5586d-0984-4161-8658-d4f21169571b"),
+	splitPayment: planner("94aa3e62-9e9c-4720-9a5b-f6a92b7c36a5"),
+	twelveDays: planner("590e6c74-e9cb-4b50-8688-16f1f48e1225"),
+	lateNightShopping: planner("cc013960-8a64-4e2e-8631-3aa82b17802a"),
 	blackFriday: BLACK_FRIDAY,
 	window: FESTIVE,
-	multiPair: PLANNER_HOME,
-	twelveDays: PLANNER_HOME,
-	lateNightVip: PLANNER_HOME,
 	decemberSale: PLANNER_HOME,
 	merryChristmas: PLANNER_HOME,
 } as const;

@@ -1,15 +1,15 @@
 /**
  * Festive Focus Toolkit — volume drivers.
  *
- * The three assets the brief singles out as the "strong focus on high-performing
+ * The assets the brief singles out as the "strong focus on high-performing
  * volume drivers": festive editions of "eye exams available" and "we accept
- * outside prescriptions", plus multi-pair. Grouped on one page because a practice
- * does not choose between them — they are posters, they cost nothing to run
- * together, and the brief asks for all of them up at once.
+ * outside prescriptions", plus multi-pair — and split payment, added in
+ * September as its own card beside it. Grouped on one page because a practice
+ * does not choose between them: they are posters, they cost nothing to run
+ * together, and the first two bring people in while the last two make the visit
+ * worth more.
  *
- * Two of the three already exist as planner cards: the toolkit repackages Q4 work
- * rather than creating new campaigns, so these order the same cards the evergreen
- * pages order. Multi-pair has no card yet — see FESTIVE_ORDER in links.ts.
+ * All four order from their own Christmas cards — see FESTIVE_ORDER in links.ts.
  */
 import { img } from "../uypp-q4";
 import { FESTIVE_ORDER } from "../links";
@@ -187,10 +187,9 @@ export const FESTIVE_VOLUME_DRIVERS: Campaign = {
 			body: `<p>${WHY_DECEMBER}</p>
 				<p>A second pair is an easier conversation in December than at any other point in the year, because one of them can be a gift. The same visit, the same sight test, a materially larger dispense.</p>
 				<p>It sits naturally on top of the other two: someone who came in because the A-board said appointments were available, or because you accept an outside prescription, is already in the chair.</p>`,
-			note: `<p><strong>Two offers, four designs.</strong> 33% off additional pairs, or 50% off with a minimum spend of £200 — either way the discount applies to the cheapest pair. The designs match the eye exams and outside prescriptions posters, so the whole window reads as one. <strong>See Now Pay Later</strong> is the companion for the dispensing table: interest-free payment options, terms and conditions apply.</p>
-				<p><strong>Still being set up in the Marketing Planner.</strong> The button below opens your planner — search for the multi-pair assets there, or ask marketing and they will add it to your plan.</p>`,
+			note: `<p><strong>Two offers, four designs.</strong> 33% off additional pairs, or 50% off with a minimum spend of £200 — either way the discount applies to the cheapest pair. The designs match the eye exams and outside prescriptions posters, so the whole window reads as one. Pair it with split payment, next door, so the price of two pairs is not the reason someone leaves with one.</p>`,
 			order: {
-				label: "Open your planner",
+				label: "Order in the planner",
 				href: FESTIVE_ORDER.multiPair,
 			},
 			// Supplied 25 September 2026 as "festive-offers". Captions use the same
@@ -241,9 +240,27 @@ export const FESTIVE_VOLUME_DRIVERS: Campaign = {
 						},
 					],
 				},
+			],
+		},
+		{
+			// Supplied 25 September 2026 as its own planner card, and asked for as a
+			// toggle beside Multi Pair rather than a tab inside it. Same four designs.
+			id: "split-payment",
+			name: "Split Payment",
+			accent: "#2F4858",
+			visual: img("festive-offer-tree-pay-later.png"),
+			body: `<p>${WHY_DECEMBER}</p>
+				<p>December is the month when a dispense competes with every other thing on the Christmas list. Splitting the cost into interest-free payments takes that competition away: the decision becomes whether the glasses are right, not whether this is the month to pay for them.</p>
+				<p>It is the natural partner to Multi Pair. A second pair is an easier yes when the total can be spread, and it gives the team a straightforward answer to the patient who likes both frames but hesitates at the till.</p>`,
+			note: `<p><strong>See now, pay later.</strong> One message in the same four festive designs as the rest of the volume drivers: interest-free payment options, available now. Terms and conditions apply, so make sure the team knows the practice's terms before the poster goes up.</p>`,
+			order: {
+				label: "Order in the planner",
+				href: FESTIVE_ORDER.splitPayment,
+			},
+			placements: [
 				{
-					key: "pay-later",
-					label: "See Now Pay Later",
+					key: "poster",
+					label: "Poster",
 					items: [
 						{
 							img: img("festive-offer-fairisle-pay-later.png"),

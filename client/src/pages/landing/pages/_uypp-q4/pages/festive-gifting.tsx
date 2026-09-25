@@ -5,6 +5,7 @@ import { img } from "../uypp-q4";
 import { BRAND_ACTIVATIONS, MARKETING_LINK } from "../links";
 import {
 	ACCESSORIES,
+	ACCESSORY_GALLERY,
 	ACCESSORY_TACTICS,
 	FESTIVE_GIFTING,
 } from "../data/festive-gifting";
@@ -73,6 +74,15 @@ export default function FestiveGifting() {
 									practice.
 								</p>
 							</div>
+						</div>
+
+						<div className="gift-gallery">
+							{ACCESSORY_GALLERY.map((g) => (
+								<figure className="gift-gallery__item reveal" key={g.img}>
+									<img src={g.img} alt={g.cap} loading="lazy" />
+									<figcaption>{g.cap}</figcaption>
+								</figure>
+							))}
 						</div>
 
 						<div className="panels panels--four">

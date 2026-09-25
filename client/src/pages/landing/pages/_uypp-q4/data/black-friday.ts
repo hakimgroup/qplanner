@@ -32,6 +32,12 @@ export const BLACK_FRIDAY: Campaign = {
 						{
 							"img": img("bf-strip.jpg"),
 							"cap": "Poster artwork"
+						},
+						// Added 25 September 2026: a practice's own version, showing the
+						// offer is theirs to set.
+						{
+							"img": img("bf-example-silverberg.jpg"),
+							"cap": "30% off sunglasses — how Silverberg Opticians ran it in 2025"
 						}
 					]
 				},
@@ -42,6 +48,16 @@ export const BLACK_FRIDAY: Campaign = {
 						{
 							"img": img("bf-strip-social.png"),
 							"cap": "Instagram post"
+						}
+					]
+				},
+				{
+					"key": "email",
+					"label": "Email",
+					"items": [
+						{
+							"img": img("bf-strip-email-header.jpg"),
+							"cap": "Email header"
 						}
 					]
 				}

@@ -76,8 +76,20 @@ export const FESTIVE_GIFTING: Campaign = {
 							img: img("festive-easy-3.jpg"),
 							cap: "Gifting front and centre in the window",
 						},
-						{ ph: true, cap: "Accessories display — artwork to come" },
-						{ ph: true, cap: "Stocking filler prompt — artwork to come" },
+						{
+							img: img("festive-accessory-theia-stand.jpg"),
+							cap: "Theia cloths on the counter, where every patient sees them",
+						},
+						{
+							img: img("festive-accessory-theia-bag.jpg"),
+							cap: "A Theia cloth tied on as a bag charm",
+						},
+						{
+							img: img("festive-accessory-coti.jpg"),
+							cap: "COTI chains — bright, modern and practical",
+						},
+						// Promised by the team "as soon as possible", 25 September 2026.
+						{ ph: true, cap: "Gift cards — artwork coming soon" },
 					],
 				},
 				{
@@ -231,6 +243,27 @@ export const ACCESSORIES: { name: string; price?: string; body: string }[] = [
 	{
 		name: "Plano sun",
 		body: "A fantastic gift, but usually a more considered purchase rather than an impulse one. Worth the conversation with anyone browsing, rather than relying on the display to do the work.",
+	},
+];
+
+/**
+ * Lorna's photographs of the accessories, supplied 25 September 2026. Shown at
+ * the top of the accessories section rather than only in the carousel further
+ * down: the team asked for gifting to come forward, and the photos do that
+ * faster than the copy can.
+ */
+export const ACCESSORY_GALLERY: { img: string; cap: string }[] = [
+	{
+		img: img("festive-accessory-coti.jpg"),
+		cap: "COTI chains: bright, modern and practical",
+	},
+	{
+		img: img("festive-accessory-theia-stand.jpg"),
+		cap: "Theia cloths on the counter, where every patient sees them",
+	},
+	{
+		img: img("festive-accessory-theia-bag.jpg"),
+		cap: "Tied on as a bag charm — useful, and a gift in its own right",
 	},
 ];
 

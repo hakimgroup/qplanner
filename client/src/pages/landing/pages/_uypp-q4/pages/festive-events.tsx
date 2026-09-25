@@ -9,7 +9,7 @@ export const meta: LandingPageMeta = {
 	slug: "festive-events",
 	title: "Events — Festive Focus Toolkit",
 	description:
-		"A reason to come on a particular day. 12 Days of Christmas across the month, or a single late-night VIP evening.",
+		"A reason to come on a particular day. 12 Days of Christmas across the month, or a single Late Night Shopping evening.",
 	publishedAt: "2026-09-29",
 	hidden: true,
 };
@@ -42,9 +42,9 @@ export default function FestiveEvents() {
 			]}
 			creativeTitle="Two formats"
 			creativeLead="Twelve days of small reasons, or one evening of a big one. Pick the one your team can actually staff."
-			artworkLead="Artwork is still in production. The placements below show what each format needs."
+			artworkLead="Shown as two practices ran them last year: Norville Opticians' 12 Days and Broadhurst's Late Night Shopping. Your practice name, dates and offers go into the same templates."
 			orderTitle="Add an event to your plan"
-			orderNote="Both formats are still being set up in the Marketing Planner. The buttons open your planner — if you cannot find the event yet, your marketing executive can add it to your plan."
+			orderNote="Both formats are in your Marketing Planner, and each button opens the right one."
 			orderFootText="Events need a date before they need artwork. Pick the date first, then order."
 		>
 			{/* The running order sits after the artwork rather than in the route copy:

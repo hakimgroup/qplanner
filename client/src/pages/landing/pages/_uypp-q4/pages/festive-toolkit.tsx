@@ -288,9 +288,10 @@ export default function FestiveToolkit() {
 									<h3 className="tier__title">Get them through the door</h3>
 									<p>
 										Posters that say you are open, you can see them, and you will
-										take their prescription — then an offer on additional pairs
-										once they are inside. No planning, no lead time. The cheapest
-										volume in the toolkit and the first thing to put up.
+										take their prescription — then an offer on additional pairs,
+										and a way to spread the cost, once they are inside. No planning,
+										no lead time. The cheapest volume in the toolkit and the first
+										thing to put up.
 									</p>
 									<p className="tier__link">
 										<Link to="/landing/festive-volume-drivers">Volume drivers →</Link>
@@ -485,7 +486,7 @@ export default function FestiveToolkit() {
 									<ul className="qlist">
 										<li>
 											<Link to="/landing/festive-events">
-												Your event — 12 Days or late-night VIP
+												Your event — 12 Days or Late Night Shopping
 											</Link>
 										</li>
 										<li>
@@ -526,6 +527,9 @@ export default function FestiveToolkit() {
 										</li>
 										<li>
 											<Link to="/landing/festive-volume-drivers">Multi pair</Link>
+										</li>
+										<li>
+											<Link to="/landing/festive-volume-drivers">Split payment</Link>
 										</li>
 									</ul>
 								</div>

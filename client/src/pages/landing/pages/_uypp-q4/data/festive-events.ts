@@ -98,59 +98,101 @@ export const FESTIVE_EVENTS: Campaign = {
 			id: "twelve-days",
 			name: "12 Days of Christmas",
 			accent: "#9E1F3D",
+			visual: img("festive-12days-poster.jpg"),
 			body: `<p>${WHY_EVENTS}</p>
 				<p>12 Days of Christmas runs a different incentive on each of twelve days, which is what lets it reach across demographics rather than appealing to one group. It builds anticipation — patients come back to see what today's offer is — and it gives you twelve separate reasons to contact them rather than one.</p>
 				<p>Appointments booked during the run tend to convert more strongly and carry a higher average dispense value. Even where someone does not buy on the day, the experience and the styling follow-up do the work later.</p>
 				<p>Twelve days needs twelve things to give away or talk about, which is where the brand gifts with purchase below earn their place — a BOSS phone wallet or a Ted Baker mug is a day's incentive that costs the practice nothing.</p>`,
-			note: `<p><strong>Worth locking your twelve offers in early.</strong> This was the most requested event of 2025, and several practices found it hard to land because the daily offers were not settled in time. Twelve is not many if you start now, and quite a lot come December.</p>`,
+			note: `<p><strong>Worth locking your twelve offers in early.</strong> This was the most requested event of 2025, and several practices found it hard to land because the daily offers were not settled in time. Twelve is not many if you start now, and quite a lot come December.</p>
+				<p><strong>Shown as Norville Opticians ran it in 2025.</strong> The same templates take your practice name and your own twelve offers.</p>`,
 			order: {
-				label: "Open your planner",
+				label: "Order in the planner",
 				href: FESTIVE_ORDER.twelveDays,
 			},
+			// Norville Opticians' 2025 execution, supplied 25 September 2026 as the
+			// worked example. The captions say so, because the offers in it are
+			// theirs — a practice reading this should not take Norville's twelve
+			// as the group's.
 			placements: [
 				{
-					key: "invite",
-					label: "Invitation",
-					items: [{ ph: true, cap: "Email and SMS invitation — artwork to come" }],
+					key: "poster",
+					label: "Poster",
+					items: [
+						{
+							img: img("festive-12days-poster.jpg"),
+							cap: "All twelve offers on one poster — Norville Opticians, 2025",
+						},
+					],
 				},
 				{
-					key: "instore",
-					label: "In practice",
+					key: "email",
+					label: "Email",
 					items: [
-						{ ph: true, cap: "Countdown POS — artwork to come" },
-						{ ph: true, cap: "Daily offer card — artwork to come" },
+						{
+							img: img("festive-12days-email-header.jpg"),
+							cap: "Email header",
+						},
+						{
+							img: img("festive-12days-email.jpg"),
+							cap: "The launch email, listing every day's offer",
+						},
 					],
 				},
 				{
 					key: "social",
 					label: "Social",
-					items: [{ ph: true, cap: "Social posts — artwork to come" }],
+					items: [
+						{
+							img: img("festive-12days-social-day1.jpg"),
+							cap: "Day 1 — the reveal",
+						},
+						{
+							img: img("festive-12days-social-day1-offer.jpg"),
+							cap: "Day 1 — the offer",
+						},
+						{
+							img: img("festive-12days-social-day12.jpg"),
+							cap: "Day 12 — the reveal",
+						},
+						{
+							img: img("festive-12days-social-day12-offer.jpg"),
+							cap: "Day 12 — the offer",
+						},
+					],
 				},
 			],
 		},
 		{
-			id: "late-night-vip",
-			name: "Late-night VIP",
+			// Named for the planner card and the artwork. The brief called it a
+			// "late-night VIP" evening, and the VIP feel is still what the copy sells.
+			id: "late-night-shopping",
+			name: "Late Night Shopping",
 			accent: "#3D305C",
+			visual: img("festive-lns-poster-lytham.jpg"),
 			body: `<p>${WHY_EVENTS}</p>
-				<p>A late-night VIP evening gives the event a premium feel, and appointments booked around it lead to higher conversion and a higher average dispense value. The festive high street is already open late across plenty of other trades, so a later opening is something shoppers are looking for rather than something you have to explain.</p>
+				<p>A late-night shopping evening run with a VIP feel gives the event a premium edge, and appointments booked around it lead to higher conversion and a higher average dispense value. The festive high street is already open late across plenty of other trades, so a later opening is something shoppers are looking for rather than something you have to explain.</p>
 				<p>An exclusive event with a premium look and feel gives shoppers a moment to themselves in a busy month. They may not buy on the night — the experience is what converts at the styling follow-up.</p>
 				<p>It works hardest with something to hand over. A supplier gift with purchase turns a nice evening into a reason to dispense that night, and the brands below are all funding one this December.</p>`,
-			note: `<p><strong>Pair it with something to give away.</strong> A brand gift with purchase and whatever frames offer you are already running give the evening a reason to exist beyond the late opening. Questions: <a href="${MARKETING_LINK}">${MARKETING}</a></p>`,
+			note: `<p><strong>Pair it with something to give away.</strong> A brand gift with purchase and whatever frames offer you are already running give the evening a reason to exist beyond the late opening. Questions: <a href="${MARKETING_LINK}">${MARKETING}</a></p>
+				<p><strong>Shown as Broadhurst Opticians ran it in 2025</strong> — a brand showcase with 20% off sunglasses and accessories on the night. Your date, times and offer go into the same template.</p>`,
 			order: {
-				label: "Open your planner",
-				href: FESTIVE_ORDER.lateNightVip,
+				label: "Order in the planner",
+				href: FESTIVE_ORDER.lateNightShopping,
 			},
 			placements: [
 				{
-					key: "invite",
-					label: "Invitation",
-					items: [{ ph: true, cap: "VIP invitation — artwork to come" }],
-				},
-				{
-					key: "instore",
-					label: "In practice",
-					items: [{ ph: true, cap: "Evening POS — artwork to come" }],
+					key: "poster",
+					label: "Poster",
+					items: [
+						{
+							img: img("festive-lns-poster-lytham.jpg"),
+							cap: "Brand showcase evening — Broadhurst Opticians, Lytham, 2025",
+						},
+						{
+							img: img("festive-lns-poster-preston.jpg"),
+							cap: "The same template at Broadhurst Opticians, Preston",
+						},
+					],
 				},
 			],
 		},

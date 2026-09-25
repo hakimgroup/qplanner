@@ -8,7 +8,7 @@ export const meta: LandingPageMeta = {
 	slug: "festive-volume-drivers",
 	title: "Volume Drivers — Festive Focus Toolkit",
 	description:
-		"Festive editions of the posters that fill a quiet diary: eye exams available, outside prescriptions welcome, and multi pair.",
+		"Festive editions of the posters that fill a quiet diary and grow the dispense: eye exams available, outside prescriptions welcome, multi pair and split payment.",
 	publishedAt: "2026-09-29",
 	thumbnail: img("festive-easy-2.jpg"),
 	// Toolkit sub-pages render at their URL but stay off the /landing index — the
@@ -32,24 +32,24 @@ export default function FestiveVolumeDrivers() {
 			}
 			heroImage={img("festive-easy-2.jpg")}
 			heroAlt="Festive practice window carrying an eye exams available poster"
-			pills={["December – January", "Core KPI · Volume and conversion", "3 assets"]}
+			pills={["December – January", "Core KPI · Volume and conversion", "4 assets"]}
 			hook="The diary is quiet. The high street is not."
 			standfirst="December and January are the two months when footfall and appointments move in opposite directions."
-			body="These three posters exist to close that gap. No clinical language — they simply tell the people already walking past that they can be seen here, that a prescription from elsewhere is welcome, and that a second pair is worth having, with an offer on additional pairs to back it. The cheapest volume in the toolkit, and the first thing to put up."
+			body="These four posters exist to close that gap. No clinical language — they simply tell the people already walking past that they can be seen here and that a prescription from elsewhere is welcome, then make a second pair worth having and the cost easy to spread. The cheapest volume in the toolkit, and the first thing to put up."
 			points={[
-				"Two of the three fill quiet diary slots without discounting",
+				"Two of the four fill quiet diary slots without discounting",
 				"Works on the pavement, where December footfall already is",
 				"Nothing to plan, brief or schedule — they go straight up",
 				"Two are new festive editions of assets you already know",
 				"Runs alongside an event or an offer rather than competing with it",
 				"Catches visiting family, who have no practice of their own nearby",
 			]}
-			creativeTitle="Three assets"
-			creativeLead="Not alternatives. Put all three up — they answer three different reasons someone has for not coming in."
-			artworkLead="Two festive designs each for eye exams and outside prescriptions, across window, A-board, poster and social. Multi pair comes in all four designs at 33% or 50% off additional pairs, with See Now Pay Later alongside."
+			creativeTitle="Four assets"
+			creativeLead="Not alternatives. The first two bring people through the door; the last two turn the visit into a bigger dispense. Put them all up."
+			artworkLead="Two festive designs each for eye exams and outside prescriptions, across window, A-board, poster and social. Multi pair comes in all four designs at 33% or 50% off additional pairs, and split payment in the same four."
 			orderTitle="Order the posters"
-			orderNote="Eye exams available and outside prescriptions welcome are already in your Marketing Planner as festive editions. Multi pair is still being set up — the button opens your planner."
-			orderFootText="Two of the three order directly from the planner. If you cannot find multi pair yet, speak to your marketing executive."
+			orderNote="All four are in your Marketing Planner as Christmas campaigns, and each button opens the right one."
+			orderFootText="Run eye exams available or outside prescriptions earlier in the year? These are separate Christmas campaigns, so you can order the festive editions even if you have run the all-year versions before."
 		>
 			<section className="section">
 				<div className="wrap">
@@ -82,8 +82,8 @@ export default function FestiveVolumeDrivers() {
 								Multi pair belongs inside, where the conversation is already
 								happening. A second pair is an easier ask in December than at any
 								other point in the year, because one of them can be a gift. Put
-								See Now Pay Later beside it, so the price of two pairs is not the
-								reason someone leaves with one.
+								the split payment poster beside it, so the price of two pairs is
+								not the reason someone leaves with one.
 							</p>
 						</article>
 					</div>
