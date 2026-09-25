@@ -46,7 +46,7 @@ export default function FestiveVolumeDrivers() {
 			]}
 			creativeTitle="Three assets"
 			creativeLead="Not alternatives. Put all three up — they answer three different reasons someone has for not coming in."
-			artworkLead="The festive window treatments are shown below. A-board and multi-pair artwork is still in production."
+			artworkLead="Two festive designs each for eye exams and outside prescriptions, across window, A-board, poster and social. Multi-pair artwork is still in production."
 			orderTitle="Order the posters"
 			orderNote="Eye exams available and outside prescriptions welcome are already in your Marketing Planner as festive editions. Multi pair is still being set up — the button opens your planner."
 			orderFootText="Two of the three order directly from the planner. If you cannot find multi pair yet, speak to your marketing executive."

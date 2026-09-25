@@ -50,6 +50,7 @@ export function FestivePage({
 	orderTitle,
 	orderNote,
 	orderFootText,
+	orderCardAction,
 	children,
 }: {
 	id: CampaignId;
@@ -83,6 +84,8 @@ export function FestivePage({
 	orderTitle?: string;
 	orderNote?: ReactNode;
 	orderFootText?: ReactNode;
+	/** See OrderSection's `cardAction`. */
+	orderCardAction?: { label: string; href: string };
 	children?: ReactNode;
 }) {
 	return (
@@ -136,6 +139,7 @@ export function FestivePage({
 				title={orderTitle}
 				note={orderNote}
 				footText={orderFootText}
+				cardAction={orderCardAction}
 			/>
 
 			<ToolkitCrosslinks exclude={slug} />

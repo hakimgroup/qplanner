@@ -45,7 +45,7 @@ export default function FestiveInPractice() {
 			]}
 			creativeTitle="Two activities"
 			creativeLead="One outward-facing, one straight to the patients you already have. Neither takes the place of the other."
-			artworkLead="Window photography is below. The Merry Christmas email artwork is still in production."
+			artworkLead="Window photography and the Seeing is Believing posters are below. The Merry Christmas email artwork is still in production."
 			orderTitle="Add these to your plan"
 			orderNote="Festive posters order straight from the planner. The Merry Christmas HTML is still being set up — the button opens your planner."
 			orderFootText="The window needs lead time and the decor needs ordering. Start this one first."

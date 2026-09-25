@@ -1,7 +1,7 @@
 /**
  * Every ordering button on the Q4 pages, in one component.
  *
- * Three shapes of destination and each behaves differently:
+ * Four shapes of destination and each behaves differently:
  *   - a real destination — a planner deep link (`/dashboard?campaign=…`) or an
  *     external URL — opens in a new tab, so the visitor keeps the campaign page
  *     they were reading. These pages are a browsing surface: someone comparing
@@ -9,6 +9,9 @@
  *     than lose their place and have to navigate back.
  *   - a mailto opens the mail client, and must NOT carry target="_blank" or it
  *     leaves an empty tab behind once the client takes over;
+ *   - an in-page anchor (`#supplier-support`) scrolls this page, so it must not
+ *     carry target="_blank" either — that would open a second copy of the page
+ *     rather than moving down the one the visitor is reading;
  *   - nothing at all renders a button with no href, so it looks right and simply
  *     does nothing. With href="#" it would jump the page to the top, which reads
  *     as broken.
@@ -45,7 +48,7 @@ export function Cta({
 			</a>
 		);
 	}
-	if (isMail(href)) {
+	if (isMail(href) || href.startsWith("#")) {
 		return (
 			<a className={cls} href={href} onClick={onClick}>
 				{children}

@@ -246,6 +246,11 @@
 	   box still squares off with the text beside it. */
 	.route__media img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
 	  padding:clamp(10px,1.4vw,20px); }
+	/* A photograph rather than a deck render: fill the frame edge to edge. The frame is as
+	   tall as the copy beside it, so where the copy runs long a contained landscape image
+	   floated in a tall empty mat — the gifting page, flagged in the team's amends. Cover
+	   crops the sides instead, which a photograph survives and a poster does not. */
+	.route__media--cover img { object-fit:cover; padding:0; }
 	/* The placeholder block brings its own min-height, which would otherwise fight the figure. */
 	.route__media .ph-block { position:absolute; inset:0; min-height:0; }
 	/* Right column stacks so the button can sit on the bottom edge of the image when the copy
@@ -360,6 +365,10 @@
 	.route__media:has(img)::after { color:var(--muted); }
 	.tile:not(.tile--dim):not(.tile--ph):hover::after { text-decoration-color:#fff; }
 	.route__media:has(img):hover::after { text-decoration-color:var(--ink); color:var(--ink); }
+	/* A cover image has no mat — the label sits on the photograph, so it takes the tile
+	   treatment instead: white with a soft shadow. */
+	.route__media--cover:has(img)::after { color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.7); }
+	.route__media--cover:has(img):hover::after { color:#fff; text-decoration-color:#fff; }
 
 	/* ===================== SECTION TYPOGRAPHY ===================== */
 	/* ONE rule for every section-level heading, and one for the copy under it. Before this,
@@ -795,6 +804,22 @@
 	.supplier__how p:last-child { margin-bottom:0; }
 	.supplier__actions { margin-top:clamp(16px,2vw,22px); }
 	.supplier__tbc { margin:0; color:var(--muted); font-size:1.05rem; }
+
+	/* Full — every allocation taken. Dimmed like a TBC row so it reads as unavailable at a
+	   glance, and the button is replaced by a note pointing at the brands still open. */
+	.supplier--closed .supplier__logo img, .supplier--closed .supplier__name { opacity:.55; }
+	.supplier__closed { border-left:3px solid var(--deck); background:var(--tint);
+	  border-radius:0 12px 12px 0; padding:clamp(14px,1.6vw,18px) clamp(16px,2vw,22px);
+	  max-width:70ch; color:#3a3640; }
+	.supplier__closed p { margin:0; }
+	.supplier__closed p + p { margin-top:.6em; }
+
+	/* The activation itself, at the top of the open panel. Landscape and capped in height so a
+	   tall concept render cannot push the detail a full screen down. */
+	.supplier__visual { position:relative; margin:0 0 clamp(16px,2vw,22px); aspect-ratio:16/9;
+	  max-height:420px; border-radius:12px; overflow:hidden; border:1px solid var(--line);
+	  background:var(--tint); }
+	.supplier__visual img { width:100%; height:100%; object-fit:cover; }
 	/* Smaller button tier: these sit inside a row, not at the end of a section. */
 	.btn--sm { font-size:.95rem; padding:10px 20px; }
 

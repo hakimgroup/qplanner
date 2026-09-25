@@ -114,9 +114,9 @@ export const TOOLKIT_PAGES: ToolkitPage[] = [
 		slug: "festive-gifting",
 		name: "Gifting & brand support",
 		when: "December",
-		blurb: "Accessories and stocking fillers front and centre, then supplier-funded gifts with purchase on BOSS, Oakley, Ted Baker and Design Eyewear.",
+		blurb: "Accessories and stocking fillers front and centre, then supplier-funded gifts with purchase on BOSS, Ted Baker and Design Eyewear, and a Face a Face festive window.",
 		layer: "gifting",
-		count: "Accessories + 4 gifts, 4 activations",
+		count: "Accessories + 4 gifts, 3 activations",
 		image: "festive-easy-3.jpg",
 	},
 	{

@@ -13,7 +13,7 @@ export const meta: LandingPageMeta = {
 	slug: "festive-gifting",
 	title: "Gifting & Brand Support — Festive Focus Toolkit",
 	description:
-		"Accessories and stocking fillers front and centre, plus supplier-funded gifts with purchase on BOSS, Oakley, Ted Baker and Design Eyewear.",
+		"Accessories and stocking fillers front and centre, plus supplier-funded gifts with purchase and a Face a Face festive window.",
 	publishedAt: "2026-09-29",
 	thumbnail: img("festive-easy-3.jpg"),
 	hidden: true,
@@ -35,7 +35,7 @@ export default function FestiveGifting() {
 			}
 			heroImage={img("festive-easy-3.jpg")}
 			heroAlt="Festive practice window with wrapped gifts and an eye exams available poster"
-			pills={["December", "Core KPI · Volume and conversion", "Accessories + 8 brands"]}
+			pills={["December", "Core KPI · Volume and conversion", "Accessories + 7 brands"]}
 			hook="Your patients are already shopping for someone else."
 			standfirst="December is the only month of the year when eyewear and accessories are bought as gifts."
 			body="Let's not miss the chance to help them tick a few things off the list while they are in the practice. Accessories are the impulse purchase and the easiest place to start; a supplier gift with purchase is what secures the dispense on top."
@@ -109,10 +109,14 @@ export default function FestiveGifting() {
 			orderTitle="Take up an activation"
 			orderNote="Each supplier collects practice details itself, so these are taken up on the supplier's form rather than through the planner. Open a brand above to see what it includes and how to opt in."
 			orderFootText="Gifting sits on top of a campaign, it does not replace one. Order the campaign in your planner, then opt in alongside it."
+			orderCardAction={{
+				label: "See campaign options above",
+				href: "#supplier-support",
+			}}
 		>
 			{/* Supplier rows, then the caveats. The rows are why anyone scrolled this
 			    far; the allocation rules only matter once a brand has been chosen. */}
-			<SupplierSection lead="Four gifts with purchase and four brand activations, on top of the accessories above. The gifts are finite and allocated first come first served against a qualifying order, so the deadline is real. The activations are training and product support from the rep, with nothing to run out of." />
+			<SupplierSection lead="Four gifts with purchase and three brand activations, on top of the accessories above. The gifts are finite and allocated first come first served against a qualifying order, so the deadline is real — Oakley's has already gone. The activations bring a festive window, or product support and training, from the supplier." />
 
 			<section className="section section--tint">
 				<div className="wrap">
@@ -127,16 +131,19 @@ export default function FestiveGifting() {
 							<p>
 								Every gift-with-purchase programme has a fixed number of sets and a
 								qualifying order behind it. First come, first served, and once the
-								allocation is gone it is gone for the season.
+								allocation is gone it is gone for the season — Oakley&rsquo;s already
+								has.
 							</p>
 						</article>
+						{/* Was "Oakley is by invitation" until Oakley filled up. The sell-in is
+						    the condition most likely to catch a practice out now. */}
 						<article className="panel panel--flag reveal">
-							<h3 className="panel__title">Oakley is by invitation</h3>
+							<h3 className="panel__title">Some need a sell-in</h3>
 							<p>
-								Only selected practices can opt in. If yours is one, an email
-								arrives from <strong>{BRAND_ACTIVATIONS}</strong>. Without it the
-								form cannot be completed, so wait for the email rather than
-								chasing the link.
+								The Face a Face window needs an order of 20 frames. Ordered
+								recently? Opt in anyway — it is at your Design Eyewear Group
+								rep&rsquo;s discretion. Silhouette&rsquo;s sign-up links arrive by
+								email from <strong>{BRAND_ACTIVATIONS}</strong>.
 							</p>
 						</article>
 						<article className="panel panel--flag reveal">

@@ -33,6 +33,17 @@ export interface Route {
 	/** HTML string — the route's own copy, straight from the creative deck. */
 	body?: string;
 	visual?: string;
+	/**
+	 * How the visual sits in its frame. The frame is as tall as the copy beside
+	 * it, so a landscape visual next to long copy floats in a tall empty mat.
+	 * `contain` (the default) is right for deck renders, where cropping would
+	 * slice the posters; "cover" fills the frame and suits a photograph that can
+	 * lose its edges. The full image is always one click away in the lightbox.
+	 */
+	visualFit?: "contain" | "cover";
+	/** Where a "cover" crop is anchored, as CSS object-position. Centred by default;
+	 *  set it where the subject sits off-centre and the crop would cut through it. */
+	visualPosition?: string;
 	/** Drives the --route custom property on the page. */
 	accent?: string;
 	/** Retained but not rendered — the placement carousel already lists everything. */
@@ -75,14 +86,38 @@ export interface Brand {
 	offer?: string;
 	/** Groups the list where there are enough add-ons to need it. */
 	group?: string;
-	/** "tbc" dims the row and renders no button — there is nothing to take up. */
-	status?: "tbc";
+	/**
+	 * "tbc" dims the row: details are still to come, so the panel says so and
+	 * offers a conversation with marketing instead.
+	 *
+	 * "closed" means the activation has run out — every allocation is taken. The
+	 * row stays, so a practice looking for the brand learns it is full rather than
+	 * wondering where it went, but it renders no button: a sign-up form for
+	 * something with no places left only produces disappointed practices.
+	 */
+	status?: "tbc" | "closed";
+	/** HTML string. The message a closed row shows in place of its button. */
+	closedNote?: string;
 	/** HTML string. */
 	body?: string;
+	/** HTML string. What the practice has to order to qualify, where that is a
+	 *  condition of taking part rather than a detail of the offer. */
+	requirement?: string;
 	gives?: string[];
 	products?: string[];
 	/** HTML string. */
 	howto?: string;
+	/**
+	 * Button wording, where the supplier's own wording has been asked for.
+	 *
+	 * Otherwise derived from the destination — "Fill in form" for a supplier form,
+	 * "Contact marketing" for everything else — which is the rule across every
+	 * brand on every page. Override sparingly, or the rule stops meaning anything.
+	 */
+	actionLabel?: string;
+	/** The activation itself, shown at the top of the open panel. A placeholder
+	 *  tile where the imagery exists but has not reached the site yet. */
+	visual?: Tile;
 }
 
 export interface Campaign {

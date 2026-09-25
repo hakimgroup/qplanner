@@ -9,8 +9,9 @@
  *   first served against a qualifying order. These have forms and deadlines, and
  *   missing one means missing it entirely.
  *
- *   Brand activations — training, product support and point of sale from the rep.
- *   Nothing runs out, so there is no rush, and most are still being confirmed.
+ *   Brand activations — a supplier campaign run in the practice: Face a Face's
+ *   festive window kit, Thea's party-season dry eye support. Some carry a sell-in
+ *   requirement, and each is opted into on the supplier's own form.
  *
  * The four confirmed gift-with-purchase programmes are the same ones Festive
  * Windows carries. They are reached from both places on purpose: a practice
@@ -26,14 +27,38 @@ import type { Campaign } from "../types";
 const GWP_CASE =
 	"<p>A free gift with the frames is a straightforward way to secure the dispense, and it can lift a lower-spend dispense into a more premium range. Run it from late November through December, when customers are already prioritising spend towards Christmas.</p><p>Display the gifts beside the relevant frames, and brief the team to offer it — including the suggestion that it saves the customer buying a gift for someone else.</p>";
 
+/**
+ * Oakley reached capacity on 25 September 2026. The team's wording, used on every
+ * page that carries the Oakley row — gifting, events and Q4 Festive Windows all
+ * offered the same form, and a full programme is full wherever it is reached from.
+ * Spread into each row so the three cannot say different things.
+ */
+export const OAKLEY_CLOSED = {
+	status: "closed" as const,
+	offer: "Now at capacity — see the other gifting brands",
+	closedNote:
+		"<p>This brand activation is now at capacity. Please look at our other highlighted brand suppliers if you would like to do this gifting campaign.</p>",
+};
+
 export const FESTIVE_GIFTING: Campaign = {
-	orderLabel: "Add gifting to your plan",
+	// Only the supplier-rows footer uses this now — the route sends visitors down
+	// to the supplier rows instead. "Add gifting to your plan" promised a planner
+	// card that does not exist: gifting is taken up on each supplier's form.
+	orderLabel: "Open the Marketing Planner",
 	routes: [
 		{
 			id: "gifting",
 			name: "Gifting & gifts with purchase",
 			accent: "#A8802B",
-			visual: img("festive-easy-3.jpg"),
+			// Frames presented as gifts, from the "jump" window concept, cropped to a
+			// portrait. The landscape window shot this replaced sat in a tall empty
+			// frame beside the long copy — see Route.visualFit.
+			visual: img("festive-gifting-frames.jpg"),
+			visualFit: "cover",
+			order: {
+				label: "See campaign options below",
+				href: "#supplier-support",
+			},
 			body: `<p>December is the one month of the year when eyewear and accessories are bought for other people. Patients walk in already in a gifting mindset — the opportunity is to inspire them to tick a few stocking fillers off the list while they are with you.</p>
 				<p>Two different purchases sit inside that. <strong>Accessories are the impulse buy</strong>: seen on the way past the till, picked up without much deliberation, and the easiest incremental revenue in the toolkit. <strong>Plano sun is the considered one</strong> — a fantastic gift, but a decision rather than a reflex, so it needs the conversation.</p>
 				<p>On top of both, four suppliers are funding gifts with purchase this season. Each is capped, each is first come first served, and each needs a form.</p>`,
@@ -43,6 +68,10 @@ export const FESTIVE_GIFTING: Campaign = {
 					key: "instore",
 					label: "In practice",
 					items: [
+						{
+							img: img("festive-gifting-frames.jpg"),
+							cap: "Frames presented as gifts",
+						},
 						{
 							img: img("festive-easy-3.jpg"),
 							cap: "Gifting front and centre in the window",
@@ -69,6 +98,9 @@ export const FESTIVE_GIFTING: Campaign = {
 			logo: img("logo-boss.png"),
 			group: "Gift with purchase",
 			offer: "Five branded magnetic phone wallets to give away with BOSS frames",
+			// Imagery for every gift with purchase sits in the Growth team's
+			// "11 Christmas Gifting" folder on SharePoint, not yet on the site.
+			visual: { ph: true, cap: "BOSS gift with purchase — images to come" },
 			body: GWP_CASE,
 			gives: ["Five BOSS branded magnetic phone wallets per qualifying practice"],
 			products: ["BOSS frames"],
@@ -79,11 +111,7 @@ export const FESTIVE_GIFTING: Campaign = {
 			name: "Oakley",
 			logo: img("logo-oakley.png"),
 			group: "Gift with purchase",
-			offer: "Ten Oakley baseball caps to give away with Oakley frames",
-			body: GWP_CASE,
-			gives: ["Ten Oakley baseball caps per selected practice"],
-			products: ["Oakley frames"],
-			howto: `<p><strong>Selected practices only.</strong> If your practice has been chosen, an email will arrive from <strong>${BRAND_ACTIVATIONS}</strong>. Opt in below once you have it — practices that have not been selected cannot opt in.</p><p>Artwork is still to come from Luxottica.</p>`,
+			...OAKLEY_CLOSED,
 		},
 		{
 			id: "ted-baker",
@@ -91,6 +119,7 @@ export const FESTIVE_GIFTING: Campaign = {
 			logo: img("logo-ted-baker.png"),
 			group: "Gift with purchase",
 			offer: "Ten branded re-usable coffee mugs to give away with Ted Baker frames",
+			visual: { ph: true, cap: "Ted Baker gift with purchase — images to come" },
 			body: GWP_CASE,
 			gives: ["Ten Ted Baker branded re-useable coffee mugs per qualifying practice"],
 			products: ["Ted Baker frames"],
@@ -102,6 +131,7 @@ export const FESTIVE_GIFTING: Campaign = {
 			logo: img("logo-prodesign.png"),
 			group: "Gift with purchase",
 			offer: "A free sunglass with every optical frame purchase, on Prodesign and Face a Face",
+			visual: { ph: true, cap: "Prodesign and Face a Face gifts — images to come" },
 			body: "<p>Display the sunglasses, or a clearly branded &ldquo;free sunglass with every purchase&rdquo; message, beside the relevant frames.</p><p><strong>Still to be confirmed:</strong> whether Design Eyewear supply the strut cards carrying that message. The rest of the activation is confirmed and can be taken up now.</p>",
 			gives: [
 				"Prodesign: 10 sunglasses with any order over 20 pieces &mdash; max 25 practices, first come first served",
@@ -110,6 +140,31 @@ export const FESTIVE_GIFTING: Campaign = {
 			],
 			products: ["Prodesign", "Face a Face"],
 			howto: "<p>Opt in to one or both campaigns using the form below.</p>",
+		},
+		{
+			// Added in the team's amends, 25 September 2026. A window campaign
+			// rather than a gift with purchase, so it sits with the activations —
+			// though it is separate from the Face a Face Polaroid gift in the
+			// Design Eyewear row above, and a practice can do both.
+			id: "face-a-face",
+			name: "Face a Face",
+			logo: img("logo-face-a-face.png"),
+			group: "Brand activations",
+			offer: "Nights in Colour — a branded festive window, with a 20-frame sell-in",
+			// Only the second option in the concept pack, "Nights in Colour" with
+			// the gift boxes. The pack is on SharePoint and not yet on the site.
+			visual: { ph: true, cap: "Nights in Colour window — images to come" },
+			body: "<p>Celebrate the festive and party season with a branded window campaign from Face a Face! Highlighting their Nights in Colour campaign, we&rsquo;ve worked with the team to create a dedicated window across the festive season.</p>",
+			requirement: "<p>20 pieces of Face a Face frames. If you have recently purchased an order, still opt in your interest and this will be at your Design Eyewear Group rep&rsquo;s discretion.</p>",
+			gives: [
+				"2 &times; window banners",
+				"2 &times; double-sided show cards",
+				"Window vinyl with the Face a Face logo",
+				"Display stand",
+				"Branded gift boxes",
+			],
+			howto: "<p>To register your interest, please opt in by filling out the form below. To get a head start, you can also book in a visit from your rep to secure your 20 frames too!</p>",
+			actionLabel: "Opt in here",
 		},
 		{
 			id: "thea",
@@ -130,23 +185,9 @@ export const FESTIVE_GIFTING: Campaign = {
 				"Blephasol micellar solution",
 				"Blephaderm eyelid and eye contour cream",
 			],
-			howto: "<p>Speak to your Thea rep for product information and team training. There is no sign-up form for this one — contact marketing below and they will put you in touch.</p><p><strong>Still in development:</strong> the supporting video links and HelpHub page are not live yet.</p>",
-		},
-		{
-			id: "alcon",
-			name: "Alcon",
-			logo: img("logo-alcon.png"),
-			group: "Brand activations",
-			status: "tbc",
-			offer: "Festive activation still to be confirmed",
-		},
-		{
-			id: "bausch-lomb",
-			name: "Bausch + Lomb",
-			logo: img("logo-bausch-lomb.png"),
-			group: "Brand activations",
-			status: "tbc",
-			offer: "Festive activation still to be confirmed",
+			howto: "<p>Opt in using the form below. Your Thea rep will then be in touch with product information and training for the team.</p><p><strong>Still in development:</strong> the supporting video links and HelpHub page are not live yet.</p>",
+			// The team's wording for this button, in the 25 September amends.
+			actionLabel: "Opt in here",
 		},
 		{
 			id: "silhouette",
@@ -154,8 +195,11 @@ export const FESTIVE_GIFTING: Campaign = {
 			logo: img("logo-silhouette.png"),
 			group: "Brand activations",
 			status: "tbc",
-			offer: "Festive activation still to be confirmed",
+			offer: "Festive activation — visuals and sign-up links coming soon",
+			body: `<p>Visuals of this activation are currently being worked on and will be available to view in the coming weeks. An email from <strong>${BRAND_ACTIVATIONS}</strong> will come to your inbox with this information along with the sign-up links.</p>`,
 		},
+		// Alcon and Bausch + Lomb were removed in the 25 September amends: neither
+		// has been confirmed as happening this year.
 	],
 };
 

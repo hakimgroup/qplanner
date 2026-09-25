@@ -6,6 +6,7 @@
 import { img } from "../uypp-q4";
 import type { Campaign } from "../types";
 import { FESTIVE_INSPIRATION } from "../links";
+import { OAKLEY_CLOSED } from "./festive-gifting";
 
 export const FESTIVE: Campaign = {
 	"orderLabel": "Order Festive posters",
@@ -31,6 +32,20 @@ export const FESTIVE: Campaign = {
 					"key": "posters",
 					"label": "Festive posters",
 					"items": [
+						// Window mock-ups, added with the updated artwork of 25 September
+						// 2026 — the posters in situ, ahead of the flat artwork.
+						{
+							"img": img("festive-posters-window.jpg"),
+							"cap": "Both posters, side by side in the window"
+						},
+						{
+							"img": img("festive-poster-sleigh-window.jpg"),
+							"cap": "Seeing is Believing in the window"
+						},
+						{
+							"img": img("festive-poster-cookies-window.jpg"),
+							"cap": "Even Santa needs a clear view, in the window"
+						},
 						{
 							"img": img("festive-poster-sleigh.jpg"),
 							"cap": "Seeing is Believing — A4 poster"
@@ -68,6 +83,20 @@ export const FESTIVE: Campaign = {
 					"key": "posters",
 					"label": "Festive posters",
 					"items": [
+						// Window mock-ups, added with the updated artwork of 25 September
+						// 2026 — the posters in situ, ahead of the flat artwork.
+						{
+							"img": img("festive-posters-window.jpg"),
+							"cap": "Both posters, side by side in the window"
+						},
+						{
+							"img": img("festive-poster-sleigh-window.jpg"),
+							"cap": "Seeing is Believing in the window"
+						},
+						{
+							"img": img("festive-poster-cookies-window.jpg"),
+							"cap": "Even Santa needs a clear view, in the window"
+						},
 						{
 							"img": img("festive-poster-sleigh.jpg"),
 							"cap": "Seeing is Believing — A4 poster"
@@ -110,15 +139,9 @@ export const FESTIVE: Campaign = {
 			"name": "Oakley",
 			"logo": img("logo-oakley.png"),
 			"group": "Gift with purchase",
-			"offer": "Ten Oakley baseball caps to give away with Oakley frames",
-			"body": "<p>Same mechanic as the other gift-with-purchase activations: run it from late November through December, display the caps beside the Oakley frames, and brief the team to use it to secure the dispense.</p>",
-			"gives": [
-				"Ten Oakley baseball caps per selected practice"
-			],
-			"products": [
-				"Oakley frames"
-			],
-			"howto": "<p>Only selected practices can successfully opt in. You will have received an email from <strong>brand.activations@hakimgroup.co.uk</strong> if you have been pre-selected. If you have received this email, please sign up below.</p><p>For any queries please email the brand activations inbox.</p><p>Artwork for this one is still to come from Luxottica.</p>"
+			// Full from 25 September 2026 — the same form the Festive Focus Toolkit
+			// offers, so the same capacity note. See OAKLEY_CLOSED.
+			...OAKLEY_CLOSED
 		},
 		{
 			"id": "ted-baker",

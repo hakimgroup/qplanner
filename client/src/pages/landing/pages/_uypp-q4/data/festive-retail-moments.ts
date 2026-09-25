@@ -22,6 +22,7 @@ export const FESTIVE_RETAIL_MOMENTS: Campaign = {
 			name: "Black Friday",
 			accent: "#15131A",
 			visual: img("bf-strip-window-situ.jpg"),
+			visualFit: "cover",
 			body: `<p>Black Friday is the biggest retail moment of the year and patients are actively looking for value. The campaign positions the practice to capture that demand and encourages people to act now rather than delay a purchase they were going to make anyway.</p>
 				<p>Clear, time-limited messaging creates the urgency. It is also the easiest month to showcase frame ranges, sunglasses and lens upgrades, which is where the average transaction value comes from.</p>
 				<p>The mechanic is yours. Discontinued frames to clear, a multi-pair offer, a lens upgrade — Black Friday is the lever, the promotion behind it is a local decision.</p>`,

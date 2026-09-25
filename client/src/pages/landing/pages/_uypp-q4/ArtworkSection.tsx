@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useCampaign } from "./CampaignShell";
 import { campaignLink } from "./links";
 import { Cta } from "./Cta";
+import { Lightbox } from "./Lightbox";
 import { isPlaceholder } from "./types";
 import type { Placement, Tile } from "./types";
 
@@ -36,19 +37,6 @@ export function ArtworkSection({
 		setCurrent(0);
 		if (track.current) track.current.scrollLeft = 0;
 	}, [active.id]);
-
-	// Escape closes the lightbox, and the page behind it must not scroll while open.
-	useEffect(() => {
-		if (!lightbox) return;
-		const onKey = (e: KeyboardEvent) => e.key === "Escape" && setLightbox(null);
-		document.addEventListener("keydown", onKey);
-		const prev = document.body.style.overflow;
-		document.body.style.overflow = "hidden";
-		return () => {
-			document.removeEventListener("keydown", onKey);
-			document.body.style.overflow = prev;
-		};
-	}, [lightbox]);
 
 	if (!placements.length) return null;
 
@@ -169,25 +157,7 @@ export function ArtworkSection({
 			</div>
 
 			{lightbox ? (
-				<div
-					className="lb is-open"
-					role="dialog"
-					aria-modal="true"
-					aria-label="Artwork, full size"
-					onClick={(e) => {
-						if (e.target === e.currentTarget) setLightbox(null);
-					}}
-				>
-					<button className="lb__close" type="button" aria-label="Close" onClick={() => setLightbox(null)}>
-						×
-					</button>
-					<figure className="lb__figure">
-						<div className="lb__media">
-							<img src={lightbox.src} alt={lightbox.cap} />
-						</div>
-						<p className="lb__cap">{lightbox.cap}</p>
-					</figure>
-				</div>
+				<Lightbox src={lightbox.src} cap={lightbox.cap} onClose={() => setLightbox(null)} />
 			) : null}
 		</section>
 	);

@@ -5,9 +5,11 @@
  * deliberately not rendered: it only ever held "Route 01" and the like, which the
  * route name already says.
  */
+import { useState } from "react";
 import { useCampaign } from "./CampaignShell";
 import { campaignLink } from "./links";
 import { Cta } from "./Cta";
+import { Lightbox } from "./Lightbox";
 
 export function CreativeSection({
 	title = "Three creative directions",
@@ -17,6 +19,7 @@ export function CreativeSection({
 	lead?: React.ReactNode;
 }) {
 	const { routes, active, setActive, id, multi, orderLabel } = useCampaign();
+	const [zoomed, setZoomed] = useState(false);
 
 	return (
 		<section className="section section--tint" id="creative">
@@ -46,9 +49,24 @@ export function CreativeSection({
 				) : null}
 
 				<div className="route" id="routePanel">
-					<figure className="route__media">
+					<figure
+						className={`route__media${
+							active.visualFit === "cover" ? " route__media--cover" : ""
+						}`}
+					>
 						{active.visual ? (
-							<img src={active.visual} alt={`${active.name} creative route`} />
+							// The CSS has labelled this "Click to enlarge" since Q4 launched;
+							// this is the click it was promising.
+							<img
+								src={active.visual}
+								alt={`${active.name} creative route`}
+								style={
+									active.visualPosition
+										? { objectPosition: active.visualPosition }
+										: undefined
+								}
+								onClick={() => setZoomed(true)}
+							/>
 						) : (
 							<div className="ph-block">
 								<span>Creative to come</span>
@@ -78,6 +96,14 @@ export function CreativeSection({
 					</div>
 				</div>
 			</div>
+
+			{zoomed && active.visual ? (
+				<Lightbox
+					src={active.visual}
+					cap={active.name}
+					onClose={() => setZoomed(false)}
+				/>
+			) : null}
 		</section>
 	);
 }

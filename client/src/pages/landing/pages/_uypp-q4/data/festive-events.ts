@@ -14,6 +14,7 @@
 import { img } from "../uypp-q4";
 import { FESTIVE_ORDER, MARKETING, MARKETING_LINK } from "../links";
 import type { Brand, Campaign } from "../types";
+import { OAKLEY_CLOSED } from "./festive-gifting";
 
 /** The case for running any event at all, shared by both routes. */
 const WHY_EVENTS =
@@ -58,11 +59,8 @@ const EVENT_BRANDS: Brand[] = [
 		name: "Oakley",
 		logo: img("logo-oakley.png"),
 		group: "Gifts to hand out on the night",
-		offer: "Ten Oakley baseball caps, with Oakley frames",
-		body: EVENT_GWP_CASE,
-		gives: ["Ten Oakley baseball caps per selected practice"],
-		products: ["Oakley frames"],
-		howto: "<p>Selected practices only — you will have had an email if yours is one. Opt in below.</p>",
+		// Full — same programme, same form as the gifting page. See OAKLEY_CLOSED.
+		...OAKLEY_CLOSED,
 	},
 	{
 		id: "ted-baker",

@@ -175,6 +175,8 @@ const BRANDS: Record<CampaignId, Record<string, string>> = {
 		// practice's details for that supplier directly, so these are real
 		// destinations rather than a request to marketing.
 		boss: "https://form.jotform.com/262382567372363",
+		// At capacity from 25 September 2026: the row is marked `status: "closed"`
+		// in the data and renders no button. Kept so reopening is a one-line change.
 		oakley: "https://form.jotform.com/262382059840359",
 		"ted-baker": "https://form.jotform.com/262371538489065",
 		"design-eyewear": "https://form.jotform.com/262382412556356",
@@ -194,6 +196,8 @@ const BRANDS: Record<CampaignId, Record<string, string>> = {
 		// so a practice planning one should be able to opt in from here rather than
 		// being sent somewhere else to find the link.
 		boss: "https://form.jotform.com/262382567372363",
+		// At capacity from 25 September 2026: the row is marked `status: "closed"`
+		// in the data and renders no button. Kept so reopening is a one-line change.
 		oakley: "https://form.jotform.com/262382059840359",
 		"ted-baker": "https://form.jotform.com/262371538489065",
 		"design-eyewear": "https://form.jotform.com/262382412556356",
@@ -207,15 +211,21 @@ const BRANDS: Record<CampaignId, Record<string, string>> = {
 		// aliased: if one campaign's form changes, the other should not change with
 		// it silently.
 		boss: "https://form.jotform.com/262382567372363",
+		// At capacity from 25 September 2026: the row is marked `status: "closed"`
+		// in the data and renders no button. Kept so reopening is a one-line change.
 		oakley: "https://form.jotform.com/262382059840359",
 		"ted-baker": "https://form.jotform.com/262371538489065",
 		"design-eyewear": "https://form.jotform.com/262382412556356",
-		// Brand activations rather than gifts with purchase: training and product
-		// support run through the rep, so these are conversations, not sign-ups.
-		thea: ask("Thea brand support - Festive Focus Toolkit"),
-		alcon: ask("Alcon brand activation - Festive Focus Toolkit"),
-		"bausch-lomb": ask("Bausch + Lomb brand activation - Festive Focus Toolkit"),
+		// Brand activations. Thea and Face a Face now run their own opt-in forms,
+		// supplied in the team's amends of 25 September 2026. Silhouette has no
+		// sign-up yet — the links arrive by email from brand activations — so it
+		// stays a conversation with marketing until then.
+		thea: "https://form.jotform.com/262642200459352",
+		"face-a-face": "https://form.jotform.com/262642268262358",
 		silhouette: ask("Silhouette brand activation - Festive Focus Toolkit"),
+		// Alcon and Bausch + Lomb were removed in the same amends: neither has been
+		// confirmed as happening. Taken out of the data rather than left as `tbc`,
+		// matching how Festive Windows handled its unconfirmed brands.
 	},
 };
 

@@ -28,10 +28,11 @@ export const FESTIVE_VOLUME_DRIVERS: Campaign = {
 			name: "Eye Exams Available",
 			accent: "#9E1F3D",
 			visual: img("festive-easy-2.jpg"),
+			visualFit: "cover",
 			body: `<p>${WHY_DECEMBER}</p>
 				<p>The simplest message a practice can put on the pavement, in a festive edition. No offer, no clinical language — just an open door and appointments available today. It fills quiet diary slots without ever reaching for a discount, and it works hardest in exactly the weeks the diary looks lightest.</p>
 				<p>Alongside well-executed offers and brand activations, it supports conversion as well as volume: it brings both new and existing patients in while the high street is already busy.</p>`,
-			note: `<p><strong>Put it where the footfall is.</strong> An A-board outside and a poster in the window or inside the practice. This is a new festive design, not the all-year version.</p>`,
+			note: `<p><strong>Two festive designs to choose from:</strong> a red cross-stitch that reads like a Christmas jumper, or a quieter gold star on a dark ground. Put an A-board outside and a poster in the window or inside the practice.</p>`,
 			order: {
 				label: "Order in the planner",
 				href: FESTIVE_ORDER.eyeExams,
@@ -43,18 +44,63 @@ export const FESTIVE_VOLUME_DRIVERS: Campaign = {
 					items: [
 						{
 							img: img("festive-easy-2.jpg"),
-							cap: "Festive window, eye exams available",
+							cap: "Star design in a full festive window",
 						},
 						{
 							img: img("festive-easy-3.jpg"),
-							cap: "Dot-matrix treatment, with gifting alongside",
+							cap: "Cross-stitch design, with gifting alongside",
+						},
+						{
+							img: img("festive-eye-exams-stitch-window.jpg"),
+							cap: "Cross-stitch poster in the window",
+						},
+						{
+							img: img("festive-eye-exams-star-window.jpg"),
+							cap: "Star poster in the window",
 						},
 					],
 				},
 				{
 					key: "aboard",
 					label: "A-board",
-					items: [{ ph: true, cap: "Festive A-board — artwork to come" }],
+					items: [
+						{
+							img: img("festive-eye-exams-stitch-aboard.jpg"),
+							cap: "Cross-stitch A-board",
+						},
+						{
+							img: img("festive-eye-exams-star-aboard.jpg"),
+							cap: "Star A-board",
+						},
+					],
+				},
+				{
+					key: "poster",
+					label: "Poster",
+					items: [
+						{
+							img: img("festive-eye-exams-stitch-poster.jpg"),
+							cap: "Cross-stitch poster artwork",
+						},
+						{
+							img: img("festive-eye-exams-star-poster.jpg"),
+							cap: "Star poster artwork",
+						},
+					],
+				},
+				{
+					key: "social",
+					label: "Social",
+					items: [
+						{
+							img: img("festive-eye-exams-stitch-social.jpg"),
+							cap: "Cross-stitch social post",
+						},
+						{
+							img: img("festive-eye-exams-star-social.jpg"),
+							cap: "Star social post",
+						},
+					],
 				},
 			],
 		},
@@ -62,24 +108,72 @@ export const FESTIVE_VOLUME_DRIVERS: Campaign = {
 			id: "outside-rx",
 			name: "Outside Prescriptions Welcome",
 			accent: "#2F5D45",
+			visual: img("festive-outside-rx-red-window.jpg"),
+			visualFit: "cover",
 			body: `<p>${WHY_DECEMBER}</p>
 				<p>This one converts rather than recruits. It tells high-street shoppers that a prescription from somewhere else is welcome here, which catches last-minute needs for new glasses or lenses — including visiting family, who are in town for a fortnight and have nowhere else to go.</p>
 				<p>It works well alongside whatever promotion is already live in the practice, and it is easy to add accessories, sunglasses and sports eyewear onto the dispense, which lifts ADV through the gifting period.</p>`,
-			note: `<p><strong>Your prescription, our frames.</strong> A new festive edition of the always-on asset, so it can go straight up alongside the rest of the toolkit.</p>`,
+			note: `<p><strong>Two festive designs to choose from:</strong> a red poster with a Santa-coat trim that says it plainly, or &ldquo;Your prescription. Our frames.&rdquo; for practices that want the frames to do the talking.</p>`,
 			order: {
 				label: "Order in the planner",
 				href: FESTIVE_ORDER.outsideRx,
 			},
 			placements: [
 				{
+					key: "window",
+					label: "Window",
+					items: [
+						{
+							img: img("festive-outside-rx-red-window.jpg"),
+							cap: "Red design in the window",
+						},
+						{
+							img: img("festive-outside-rx-frames-window.jpg"),
+							cap: "\u201cYour prescription. Our frames.\u201d in the window",
+						},
+					],
+				},
+				{
 					key: "aboard",
 					label: "A-board",
-					items: [{ ph: true, cap: "Festive A-board — artwork to come" }],
+					items: [
+						{
+							img: img("festive-outside-rx-red-aboard.jpg"),
+							cap: "Red A-board",
+						},
+						{
+							img: img("festive-outside-rx-frames-aboard.jpg"),
+							cap: "Frames A-board",
+						},
+					],
 				},
 				{
 					key: "poster",
 					label: "Poster",
-					items: [{ ph: true, cap: "Window poster — artwork to come" }],
+					items: [
+						{
+							img: img("festive-outside-rx-red-poster.jpg"),
+							cap: "Red poster artwork",
+						},
+						{
+							img: img("festive-outside-rx-frames-poster.jpg"),
+							cap: "Frames poster artwork",
+						},
+					],
+				},
+				{
+					key: "social",
+					label: "Social",
+					items: [
+						{
+							img: img("festive-outside-rx-red-social.jpg"),
+							cap: "Red social post",
+						},
+						{
+							img: img("festive-outside-rx-frames-social.jpg"),
+							cap: "Frames social post",
+						},
+					],
 				},
 			],
 		},

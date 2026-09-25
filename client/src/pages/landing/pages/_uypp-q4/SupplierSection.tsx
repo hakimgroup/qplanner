@@ -17,6 +17,7 @@ import { useLocation } from "react-router-dom";
 import { useCampaign } from "./CampaignShell";
 import { brandLink, campaignLink, isForm } from "./links";
 import { Cta } from "./Cta";
+import { isPlaceholder } from "./types";
 import type { Brand } from "./types";
 
 export function SupplierSection({
@@ -90,17 +91,20 @@ export function SupplierSection({
 								{g.items.map((b) => {
 									const isOpen = !!open[b.id];
 									const tbc = b.status === "tbc";
+									const closed = b.status === "closed";
 									const href = brandLink(id, b.id);
 									// One rule for every brand on every campaign: a supplier form
 									// is filled in, anything else is a conversation with marketing.
 									// Derived rather than stored per brand, so the two cannot drift
-									// apart as brands are added.
-									const label = isForm(href) ? "Fill in form" : "Contact marketing";
+									// apart as brands are added. `actionLabel` exists for the few
+									// places the team has asked for the supplier's own wording.
+									const label =
+										b.actionLabel ?? (isForm(href) ? "Fill in form" : "Contact marketing");
 									return (
 										<article
 											className={`supplier${tbc ? " supplier--tbc" : ""}${
-												targeted === b.id ? " supplier--targeted" : ""
-											}`}
+												closed ? " supplier--closed" : ""
+											}${targeted === b.id ? " supplier--targeted" : ""}`}
 											id={`brand-${b.id}`}
 											key={b.id}
 										>
@@ -120,12 +124,34 @@ export function SupplierSection({
 														<span className="supplier__offer">{b.offer ?? ""}</span>
 													</span>
 													{tbc ? <span className="supplier__chip">TBC</span> : null}
+													{closed ? (
+														<span className="supplier__chip">At capacity</span>
+													) : null}
 													<span className="supplier__chev" aria-hidden="true" />
 												</button>
 											</h3>
 											<div className="supplier__panel" id={`brandpanel-${b.id}`} hidden={!isOpen}>
 												<div className="supplier__panel-in">
+													{b.visual ? (
+														isPlaceholder(b.visual) ? (
+															<figure className="supplier__visual">
+																<span className="ph-block ph-block--fill">
+																	<span>{b.visual.cap ?? "Images to come"}</span>
+																</span>
+															</figure>
+														) : (
+															<figure className="supplier__visual">
+																<img src={b.visual.img} alt={b.visual.cap} loading="lazy" />
+															</figure>
+														)
+													) : null}
 													{b.body ? <div dangerouslySetInnerHTML={{ __html: b.body }} /> : null}
+													{b.requirement ? (
+														<div className="supplier__how">
+															<h4 className="supplier__coltitle">Sell-in requirement</h4>
+															<div dangerouslySetInnerHTML={{ __html: b.requirement }} />
+														</div>
+													) : null}
 													{b.gives?.length || b.products?.length ? (
 														<div className="supplier__cols">
 															{b.gives?.length ? (
@@ -157,17 +183,35 @@ export function SupplierSection({
 														</div>
 													) : null}
 													<div className="supplier__actions">
-														{/* A "to be confirmed" brand still gets a button. The
-														    detail is missing, not the interest — and marketing
-														    is exactly who can say more. */}
-														{tbc ? (
-															<p className="supplier__tbc">
-																Details still to be confirmed by the supplier.
-															</p>
-														) : null}
-														<Cta href={href} className="btn--sm">
-															{label}
-														</Cta>
+														{closed ? (
+															/* No button at all. Every allocation is taken, so a
+															   form would only collect sign-ups that cannot be
+															   honoured. The note points somewhere that can. */
+															<div
+																className="supplier__closed"
+																dangerouslySetInnerHTML={{
+																	__html:
+																		b.closedNote ??
+																		"<p>This brand activation is now at capacity.</p>",
+																}}
+															/>
+														) : (
+															<>
+																{/* A "to be confirmed" brand still gets a button.
+																    The detail is missing, not the interest — and
+																    marketing is exactly who can say more. The
+																    stock line only shows where the row has nothing
+																    of its own to say about what is coming. */}
+																{tbc && !b.body ? (
+																	<p className="supplier__tbc">
+																		Details still to be confirmed by the supplier.
+																	</p>
+																) : null}
+																<Cta href={href} className="btn--sm">
+																	{label}
+																</Cta>
+															</>
+														)}
 													</div>
 												</div>
 											</div>

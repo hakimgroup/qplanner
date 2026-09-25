@@ -140,16 +140,21 @@ export default function EyeExamsAvailable() {
 							Good to know
 						</h3>
 						<p>
-							Two formats: an
+							Two festive designs — a red cross-stitch and a gold star — each as an
 							{" "}
 							<strong>
 								A-board
+							</strong>
+							, a
+							{" "}
+							<strong>
+								window or in-practice poster
 							</strong>
 							{" "}
 							and a
 							{" "}
 							<strong>
-								window or in-practice poster
+								social post
 							</strong>
 							.
 						</p>

@@ -21,6 +21,10 @@ export const FESTIVE_IN_PRACTICE: Campaign = {
 			name: "Festive Window",
 			accent: "#2F5D45",
 			visual: img("festive-easy-1.jpg"),
+			visualFit: "cover",
+			// Anchored right of centre so the portrait crop keeps the whole of the
+			// "'tis the season" lettering rather than cutting it to "is sea".
+			visualPosition: "74% 50%",
 			body: `<p>An impactful window display in December can set a practice up for the whole season. Standing out on a busy high street is the point, and a window that stops people is what connects the practice to everyone walking past it.</p>
 				<p>There are two ways to get there. Off-the-shelf decor dresses the window quickly and cheaply — our creative team has put a premium display together as a shopping list you can order in one go. Or you can approach a local vendor and commission a bespoke design, which is how you end up being the talk of the high street.</p>
 				<p>Either way it works hardest next to something to buy: a gift with purchase, a brand activation, whatever offer is already live. The window earns the footfall; the offer converts it.</p>`,
@@ -55,7 +59,30 @@ export const FESTIVE_IN_PRACTICE: Campaign = {
 				{
 					key: "poster",
 					label: "Festive posters",
-					items: [{ ph: true, cap: "Festive poster set — see the Q4 campaign page" }],
+					// The two "Seeing is Believing" posters — what the planner card
+					// behind "Order festive posters" actually supplies.
+					items: [
+						{
+							img: img("festive-posters-window.jpg"),
+							cap: "Both posters, side by side in the window",
+						},
+						{
+							img: img("festive-poster-cookies-window.jpg"),
+							cap: "Santa\u2019s cookies poster in the window",
+						},
+						{
+							img: img("festive-poster-sleigh-window.jpg"),
+							cap: "Sleigh poster in the window",
+						},
+						{
+							img: img("festive-aboard-cookies.jpg"),
+							cap: "Santa\u2019s cookies A-board",
+						},
+						{
+							img: img("festive-aboard-sleigh.jpg"),
+							cap: "Sleigh A-board",
+						},
+					],
 				},
 			],
 		},
