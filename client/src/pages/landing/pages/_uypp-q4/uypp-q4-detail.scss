@@ -524,7 +524,11 @@
 	/* Four accessories, so the shared three-column .panels grid leaves an orphan on
 	   the second row. Two-by-two instead: four across was tried first and gave each
 	   card roughly 25 characters a line, which is a newspaper column, not a card. */
-	.panels--four { grid-template-columns:repeat(2,1fr); }
+	.panels--four { grid-template-columns:repeat(2,1fr);
+	  /* The wide "getting it right" panel follows this grid directly and sat flush
+	     against it — the grid has a gap between rows but no margin after the last.
+	     Same gap, so the wide panel reads as the next row. */
+	  margin-bottom:clamp(18px,2.5vw,28px); }
 	@media (max-width:760px){ .panels--four { grid-template-columns:1fr; } }
 
 	/* A price under an accessory's name. Small and quiet — it is a fact about the

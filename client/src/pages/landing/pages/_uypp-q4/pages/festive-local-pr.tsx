@@ -1,5 +1,6 @@
 import type { LandingPageMeta } from "../../../registry";
 import { FestivePage } from "../FestivePage";
+import { img } from "../uypp-q4";
 import { MARKETING_LINK } from "../links";
 import {
 	FESTIVE_LOCAL_PR,
@@ -13,6 +14,7 @@ export const meta: LandingPageMeta = {
 	description:
 		"Give the Gift of Sight. HQ writes and places a story with your local press, free of charge — you send a form and a photograph.",
 	publishedAt: "2026-09-29",
+	thumbnail: img("festive-pr-eye-exam.jpg"),
 	hidden: true,
 };
 
@@ -30,6 +32,8 @@ export default function FestiveLocalPr() {
 					PR
 				</>
 			}
+			heroImage={img("festive-pr-eye-exam.jpg")}
+			heroAlt="An optometrist examining a patient at the slit lamp"
 			pills={[`Deadline · ${PR_DEADLINE}`, "Core KPI · Volume and conversion", "Free of charge"]}
 			hook="Coverage you do not have to write, pay for, or chase."
 			standfirst="The PR team at HQ is running Give the Gift of Sight with your local press, on your behalf."
@@ -45,7 +49,7 @@ export default function FestiveLocalPr() {
 			]}
 			creativeTitle="The campaign"
 			creativeLead="One campaign, one form, one deadline."
-			artworkLead="There is no artwork to order. What matters is the photograph you send — see below."
+			artworkLead="Nothing to order. The press release is written for you — read the template — and what matters is the photograph you send."
 			orderTitle="Get involved"
 			orderNote={`The form explains how the campaign works in full and collects everything the PR team needs. It closes at ${PR_DEADLINE}.`}
 			orderFootText="Nothing else is required from the practice once the form is in."

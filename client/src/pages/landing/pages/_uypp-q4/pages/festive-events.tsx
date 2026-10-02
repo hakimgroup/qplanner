@@ -1,6 +1,7 @@
 import type { LandingPageMeta } from "../../../registry";
 import { Link } from "react-router-dom";
 import { FestivePage } from "../FestivePage";
+import { img } from "../uypp-q4";
 import { SupplierSection } from "../SupplierSection";
 import { MARKETING_LINK } from "../links";
 import { FESTIVE_EVENTS } from "../data/festive-events";
@@ -28,6 +29,8 @@ export default function FestiveEvents() {
 					Events
 				</>
 			}
+			heroImage={img("festive-lns-window.jpg")}
+			heroAlt="Late Night Shopping poster in a festive practice window"
 			pills={["December", "Core KPI · Conversion", "2 formats"]}
 			hook="A poster says you are open. An event says come on Thursday."
 			standfirst="Practices running a targeted festive event often report record days and record weeks."

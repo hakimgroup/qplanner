@@ -66,24 +66,27 @@ export const FESTIVE_RETAIL_MOMENTS: Campaign = {
 			id: "december-sale",
 			name: "December Sale",
 			accent: "#5E2750",
+			// Supplied 2 October 2026. Flat artwork with a space for the practice's
+			// own offer line, so contained rather than cropped.
+			visual: img("festive-sale-poster.jpg"),
 			body: `<p>The sale period now runs on through December rather than stopping when Black Friday does. That is a month of shoppers who have left it late, and a sale is the simplest way to convert them.</p>
 				<p>Run alongside the volume drivers elsewhere in this toolkit, it makes the most of last-minute gift shoppers who are already on the high street. It works particularly well with later opening times and an in-practice event, which together make the practice a destination for gifting rather than somewhere people pass.</p>`,
-			note: `<p><strong>Running a multi-pair offer?</strong> The festive 33% and 50% off additional pairs posters, and the split payment posters, are ready on the <a href="/landing/festive-volume-drivers">Volume drivers</a> page. A general sale poster is still to come.</p>
-				<p><strong>Still being set up in the Marketing Planner.</strong> The button below opens your planner — or speak to your marketing executive and they will add it to your plan.</p>`,
+			note: `<p><strong>The poster carries your offer, not ours.</strong> Order it in the planner and the offer line is set for your practice, so the same artwork works for a frames clearance, a lens upgrade or a percentage off the lot.</p>
+				<p><strong>Running a multi-pair offer instead?</strong> The festive 33% and 50% off additional pairs posters, and the split payment posters, are ready on the <a href="/landing/festive-volume-drivers">Volume drivers</a> page.</p>`,
 			order: {
-				label: "Open your planner",
+				label: "Order in the planner",
 				href: FESTIVE_ORDER.decemberSale,
 			},
 			placements: [
 				{
-					key: "window",
-					label: "Window",
-					items: [{ ph: true, cap: "Sale window poster — artwork to come" }],
-				},
-				{
-					key: "instore",
-					label: "In practice",
-					items: [{ ph: true, cap: "In-practice sale POS — artwork to come" }],
+					key: "poster",
+					label: "Poster",
+					items: [
+						{
+							img: img("festive-sale-poster.jpg"),
+							cap: "Christmas sale poster \u2014 your offer goes where the placeholder line is",
+						},
+					],
 				},
 			],
 		},

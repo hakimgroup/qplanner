@@ -88,9 +88,9 @@ export const TOOLKIT_PAGES: ToolkitPage[] = [
 		slug: "festive-in-practice",
 		name: "In the practice",
 		when: "December",
-		blurb: "What the practice looks and sounds like in December — the window display, and the Merry Christmas message from the team.",
+		blurb: "What the practice looks like in December — the window display, off the shelf or bespoke, and the festive poster set.",
 		layer: "drivers",
-		count: "2 activities",
+		count: "Window + posters",
 		image: "festive-easy-1.jpg",
 	},
 	{
@@ -115,9 +115,9 @@ export const TOOLKIT_PAGES: ToolkitPage[] = [
 		slug: "festive-gifting",
 		name: "Gifting & brand support",
 		when: "December",
-		blurb: "Accessories and stocking fillers front and centre, then supplier-funded gifts with purchase on BOSS, Ted Baker and Design Eyewear, and a Face a Face festive window.",
+		blurb: "Accessories and stocking fillers front and centre, practice-branded gift cards, then supplier-funded gifts with purchase and a Face a Face festive window.",
 		layer: "gifting",
-		count: "Accessories + 4 gifts, 3 activations",
+		count: "Accessories, gift cards + 7 brands",
 		image: "festive-easy-3.jpg",
 	},
 	{
@@ -127,6 +127,7 @@ export const TOOLKIT_PAGES: ToolkitPage[] = [
 		blurb: "Give the Gift of Sight. HQ writes and places a story with your local press, free of charge — you send a form and a photograph.",
 		layer: "gifting",
 		count: "1 campaign",
+		image: "festive-pr-eye-exam.jpg",
 	},
 ];
 

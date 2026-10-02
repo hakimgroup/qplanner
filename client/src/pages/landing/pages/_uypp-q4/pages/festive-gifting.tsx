@@ -14,7 +14,7 @@ export const meta: LandingPageMeta = {
 	slug: "festive-gifting",
 	title: "Gifting & Brand Support — Festive Focus Toolkit",
 	description:
-		"Accessories and stocking fillers front and centre, plus supplier-funded gifts with purchase and a Face a Face festive window.",
+		"Accessories and stocking fillers front and centre, practice-branded gift cards, plus supplier-funded gifts with purchase and a Face a Face festive window.",
 	publishedAt: "2026-09-29",
 	thumbnail: img("festive-easy-3.jpg"),
 	hidden: true,
@@ -36,7 +36,7 @@ export default function FestiveGifting() {
 			}
 			heroImage={img("festive-easy-3.jpg")}
 			heroAlt="Festive practice window with wrapped gifts and an eye exams available poster"
-			pills={["December", "Core KPI · Volume and conversion", "Accessories + 7 brands"]}
+			pills={["December", "Core KPI · Volume and conversion", "Accessories, gift cards + 7 brands"]}
 			hook="Your patients are already shopping for someone else."
 			standfirst="December is the only month of the year when eyewear and accessories are bought as gifts."
 			body="Let's not miss the chance to help them tick a few things off the list while they are in the practice. Accessories are the impulse purchase and the easiest place to start; a supplier gift with purchase is what secures the dispense on top."
@@ -114,10 +114,10 @@ export default function FestiveGifting() {
 				</section>
 			}
 			creativeTitle="How gifting fits"
-			creativeLead="An add-on rather than a campaign. It attaches to whatever else you are already running this December."
-			artworkLead="Point-of-sale artwork is still in production. Most suppliers provide their own."
-			orderTitle="Take up an activation"
-			orderNote="Each supplier collects practice details itself, so these are taken up on the supplier's form rather than through the planner. Open a brand above to see what it includes and how to opt in."
+			creativeLead="An add-on rather than a campaign. It attaches to whatever else you are already running this December — and gift cards are the one piece of it you order yourself."
+			artworkLead="The accessories, the supplier gifts and the gift cards. Most suppliers provide their own point of sale."
+			orderTitle="Take it up"
+			orderNote="The supplier activations are taken up on each supplier's own form — open a brand above to see what it includes and how to opt in. Gift cards order from the planner, like any other campaign."
 			orderFootText="Gifting sits on top of a campaign, it does not replace one. Order the campaign in your planner, then opt in alongside it."
 			orderCardAction={{
 				label: "See campaign options above",

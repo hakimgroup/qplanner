@@ -47,6 +47,7 @@ const EVENT_BRANDS: Brand[] = [
 		id: "boss",
 		name: "BOSS",
 		logo: img("logo-boss.png"),
+		visual: { img: img("brand-boss-gwp.jpg"), cap: "The BOSS gift-with-purchase pack: five magnetic phone wallets" },
 		group: "Gifts to hand out on the night",
 		offer: "Five branded magnetic phone wallets, with BOSS frames",
 		body: EVENT_GWP_CASE,
@@ -66,6 +67,7 @@ const EVENT_BRANDS: Brand[] = [
 		id: "ted-baker",
 		name: "Ted Baker",
 		logo: img("logo-ted-baker.png"),
+		visual: { img: img("brand-ted-baker-gwp.jpg"), cap: "The Ted Baker re-usable coffee cup" },
 		group: "Gifts to hand out on the night",
 		offer: "Ten branded re-usable coffee mugs, with Ted Baker frames",
 		body: EVENT_GWP_CASE,
@@ -77,6 +79,7 @@ const EVENT_BRANDS: Brand[] = [
 		id: "design-eyewear",
 		name: "Design Eyewear Group",
 		logo: img("logo-prodesign.png"),
+		visual: { img: img("brand-design-eyewear-gwp.jpg"), cap: "The Prodesign pocket mirror and the Face a Face Polaroid camera" },
 		group: "Gifts to hand out on the night",
 		offer: "A free sunglass with every optical frame purchase, on Prodesign and Face a Face",
 		body: EVENT_GWP_CASE,
@@ -168,7 +171,10 @@ export const FESTIVE_EVENTS: Campaign = {
 			id: "late-night-shopping",
 			name: "Late Night Shopping",
 			accent: "#3D305C",
-			visual: img("festive-lns-poster-lytham.jpg"),
+			// The poster in a dressed window — the mock-up the team supplied on
+			// 2 October 2026 for the page banner, which also suits this frame.
+			visual: img("festive-lns-window.jpg"),
+			visualFit: "cover",
 			body: `<p>${WHY_EVENTS}</p>
 				<p>A late-night shopping evening run with a VIP feel gives the event a premium edge, and appointments booked around it lead to higher conversion and a higher average dispense value. The festive high street is already open late across plenty of other trades, so a later opening is something shoppers are looking for rather than something you have to explain.</p>
 				<p>An exclusive event with a premium look and feel gives shoppers a moment to themselves in a busy month. They may not buy on the night — the experience is what converts at the styling follow-up.</p>
@@ -180,6 +186,16 @@ export const FESTIVE_EVENTS: Campaign = {
 				href: FESTIVE_ORDER.lateNightShopping,
 			},
 			placements: [
+				{
+					key: "window",
+					label: "Window",
+					items: [
+						{
+							img: img("festive-lns-window.jpg"),
+							cap: "The poster in a dressed festive window",
+						},
+					],
+				},
 				{
 					key: "poster",
 					label: "Poster",

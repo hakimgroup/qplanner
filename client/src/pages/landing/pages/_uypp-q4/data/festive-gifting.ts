@@ -19,7 +19,7 @@
  * asking two different questions.
  */
 import { img } from "../uypp-q4";
-import { BRAND_ACTIVATIONS } from "../links";
+import { BRAND_ACTIVATIONS, FESTIVE_ORDER } from "../links";
 import type { Campaign } from "../types";
 
 /** Said on all four gift-with-purchase rows in the brief, so it is written once
@@ -88,16 +88,47 @@ export const FESTIVE_GIFTING: Campaign = {
 							img: img("festive-accessory-coti.jpg"),
 							cap: "COTI chains — bright, modern and practical",
 						},
-						// Promised by the team "as soon as possible", 25 September 2026.
-						{ ph: true, cap: "Gift cards — artwork coming soon" },
 					],
 				},
 				{
 					key: "gwp",
 					label: "Gift with purchase",
 					items: [
-						{ ph: true, cap: "Supplier gift display — artwork to come" },
-						{ ph: true, cap: "Strut card — artwork to come" },
+						{ img: img("brand-boss-gwp.jpg"), cap: "BOSS \u2014 BOSS gift-with-purchase pack: five magnetic phone wallets" },
+						{ img: img("brand-ted-baker-gwp.jpg"), cap: "Ted Baker \u2014 the re-usable coffee cup" },
+						{ img: img("brand-design-eyewear-gwp.jpg"), cap: "Design Eyewear \u2014 Prodesign pocket mirror and Face a Face Polaroid" },
+						{ img: img("brand-face-a-face-window.jpg"), cap: "Face a Face \u2014 the Nights in Colour window" },
+					],
+				},
+			],
+		},
+		{
+			// Added 2 October 2026 with the mockup and its planner card. A route of
+			// its own rather than a tile in the gifting carousel: it has a different
+			// destination (the planner, not a supplier form) and a different job —
+			// it is what the practice sells when the patient cannot choose for
+			// someone else.
+			id: "gift-cards",
+			name: "Gift cards",
+			accent: "#8C2F39",
+			visual: img("festive-gift-cards.jpg"),
+			visualFit: "cover",
+			body: `<p>Not every gift buyer knows the prescription, the frame or the taste of the person they are buying for. A gift card lets them buy the practice instead — the recipient chooses, and comes in to do it.</p>
+				<p>The cards are branded to your practice, with the value and expiry set when you sell them. Keep a few at the till beside the accessories: it is the answer to the patient who has picked up a Theia cloth and is still looking for something bigger.</p>`,
+			note: `<p><strong>Order them in the planner.</strong> They are printed with your practice name, so allow for the turnaround before December.</p>`,
+			order: {
+				label: "Order in the planner",
+				href: FESTIVE_ORDER.giftCards,
+			},
+			placements: [
+				{
+					key: "cards",
+					label: "Gift cards",
+					items: [
+						{
+							img: img("festive-gift-cards.jpg"),
+							cap: "Front and back \u2014 A Christmas Treat from your practice, with To, From, Value and Expiry",
+						},
 					],
 				},
 			],
@@ -112,7 +143,7 @@ export const FESTIVE_GIFTING: Campaign = {
 			offer: "Five branded magnetic phone wallets to give away with BOSS frames",
 			// Imagery for every gift with purchase sits in the Growth team's
 			// "11 Christmas Gifting" folder on SharePoint, not yet on the site.
-			visual: { ph: true, cap: "BOSS gift with purchase — images to come" },
+			visual: { img: img("brand-boss-gwp.jpg"), cap: "The BOSS gift-with-purchase pack: five magnetic phone wallets" },
 			body: GWP_CASE,
 			gives: ["Five BOSS branded magnetic phone wallets per qualifying practice"],
 			products: ["BOSS frames"],
@@ -131,7 +162,7 @@ export const FESTIVE_GIFTING: Campaign = {
 			logo: img("logo-ted-baker.png"),
 			group: "Gift with purchase",
 			offer: "Ten branded re-usable coffee mugs to give away with Ted Baker frames",
-			visual: { ph: true, cap: "Ted Baker gift with purchase — images to come" },
+			visual: { img: img("brand-ted-baker-gwp.jpg"), cap: "The Ted Baker re-usable coffee cup" },
 			body: GWP_CASE,
 			gives: ["Ten Ted Baker branded re-useable coffee mugs per qualifying practice"],
 			products: ["Ted Baker frames"],
@@ -143,7 +174,7 @@ export const FESTIVE_GIFTING: Campaign = {
 			logo: img("logo-prodesign.png"),
 			group: "Gift with purchase",
 			offer: "A free sunglass with every optical frame purchase, on Prodesign and Face a Face",
-			visual: { ph: true, cap: "Prodesign and Face a Face gifts — images to come" },
+			visual: { img: img("brand-design-eyewear-gwp.jpg"), cap: "The Prodesign pocket mirror and the Face a Face Polaroid camera" },
 			body: "<p>Display the sunglasses, or a clearly branded &ldquo;free sunglass with every purchase&rdquo; message, beside the relevant frames.</p><p><strong>Still to be confirmed:</strong> whether Design Eyewear supply the strut cards carrying that message. The rest of the activation is confirmed and can be taken up now.</p>",
 			gives: [
 				"Prodesign: 10 sunglasses with any order over 20 pieces &mdash; max 25 practices, first come first served",
@@ -165,7 +196,7 @@ export const FESTIVE_GIFTING: Campaign = {
 			offer: "Nights in Colour — a branded festive window, with a 20-frame sell-in",
 			// Only the second option in the concept pack, "Nights in Colour" with
 			// the gift boxes. The pack is on SharePoint and not yet on the site.
-			visual: { ph: true, cap: "Nights in Colour window — images to come" },
+			visual: { img: img("brand-face-a-face-window.jpg"), cap: "The Nights in Colour window, as supplied" },
 			body: "<p>Celebrate the festive and party season with a branded window campaign from Face a Face! Highlighting their Nights in Colour campaign, we&rsquo;ve worked with the team to create a dedicated window across the festive season.</p>",
 			requirement: "<p>20 pieces of Face a Face frames. If you have recently purchased an order, still opt in your interest and this will be at your Design Eyewear Group rep&rsquo;s discretion.</p>",
 			gives: [

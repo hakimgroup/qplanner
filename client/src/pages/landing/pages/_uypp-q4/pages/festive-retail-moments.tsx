@@ -45,9 +45,9 @@ export default function FestiveRetailMoments() {
 			]}
 			creativeTitle="Two moments"
 			creativeLead="Four weeks apart, and stronger together than either is alone."
-			artworkLead="Black Friday artwork already exists as a Q4 campaign. December sale artwork is still in production."
+			artworkLead="Black Friday artwork already exists as a Q4 campaign. The Christmas sale poster takes the practice's own offer line."
 			orderTitle="Add a moment to your plan"
-			orderNote="Black Friday orders straight from the planner. The December sale is still being set up — the button opens your planner."
+			orderNote="Both order straight from the planner. The December sale is a bespoke campaign, so the offer on the poster is set for your practice when you order it."
 			orderFootText="Decide the promotion before you order the artwork: the assets carry your offer, not ours."
 		>
 			<section className="section">

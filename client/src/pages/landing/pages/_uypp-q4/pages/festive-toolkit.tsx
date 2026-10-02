@@ -474,11 +474,6 @@ export default function FestiveToolkit() {
 												The window display
 											</Link>
 										</li>
-										<li>
-											<Link to="/landing/festive-in-practice">
-												Merry Christmas from the team
-											</Link>
-										</li>
 									</ul>
 								</div>
 								<div className="qgroup qgroup--brand">

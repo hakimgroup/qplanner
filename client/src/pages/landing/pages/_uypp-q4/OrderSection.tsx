@@ -43,11 +43,12 @@ export function OrderSection({
 	footText?: ReactNode;
 	title?: string;
 	/**
-	 * What every card's button does, overriding the route's own destination.
-	 *
-	 * For a route whose `order` is an in-page anchor. The gifting page points
-	 * "See campaign options below" at its supplier rows — right from the route
-	 * panel, which sits above them, and wrong from here, which sits below.
+	 * What a card's button does where the route's own `order` is an in-page
+	 * anchor. The gifting page points "See campaign options below" at its
+	 * supplier rows — right from the route panel, which sits above them, and
+	 * wrong from here, which sits below. Routes with a real destination (a
+	 * planner card, a form) keep it: gift cards sit beside gifting on the same
+	 * page and must still order from the planner.
 	 */
 	cardAction?: { label: string; href: string };
 } = {}) {
@@ -83,7 +84,8 @@ export function OrderSection({
 						const shot = r.visual ?? firstImage(r);
 						// A toolkit route orders itself; a Q4 creative route orders the
 						// campaign it belongs to. See Route.order.
-						const routeHref = cardAction?.href ?? r.order?.href ?? href;
+						const anchored = !!cardAction && !!r.order?.href.startsWith("#");
+						const routeHref = anchored ? cardAction.href : r.order?.href ?? href;
 						return (
 							<article className="order__card reveal" key={r.id}>
 								<div className="order__media">
@@ -99,8 +101,7 @@ export function OrderSection({
 									<h3 className="order__title">{r.name}</h3>
 									<div className="order__actions">
 										<Cta href={routeHref} className="btn--block">
-											{cardAction?.label ??
-												r.order?.label ??
+											{(anchored ? cardAction.label : r.order?.label) ??
 												(multi ? "Select this direction" : "Select this campaign")}
 										</Cta>
 										{hasCarousel ? (

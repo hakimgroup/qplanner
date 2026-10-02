@@ -123,6 +123,7 @@ export const FESTIVE: Campaign = {
 			"id": "boss",
 			"name": "BOSS",
 			"logo": img("logo-boss.png"),
+			"visual": { "img": img("brand-boss-gwp.jpg"), "cap": "The BOSS gift-with-purchase pack: five magnetic phone wallets" },
 			"group": "Gift with purchase",
 			"offer": "Five branded magnetic phone wallets to give away with BOSS frames",
 			"body": "<p>A free gift with the frames is a straightforward way to secure the dispense, and it can push a lower-spend dispense into a more premium range. Best run from late November through December, when customers are already prioritising spend towards Christmas.</p><p>Display the gifts next to the BOSS frames, and brief the team to offer it — including the suggestion that it saves the customer buying a gift for someone else.</p>",
@@ -147,6 +148,7 @@ export const FESTIVE: Campaign = {
 			"id": "ted-baker",
 			"name": "Ted Baker",
 			"logo": img("logo-ted-baker.png"),
+			"visual": { "img": img("brand-ted-baker-gwp.jpg"), "cap": "The Ted Baker re-usable coffee cup" },
 			"group": "Gift with purchase",
 			"offer": "Ten branded re-usable coffee cups to give away with Ted Baker frames",
 			"body": "<p>A free gift with the frames is a straightforward way to secure the dispense, and it can push a lower-spend dispense into a more premium range. Best run from late November through December, when customers are already prioritising spend towards Christmas.</p><p>Display the gifts next to the Ted Baker frames, and brief the team to offer it — including the suggestion that it saves the customer buying a gift for someone else.</p>",
@@ -162,6 +164,7 @@ export const FESTIVE: Campaign = {
 			"id": "design-eyewear",
 			"name": "Design Eyewear Group",
 			"logo": img("logo-prodesign.png"),
+			"visual": { "img": img("brand-design-eyewear-gwp.jpg"), "cap": "The Prodesign pocket mirror and the Face a Face Polaroid camera" },
 			"group": "Gift with purchase",
 			"offer": "A free sunglass with every optical frame purchase, on Prodesign and Face a Face",
 			"body": "<p>Display the sunglasses, or a clearly branded &ldquo;free sunglass with every purchase&rdquo; message, next to the relevant frames.</p><p><strong>Still to be confirmed:</strong> whether Design Eyewear supply the strut cards carrying that message. The rest of the activation is confirmed and can be taken up now.</p>",
@@ -194,7 +197,9 @@ export const FESTIVE: Campaign = {
 				"Blephasol Micellar Solution",
 				"Blephaderm Eyelid and Eye Contour Cream"
 			],
-			"howto": "<p>Contact your Thea rep for information and product training.</p>"
+			"howto": "<p>Opt in using the form below. Your Thea rep will then be in touch with product information and training for the team.</p>",
+			// The team's wording for this button, 2 October 2026 — matching the toolkit.
+			"actionLabel": "Opt in here"
 		}
 	]
 };

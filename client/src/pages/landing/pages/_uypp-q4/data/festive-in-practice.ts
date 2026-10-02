@@ -1,13 +1,14 @@
 /**
  * Festive Focus Toolkit — presence in the practice.
  *
- * What the practice looks and sounds like in December, as opposed to what it is
- * offering. The window is the loudest thing a practice owns on a busy high
- * street; the Merry Christmas HTML is the same message reaching the patients who
- * are not walking past.
+ * What the practice looks like in December, as opposed to what it is offering.
+ * The window is the loudest thing a practice owns on a busy high street.
  *
  * The window route is the Q4 Festive Windows campaign seen from the toolkit, so
- * it orders the same planner card and points at the same shopping list.
+ * it orders the same planner card and points at the same shopping list. A
+ * second route, the Merry Christmas HTML, was removed on 26 September 2026 at the
+ * team's request — the email is delayed and had no planner card. It can come
+ * back as a route here when it exists.
  */
 import { img } from "../uypp-q4";
 import { FESTIVE_INSPIRATION, FESTIVE_ORDER } from "../links";
@@ -91,26 +92,6 @@ export const FESTIVE_IN_PRACTICE: Campaign = {
 							cap: "Sleigh poster artwork",
 						},
 					],
-				},
-			],
-		},
-		{
-			id: "merry-christmas",
-			name: "Merry Christmas HTML",
-			accent: "#9E1F3D",
-			body: `<p>The festive period is about community and connection, and independent practices are a pillar of their communities across the estate. This is the piece that says so out loud.</p>
-				<p>A Merry Christmas email from the whole practice team, so patients hear it from the people they actually see rather than from a brand. It costs nothing to send and it is the one December message with nothing to sell in it, which is exactly why it gets read.</p>
-				<p>There is still room to keep gifting front of mind inside it. Sent alongside an event or a brand offer, it gives the practice a moment to stand out in a very crowded inbox.</p>`,
-			note: `<p><strong>Send it from the practice, not from head office.</strong> Names and faces of the team do more here than a festive graphic will.</p>`,
-			order: {
-				label: "Open your planner",
-				href: FESTIVE_ORDER.merryChristmas,
-			},
-			placements: [
-				{
-					key: "email",
-					label: "Email",
-					items: [{ ph: true, cap: "Merry Christmas HTML — artwork to come" }],
 				},
 			],
 		},

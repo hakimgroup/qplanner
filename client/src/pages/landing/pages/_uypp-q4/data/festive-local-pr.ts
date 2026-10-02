@@ -11,7 +11,8 @@
  * almost always sent a picture of a shopfront, so the list is deliberately
  * specific rather than encouraging.
  */
-import { GIFT_OF_SIGHT } from "../links";
+import { img } from "../uypp-q4";
+import { GIFT_OF_SIGHT, GIFT_OF_SIGHT_TEMPLATE } from "../links";
 import type { Campaign } from "../types";
 
 /** Stated on the page as well as here, so a change lands in both. */
@@ -24,19 +25,43 @@ export const FESTIVE_LOCAL_PR: Campaign = {
 			id: "gift-of-sight",
 			name: "Give the Gift of Sight",
 			accent: "#3D305C",
+			// An eye exam in progress at Askew Eyewear — the PR team's own example of
+			// the photograph that gets a story picked up. Supplied 2 October 2026.
+			visual: img("festive-pr-eye-exam.jpg"),
+			visualFit: "cover",
 			body: `<p>The PR team at HQ is running a campaign for Give the Gift of Sight Month, and sending it to press and media in your local area on your behalf. Coverage is completely free of charge.</p>
 				<p>The story raises awareness of why eyes need regular care, while highlighting the services, products and clinical expertise in your practice. It reinforces your position as the trusted expert locally, and it reaches people who would not otherwise have a reason to think about you in December.</p>
 				<p>All you provide is the form and a photograph. HQ writes it, places it and chases it.</p>`,
-			note: `<p><strong>The deadline is ${PR_DEADLINE}.</strong> The form explains how the campaign works in full — fill it in before then and there is nothing further to do.</p>`,
+			note: `<p><strong>The deadline is ${PR_DEADLINE}.</strong> The form explains how the campaign works in full — fill it in before then and there is nothing further to do.</p>
+				<p>The press release itself is a template: HQ drops in your practice name, your county and a quote in your name. Download it to read what will go out before you fill in the form.</p>`,
 			order: {
 				label: "Fill in the form",
 				href: GIFT_OF_SIGHT,
 			},
+			action: {
+				label: "Download the template",
+				href: GIFT_OF_SIGHT_TEMPLATE,
+			},
 			placements: [
 				{
 					key: "press",
-					label: "Press",
-					items: [{ ph: true, cap: "Press release template — to come" }],
+					label: "Press release",
+					items: [
+						{
+							img: img("festive-pr-template.jpg"),
+							cap: "The template, page one \u2014 INSERT fields are filled in for each practice",
+						},
+					],
+				},
+				{
+					key: "photo",
+					label: "The photograph",
+					items: [
+						{
+							img: img("festive-pr-eye-exam.jpg"),
+							cap: "What editors use: a patient being examined, people in shot, landscape",
+						},
+					],
 				},
 			],
 		},

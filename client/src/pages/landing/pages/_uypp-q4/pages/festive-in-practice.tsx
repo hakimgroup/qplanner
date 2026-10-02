@@ -9,7 +9,7 @@ export const meta: LandingPageMeta = {
 	slug: "festive-in-practice",
 	title: "In The Practice — Festive Focus Toolkit",
 	description:
-		"What the practice looks and sounds like in December — the window display, and the Merry Christmas message from the team.",
+		"What the practice looks like in December. The window display, from off-the-shelf decor to a bespoke build, and the festive poster set.",
 	publishedAt: "2026-09-29",
 	thumbnail: img("festive-easy-1.jpg"),
 	hidden: true,
@@ -31,23 +31,23 @@ export default function FestiveInPractice() {
 			}
 			heroImage={img("festive-easy-1.jpg")}
 			heroAlt="Festive practice window dressed with paper decorations and frames on plinths"
-			pills={["December", "Core KPI · Volume and conversion", "2 activities"]}
+			pills={["December", "Core KPI · Volume and conversion", "Group competition"]}
 			hook="Be part of the local Christmas, not just open during it."
 			standfirst="Independent practices are a pillar of their communities. December is the month that is easiest to prove and easiest to waste."
-			body="Two pieces do most of the work. The window is the loudest thing the practice owns on a busy high street, and it is what decides whether people notice you at all. The Merry Christmas email reaches the patients who are not walking past — the same message, sent by the people they actually see."
+			body="The window does most of the work. It is the loudest thing the practice owns on a busy high street, and it is what decides whether people notice you at all — before a poster, an offer or an event gets a look in. Dress it early and everything else in the toolkit works harder."
 			points={[
 				"A window display is the only asset that works on people not looking for you",
 				"December footfall is the highest of the year on most high streets",
 				"Positions the practice as somewhere to buy a gift, not only be tested",
 				"Off-the-shelf decor gets you there in an afternoon",
 				"A bespoke window, done with a local maker, gets you talked about",
-				"The Christmas email is the one December message with nothing to sell",
+				"The festive poster set orders from the planner in one go",
 			]}
-			creativeTitle="Two activities"
-			creativeLead="One outward-facing, one straight to the patients you already have. Neither takes the place of the other."
-			artworkLead="Window photography and the Seeing is Believing posters are below. The Merry Christmas email artwork is still in production."
-			orderTitle="Add these to your plan"
-			orderNote="Festive posters order straight from the planner. The Merry Christmas HTML is still being set up — the button opens your planner."
+			creativeTitle="The window"
+			creativeLead="Off the shelf or bespoke, the window is the one thing on this page every practice should do."
+			artworkLead="Window photography and the Seeing is Believing posters are below."
+			orderTitle="Add this to your plan"
+			orderNote="The festive posters order straight from the planner. The decor is a shopping list, ordered separately — the link is above."
 			orderFootText="The window needs lead time and the decor needs ordering. Start this one first."
 		>
 			<section className="section">
@@ -67,10 +67,10 @@ export default function FestiveInPractice() {
 							<div className="tier__body">
 								<h3 className="tier__title">Off the shelf</h3>
 								<p>
-									Our creative team has put a premium window display together as a
-									single shopping list, so the whole thing can be ordered in one
-									go and dressed in an afternoon. This is the version that
-									definitely happens.
+									A simple solution with a big impact. Our creative team has put a
+									premium window display together as a single shopping list, so
+									the whole thing can be ordered in one go and dressed in an
+									afternoon — one order, and the window is done.
 								</p>
 							</div>
 							<figure className="tier__media">

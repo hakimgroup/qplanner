@@ -110,17 +110,16 @@ export const BRAND_ACTIVATIONS = "brand.activations@hakimgroup.co.uk";
 /**
  * Festive Focus Toolkit destinations, keyed by the route that orders them.
  *
- * Christmas cards, supplied 25 September 2026. Eye exams available and outside
- * prescriptions have their own Christmas cards rather than the evergreen ones:
- * the planner would not let a practice that had already run the evergreen
+ * Christmas cards, supplied through September 2026. Eye exams available and
+ * outside prescriptions have their own Christmas cards rather than the evergreen
+ * ones: the planner would not let a practice that had already run the evergreen
  * campaign order it again, so the festive refresh needed a card of its own.
- * Multi pair and split payment are separate cards, as are the two events.
+ * Multi pair and split payment are separate cards, as are the two events, the
+ * December sale (a bespoke card — the practice sets the offer) and gift cards.
  *
- * Two still have no card. They resolve to the planner itself rather than
- * nowhere: a practice that lands on their own dashboard can still find the
- * activity and raise it, whereas a dead button teaches them the page is broken.
- * Replace each `PLANNER_HOME` below with `planner("<uuid>")` as the cards are
- * created — that is the only edit needed, the pages read from here.
+ * Every route now has a real card. The Merry Christmas HTML had none and was
+ * pulled from the toolkit on 26 September — delayed, per the team — so there is
+ * no `PLANNER_HOME` fallback left in here.
  */
 export const FESTIVE_ORDER = {
 	eyeExams: planner("0dfb6374-ab4b-42a1-b2f5-2dfbc3d34907"),
@@ -129,11 +128,17 @@ export const FESTIVE_ORDER = {
 	splitPayment: planner("94aa3e62-9e9c-4720-9a5b-f6a92b7c36a5"),
 	twelveDays: planner("590e6c74-e9cb-4b50-8688-16f1f48e1225"),
 	lateNightShopping: planner("cc013960-8a64-4e2e-8631-3aa82b17802a"),
+	decemberSale: planner("4c43a49a-45af-4404-841a-7cf5477798fd"),
+	giftCards: planner("83530185-dcd5-4996-b762-60f747f7459a"),
 	blackFriday: BLACK_FRIDAY,
 	window: FESTIVE,
-	decemberSale: PLANNER_HOME,
-	merryChristmas: PLANNER_HOME,
 } as const;
+
+/** The Give the Gift of Sight press release, as the Word template HQ fills in
+ *  for each practice. Served from this site so practices can read what will go
+ *  out with their name on it before they commit to the form. */
+export const GIFT_OF_SIGHT_TEMPLATE =
+	"/landing-assets/uypp-q4/docs/gift-of-sight-press-release-template.docx";
 
 const CAMPAIGN: Record<CampaignId, string> = {
 	presbyopia: PRESBYOPIA,
@@ -182,9 +187,9 @@ const BRANDS: Record<CampaignId, Record<string, string>> = {
 		oakley: "https://form.jotform.com/262382059840359",
 		"ted-baker": "https://form.jotform.com/262371538489065",
 		"design-eyewear": "https://form.jotform.com/262382412556356",
-		// Thea is training and product support rather than a sign-up, so it
-		// stays a conversation with the rep.
-		thea: ask("Thea brand assets - Festive Windows"),
+		// Thea's Christmas activation has its own sign-up form, supplied 2 October
+		// 2026 — the same one the Festive Focus Toolkit's gifting page uses.
+		thea: "https://form.jotform.com/262642200459352",
 		// Alcon, Bausch + Lomb and Silhouette were dropped before launch —
 		// unconfirmed in time. Removed from the data rather than left as `tbc`
 		// rows, so nothing shows for them at all.
