@@ -571,7 +571,9 @@ export async function reconcileUberall(
 	// Hard wall-clock budget so a single invocation never runs past the Vercel
 	// function timeout. When hit, we stop and flag timeBoxed; the next run picks
 	// up where this left off because users are ordered oldest-verified-first.
-	const maxRunMs = Math.min(opts.maxRunMs ?? 250_000, 290_000);
+	// Default/cap sit safely under the function's maxDuration (60s on this plan)
+	// so the loop always stops before Vercel force-kills the invocation.
+	const maxRunMs = Math.min(opts.maxRunMs ?? 50_000, 55_000);
 	const outOfTime = () => Date.now() - start > maxRunMs;
 
 	const out: ReconcileSummary = {
