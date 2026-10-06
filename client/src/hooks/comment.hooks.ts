@@ -3,6 +3,7 @@ import { supabase } from "@/api/supabase";
 import { RPCFunctions } from "@/shared/shared.models";
 import {
 	AddCommentArgs,
+	CommentInboxGroup,
 	CommentInboxItem,
 	EditCommentArgs,
 	SelectionComment,
@@ -14,7 +15,9 @@ import { toast } from "sonner";
 export const COMMENT_KEYS = {
 	thread: (selectionId: string) => ["comments:thread", selectionId] as const,
 	inbox: ["comments:inbox"] as const,
+	inboxGrouped: ["comments:inbox:grouped"] as const,
 	unread: ["comments:unread"] as const,
+	unreadConversations: ["comments:unread:conversations"] as const,
 };
 
 /** Thread for a given selection. Ordered ASC (oldest → newest). */
@@ -51,6 +54,43 @@ export function useCommentInbox(limit = 10) {
 	});
 }
 
+/**
+ * Grouped inbox: one row per conversation (selection). Drives the chat-icon
+ * dropdown — all comments for a campaign collapse into a single row.
+ */
+export function useCommentInboxGrouped(limit = 10) {
+	return useQuery({
+		queryKey: COMMENT_KEYS.inboxGrouped,
+		queryFn: async (): Promise<CommentInboxGroup[]> => {
+			const { data, error } = await supabase.rpc(
+				RPCFunctions.ListMyCommentInboxGrouped,
+				{ p_limit: limit },
+			);
+			if (error) throw error;
+			return (data as CommentInboxGroup[]) ?? [];
+		},
+		staleTime: 15_000,
+		refetchOnWindowFocus: true,
+	});
+}
+
+/** Count of conversations (selections) with unread comments — badge. */
+export function useUnreadCommentConversationsCount() {
+	return useQuery({
+		queryKey: COMMENT_KEYS.unreadConversations,
+		queryFn: async (): Promise<number> => {
+			const { data, error } = await supabase.rpc(
+				RPCFunctions.UnreadCommentConversationsCount,
+			);
+			if (error) throw error;
+			return Number(data) || 0;
+		},
+		staleTime: 15_000,
+		refetchOnWindowFocus: true,
+		refetchInterval: 30_000,
+	});
+}
+
 /** Unread count for the badge on the chat icon. */
 export function useUnreadCommentCount() {
 	return useQuery({
@@ -83,7 +123,9 @@ export function useAddComment() {
 		onSuccess: (data, vars) => {
 			qc.invalidateQueries({ queryKey: COMMENT_KEYS.thread(vars.selectionId) });
 			qc.invalidateQueries({ queryKey: COMMENT_KEYS.inbox });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.inboxGrouped });
 			qc.invalidateQueries({ queryKey: COMMENT_KEYS.unread });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.unreadConversations });
 			if (data?.comment_id && data?.targets_count > 0) {
 				sendCommentEmail({ commentId: data.comment_id });
 			}
@@ -133,7 +175,9 @@ export function useDeleteComment(selectionId: string | null) {
 				qc.invalidateQueries({ queryKey: COMMENT_KEYS.thread(selectionId) });
 			}
 			qc.invalidateQueries({ queryKey: COMMENT_KEYS.inbox });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.inboxGrouped });
 			qc.invalidateQueries({ queryKey: COMMENT_KEYS.unread });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.unreadConversations });
 		},
 		onError: (err: any) => {
 			toast.error(err?.message || "Failed to delete comment");
@@ -152,7 +196,35 @@ export function useMarkCommentRead() {
 		},
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: COMMENT_KEYS.inbox });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.inboxGrouped });
 			qc.invalidateQueries({ queryKey: COMMENT_KEYS.unread });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.unreadConversations });
+		},
+	});
+}
+
+/**
+ * Marks EVERY comment for a selection read for the caller — used when a
+ * grouped conversation row is opened from the bell.
+ */
+export function useMarkSelectionCommentsRead() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: async (selectionId: string) => {
+			const { data, error } = await supabase.rpc(
+				RPCFunctions.MarkSelectionCommentsRead,
+				{ p_selection_id: selectionId },
+			);
+			if (error) throw error;
+			if (data && !data.success)
+				throw new Error(data.error || "Failed to mark read");
+			return data;
+		},
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.inbox });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.inboxGrouped });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.unread });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.unreadConversations });
 		},
 	});
 }
@@ -166,7 +238,9 @@ export function useMarkAllCommentsRead() {
 		},
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: COMMENT_KEYS.inbox });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.inboxGrouped });
 			qc.invalidateQueries({ queryKey: COMMENT_KEYS.unread });
+			qc.invalidateQueries({ queryKey: COMMENT_KEYS.unreadConversations });
 		},
 	});
 }

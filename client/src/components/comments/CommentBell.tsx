@@ -18,12 +18,12 @@ import { IconMessageCircle2 } from "@tabler/icons-react";
 import { formatDistanceToNow } from "date-fns";
 import { useMemo, useState } from "react";
 import {
-	useCommentInbox,
+	useCommentInboxGrouped,
 	useMarkAllCommentsRead,
-	useMarkCommentRead,
-	useUnreadCommentCount,
+	useMarkSelectionCommentsRead,
+	useUnreadCommentConversationsCount,
 } from "@/hooks/comment.hooks";
-import { CommentInboxItem } from "@/models/comment.models";
+import { CommentInboxGroup } from "@/models/comment.models";
 import { useCommentDrawer } from "./CommentDeepLinkDrawer";
 
 function relativeTime(s: string): string {
@@ -44,15 +44,15 @@ export default function CommentBell() {
 	const { open: openCommentDrawer } = useCommentDrawer();
 	const [opened, setOpened] = useState(false);
 
-	const { data: count = 0 } = useUnreadCommentCount();
-	const { data: inbox = [], isLoading } = useCommentInbox(10);
-	const { mutate: markRead } = useMarkCommentRead();
+	const { data: count = 0 } = useUnreadCommentConversationsCount();
+	const { data: inbox = [], isLoading } = useCommentInboxGrouped(10);
+	const { mutate: markSelectionRead } = useMarkSelectionCommentsRead();
 	const { mutate: markAll, isPending: markingAll } = useMarkAllCommentsRead();
 
 	const unread = useMemo(() => Number(count) || 0, [count]);
 
-	const handleRowClick = (row: CommentInboxItem) => {
-		if (!row.read_at) markRead(row.comment_id);
+	const handleRowClick = (row: CommentInboxGroup) => {
+		if (row.unread_count > 0) markSelectionRead(row.selection_id);
 		setOpened(false);
 		openCommentDrawer(row.selection_id);
 	};
@@ -85,7 +85,7 @@ export default function CommentBell() {
 				<Box p={15} pb={10}>
 					<Flex align="center" justify="space-between">
 						<Text fw={700} size="md" c="gray.9">
-							Conversation
+							Conversations
 						</Text>
 						{unread > 0 ? (
 							<UnstyledButton
@@ -147,7 +147,7 @@ export default function CommentBell() {
 					{!isLoading &&
 						inbox.map((row) => (
 							<CommentBellRow
-								key={row.comment_id}
+								key={row.selection_id}
 								row={row}
 								onClick={() => handleRowClick(row)}
 							/>
@@ -159,22 +159,22 @@ export default function CommentBell() {
 }
 
 interface CommentBellRowProps {
-	row: CommentInboxItem;
+	row: CommentInboxGroup;
 	onClick: () => void;
 }
 
 function CommentBellRow({ row, onClick }: CommentBellRowProps) {
 	const T = useMantineTheme().colors;
-	const isUnread = !row.read_at;
+	const isUnread = row.unread_count > 0;
 	const isAdminSide =
-		row.author_role === "admin" || row.author_role === "super_admin";
+		row.last_author_role === "admin" || row.last_author_role === "super_admin";
 
 	const initials = useMemo(() => {
-		const parts = (row.author_name || "").trim().split(/\s+/);
+		const parts = (row.last_author_name || "").trim().split(/\s+/);
 		const first = parts[0]?.[0] ?? "";
 		const last = parts[1]?.[0] ?? "";
 		return (first + last).toUpperCase() || "?";
-	}, [row.author_name]);
+	}, [row.last_author_name]);
 
 	return (
 		<UnstyledButton
@@ -221,15 +221,22 @@ function CommentBellRow({ row, onClick }: CommentBellRowProps) {
 							truncate
 							style={{ flex: 1, minWidth: 0 }}
 						>
-							{row.author_name || "Unknown"}
+							{row.campaign_name || "Campaign"}
 						</Text>
+						{isUnread && (
+							<Badge color="red" size="xs" variant="filled" style={{ flexShrink: 0 }}>
+								{row.unread_count} new
+							</Badge>
+						)}
 						<Text size="xs" c="gray.5" style={{ flexShrink: 0 }}>
-							{relativeTime(row.created_at)}
+							{relativeTime(row.last_created_at)}
 						</Text>
 					</Flex>
 					<Text size="xs" c="gray.6" truncate>
-						{row.campaign_name || "Campaign"}
-						{row.practice_name ? ` · ${row.practice_name}` : ""}
+						{row.practice_name || "Practice"}
+						{row.comment_count > 1
+							? ` · ${row.comment_count} comments`
+							: ""}
 					</Text>
 					<Text
 						size="xs"
@@ -240,7 +247,10 @@ function CommentBellRow({ row, onClick }: CommentBellRowProps) {
 							overflowWrap: "anywhere",
 						}}
 					>
-						{excerpt(row.body)}
+						<Text span fw={600} c="gray.7">
+							{(row.last_author_name || "Someone").split(/\s+/)[0]}:
+						</Text>{" "}
+						{excerpt(row.last_body)}
 					</Text>
 				</Stack>
 			</Flex>
