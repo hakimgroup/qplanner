@@ -546,6 +546,10 @@ export interface ReconcileSummary {
 	drift: Array<{ email: string; current: number[]; desired: number[] }>;
 	errors: Array<{ email: string; error: string }>;
 	durationMs: number;
+	/** True if the run stopped at its time budget before touching every user.
+	 *  Successive runs resume automatically (oldest-verified users are ordered
+	 *  first), so a few runs cover the whole base without ever timing out. */
+	timeBoxed: boolean;
 }
 
 /**
@@ -559,11 +563,16 @@ export interface ReconcileSummary {
  */
 export async function reconcileUberall(
 	supabase: SupabaseClient,
-	opts: { dryRun?: boolean; limit?: number } = {}
+	opts: { dryRun?: boolean; limit?: number; maxRunMs?: number } = {}
 ): Promise<ReconcileSummary> {
 	const start = Date.now();
 	const dryRun = !!opts.dryRun;
 	const limit = Math.min(opts.limit ?? 1000, 5000);
+	// Hard wall-clock budget so a single invocation never runs past the Vercel
+	// function timeout. When hit, we stop and flag timeBoxed; the next run picks
+	// up where this left off because users are ordered oldest-verified-first.
+	const maxRunMs = Math.min(opts.maxRunMs ?? 250_000, 290_000);
+	const outOfTime = () => Date.now() - start > maxRunMs;
 
 	const out: ReconcileSummary = {
 		dryRun,
@@ -580,6 +589,7 @@ export async function reconcileUberall(
 		drift: [],
 		errors: [],
 		durationMs: 0,
+		timeBoxed: false,
 	};
 
 	// 0. Resolve any practices with an identifier but no numeric Location id yet
@@ -591,6 +601,10 @@ export async function reconcileUberall(
 		.is("uberall_location_id", null)
 		.limit(1000);
 	for (const pr of pending ?? []) {
+		if (!dryRun && outOfTime()) {
+			out.timeBoxed = true;
+			break;
+		}
 		if (!(pr.uberall_business_id || "").trim()) continue;
 		if (dryRun) {
 			out.wouldResolve++;
@@ -604,14 +618,24 @@ export async function reconcileUberall(
 		}
 	}
 
+	// Oldest-verified first (NULLS FIRST = never-provisioned/never-synced users
+	// lead). Each user we touch gets uberall_synced_at bumped to now(), moving
+	// them to the back — so this ordering doubles as a resume cursor across
+	// time-boxed runs with no extra state to track.
 	const { data: users, error } = await supabase
 		.from("allowed_users")
 		.select("email, uberall_user_id, uberall_provision_status")
+		.order("uberall_synced_at", { ascending: true, nullsFirst: true })
 		.limit(limit);
 	if (error) throw error;
 
 	let n = 0;
 	for (const u of users ?? []) {
+		// Stop cleanly at the time budget; the next run resumes from here.
+		if (!dryRun && outOfTime()) {
+			out.timeBoxed = true;
+			break;
+		}
 		out.checked++;
 		const email = (u.email || "").toLowerCase();
 		const status = u.uberall_provision_status;
@@ -643,6 +667,15 @@ export async function reconcileUberall(
 			const current = scopeOf(await getUser(u.uberall_user_id));
 			if (sameSet(desired, current)) {
 				out.inSync++;
+				// Stamp verified-at so this user rotates to the back of the
+				// oldest-first queue; otherwise the same in-sync users would be
+				// re-checked every run and the tail would never be reached.
+				if (!dryRun) {
+					await supabase
+						.from("allowed_users")
+						.update({ uberall_synced_at: new Date().toISOString() })
+						.eq("email", email);
+				}
 			} else if (dryRun) {
 				out.wouldResync++;
 				if (out.drift.length < 200) out.drift.push({ email, current, desired });

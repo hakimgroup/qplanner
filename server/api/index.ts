@@ -3669,9 +3669,14 @@ const uberallReconcileHandler = async (req: Request, res: Response): Promise<any
 
 	const dryRun = String(req.query.dryRun ?? req.body?.dryRun ?? "false") === "true";
 	const limit = Math.min(Number(req.query.limit ?? req.body?.limit ?? 1000), 5000);
+	const rawMaxRun = req.query.maxRunMs ?? req.body?.maxRunMs;
+	const maxRunMs =
+		rawMaxRun != null && Number.isFinite(Number(rawMaxRun))
+			? Number(rawMaxRun)
+			: undefined;
 
 	try {
-		const summary = await reconcileUberall(supabase, { dryRun, limit });
+		const summary = await reconcileUberall(supabase, { dryRun, limit, maxRunMs });
 		return res.json(summary);
 	} catch (e: any) {
 		console.error("[reconcile-uberall]", e?.message);
