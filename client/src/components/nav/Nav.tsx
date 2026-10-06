@@ -74,7 +74,17 @@ const Nav = () => {
 		try {
 			await openUberall();
 		} catch (e: any) {
-			toast.error(e?.message ?? "Could not open Uberall.");
+			if (e?.code === "no_scope") {
+				// Role-aware: admins/super_admins can assign practices themselves;
+				// regular users have to ask an admin.
+				toast.error(
+					isAdmin
+						? "You're not assigned to a practice that's linked to Uberall yet. Assign yourself a practice with an Uberall location, then try again."
+						: "You don't have any practices linked to an Uberall location yet. Ask an admin to add you to a practice that's connected to Uberall."
+				);
+			} else {
+				toast.error(e?.message ?? "Could not open Uberall.");
+			}
 		} finally {
 			setOpeningUberall(false);
 		}

@@ -3506,11 +3506,16 @@ app.post("/uberall/sso", async (req: Request, res: Response) => {
 		const ens = await syncUserScope(supabase, targetEmail, "sso");
 		if (!ens.success || !ens.uberallUserId) {
 			// "no_scope" is a user-state condition (no mapped locations), not a
-			// gateway failure — surface it as 422 with its friendly message.
-			const status = ens.outcome === "no_scope" ? 422 : 502;
+			// gateway failure — surface it as 422 with a machine-readable reason
+			// so the client can tailor the message by role.
+			const noScope = ens.outcome === "no_scope";
 			return res
-				.status(status)
-				.json({ success: false, error: ens.error || "could not resolve Uberall user" });
+				.status(noScope ? 422 : 502)
+				.json({
+					success: false,
+					error: ens.error || "could not resolve Uberall user",
+					...(noScope ? { reason: "no_scope" } : {}),
+				});
 		}
 
 		const token = await ssoLoginToken(ens.uberallUserId);

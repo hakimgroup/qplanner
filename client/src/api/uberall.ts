@@ -96,8 +96,17 @@ export async function openUberall(targetEmail?: string): Promise<void> {
 		else window.location.href = url; // fallback if the popup was blocked
 	} catch (e: any) {
 		if (tab) tab.close();
-		throw new Error(
+		const err = new Error(
 			e?.response?.data?.error || e?.message || "Could not open Uberall."
 		);
+		// Flag the "no mapped locations" case so the caller can show a
+		// role-appropriate message (admins can self-assign; users can't).
+		if (
+			e?.response?.data?.reason === "no_scope" ||
+			e?.response?.status === 422
+		) {
+			(err as any).code = "no_scope";
+		}
+		throw err;
 	}
 }
