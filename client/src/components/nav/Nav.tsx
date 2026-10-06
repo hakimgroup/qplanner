@@ -81,8 +81,9 @@ const Nav = () => {
 	};
 
 	//Components
+	// Uberall is admin-only for now (regular users don't see the button).
 	const OpenUberallButton = () =>
-		uberallEnabledClient() ? (
+		uberallEnabledClient() && isAdmin ? (
 			<Button
 				variant="gradient"
 				gradient={{ from: "teal", to: "cyan", deg: 135 }}
@@ -301,7 +302,7 @@ const Nav = () => {
 				</Button>
 			)}
 
-			{uberallEnabledClient() && (
+			{uberallEnabledClient() && isAdmin && (
 				<Button
 					variant="subtle"
 					color="teal"
