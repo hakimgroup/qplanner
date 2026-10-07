@@ -23,6 +23,7 @@ import RequireAdmin from "./shared/RequireAdmin";
 import AdminCampaigns from "./pages/admin/adminPages/campaigns/AdminCampaigns";
 import { TierProvider } from "./shared/TierProvider";
 import NotificationsCenter from "./pages/notificationsCenter/NotificationsCenter";
+import ConversationsCenter from "./pages/conversationsCenter/ConversationsCenter";
 import AdminNotifications from "./pages/admin/adminPages/notifications/AdminNotifications";
 import Practices from "./pages/admin/adminPages/practices/Practices";
 import Settings from "./pages/admin/adminPages/settings/Settings";
@@ -63,6 +64,10 @@ export default function App() {
       {
         path: AppRoutes.NotificationsCenter,
         element: <NotificationsCenter />,
+      },
+      {
+        path: AppRoutes.Conversations,
+        element: <ConversationsCenter />,
       },
       { path: AppRoutes.FAQs, element: <Faqs /> },
       { path: AppRoutes.Landing, element: <LandingIndex /> },

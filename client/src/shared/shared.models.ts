@@ -20,6 +20,7 @@ export enum AppRoutes {
   BugReports = "bug-reports",
   FAQs = "/faqs",
   NotificationsCenter = "/notifications-center",
+  Conversations = "/conversations",
   Landing = "/landing",
 }
 

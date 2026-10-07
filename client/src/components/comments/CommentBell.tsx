@@ -14,9 +14,12 @@ import {
 	useMantineTheme,
 } from "@mantine/core";
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
+import StyledButton from "@/components/styledButton/StyledButton";
 import { IconMessageCircle2 } from "@tabler/icons-react";
 import { formatDistanceToNow } from "date-fns";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AppRoutes } from "@/shared/shared.models";
 import {
 	useCommentInboxGrouped,
 	useMarkAllCommentsRead,
@@ -41,6 +44,7 @@ function excerpt(s: string, max = 120): string {
 
 export default function CommentBell() {
 	const T = useMantineTheme().colors;
+	const navigate = useNavigate();
 	const { open: openCommentDrawer } = useCommentDrawer();
 	const [opened, setOpened] = useState(false);
 
@@ -153,6 +157,22 @@ export default function CommentBell() {
 							/>
 						))}
 				</Box>
+
+				<GradientDivider />
+
+				<Stack gap={8} mb={10} pl={15} pr={15} pt={10}>
+					<StyledButton
+						fw={500}
+						size="sm"
+						fullWidth
+						onClick={() => {
+							setOpened(false);
+							navigate(AppRoutes.Conversations);
+						}}
+					>
+						View all conversations
+					</StyledButton>
+				</Stack>
 			</Menu.Dropdown>
 		</Menu>
 	);

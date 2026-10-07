@@ -19,7 +19,10 @@ import { UserTabModes, ViewModes } from "@/models/general.models";
 import CampaignSelectorCards from "@/components/campaignSelector/cards/CampaignSelector";
 import CampaignSelectorTable from "@/components/campaignSelector/table/CampaignSelectorTable";
 import CampaignSelectorCalendar from "@/components/campaignSelector/calendar/CampaignSelectorCalendar";
-import Banners from "@/components/videoBanner/Banners";
+// Tutorial video banners hidden for now — replaced by the always-on inspiration
+// banner. Re-enable by swapping <InspirationBanner /> back to <Banners /> below.
+// import Banners from "@/components/videoBanner/Banners";
+import InspirationBanner from "@/components/inspirationBanner/InspirationBanner";
 import { usePractice } from "@/shared/PracticeProvider";
 import CopyPracticeCampaigns from "@/components/practiceSelector/CopyPracticeCampaigns";
 import { updateState } from "@/shared/shared.utilities";
@@ -119,7 +122,7 @@ export function DashboardContent({ isMobile, onOpenFilters }: DashboardContentPr
 	return (
 		<Paper pt={10} h="100%">
 			<Stack gap={25}>
-					<Banners />
+					<InspirationBanner />
 				<StyledTabs
 					value={filters.userSelectedTab}
 					onChange={handleTabChange}
