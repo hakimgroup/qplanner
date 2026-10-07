@@ -52,7 +52,7 @@ export default function InspirationBanner() {
 	return (
 		<Card
 			radius={10}
-			p={25}
+			p={15}
 			mt={15}
 			style={{
 				background: `linear-gradient(135deg, ${T.violet[0]} 0%, ${T.blue[0]} 100%)`,
