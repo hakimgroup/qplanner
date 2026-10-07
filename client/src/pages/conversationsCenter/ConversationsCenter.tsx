@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
 	Avatar,
 	Badge,
@@ -9,6 +9,7 @@ import {
 	Flex,
 	Group,
 	Loader,
+	Pagination,
 	Stack,
 	Text,
 	TextInput,
@@ -38,14 +39,18 @@ function excerpt(s: string, max = 200): string {
 	return t.length > max ? `${t.slice(0, max - 1)}…` : t;
 }
 
+const PAGE_SIZE = 15;
+
 export default function ConversationsCenter() {
 	const T = useMantineTheme().colors;
 	const { open: openCommentDrawer } = useCommentDrawer();
 	const { mutate: markSelectionRead } = useMarkSelectionCommentsRead();
 
-	// Full list (the bell shows 10; here we pull a generous page).
-	const { data: inbox = [], isLoading } = useCommentInboxGrouped(100);
+	// Full list (the bell shows 10; here we pull a generous set and paginate
+	// client-side — keeps the cross-all search working with no DB change).
+	const { data: inbox = [], isLoading } = useCommentInboxGrouped(200);
 	const [query, setQuery] = useState("");
+	const [page, setPage] = useState(1);
 
 	const rows = useMemo(() => {
 		const q = query.trim().toLowerCase();
@@ -58,6 +63,18 @@ export default function ConversationsCenter() {
 				.includes(q)
 		);
 	}, [inbox, query]);
+
+	// Reset to the first page whenever the filtered set changes.
+	useEffect(() => {
+		setPage(1);
+	}, [query]);
+
+	const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+	const safePage = Math.min(page, totalPages);
+	const paged = useMemo(
+		() => rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+		[rows, safePage]
+	);
 
 	const unreadConvos = useMemo(
 		() => inbox.filter((r) => r.unread_count > 0).length,
@@ -122,10 +139,37 @@ export default function ConversationsCenter() {
 					</Center>
 				)}
 
+				{!isLoading && rows.length > 0 && (
+					<Group justify="space-between" align="center">
+						<Text size="sm" c="gray.6">
+							{rows.length} conversation{rows.length === 1 ? "" : "s"}
+						</Text>
+						<Text size="sm" c="gray.6">
+							Page {safePage} of {totalPages}
+						</Text>
+					</Group>
+				)}
+
 				{!isLoading &&
-					rows.map((row) => (
-						<ConversationCard key={row.selection_id} row={row} onClick={() => handleOpen(row)} />
+					paged.map((row) => (
+						<ConversationCard
+							key={row.selection_id}
+							row={row}
+							onClick={() => handleOpen(row)}
+						/>
 					))}
+
+				{!isLoading && totalPages > 1 && (
+					<Group justify="center" mt="md">
+						<Pagination
+							total={totalPages}
+							value={safePage}
+							onChange={setPage}
+							size="sm"
+							radius="md"
+						/>
+					</Group>
+				)}
 			</Stack>
 		</Container>
 	);

@@ -53,6 +53,7 @@ const Nav = () => {
 		AppRoutes.Dashboard,
 		AppRoutes.FAQs,
 		AppRoutes.NotificationsCenter,
+		AppRoutes.Conversations,
 	].includes(pathname as any);
 	const { title, description } = useNavPreset();
 	const notDashboard = ![AppRoutes.Dashboard, AppRoutes.Admin].includes(
