@@ -109,7 +109,7 @@ export default function AdminReviewSubmissionModal({
 		// For "card" assets we prefer chosen option, else cheapest
 		if (a.type === "card") {
 			if (a.chosenOptionLabel && a.chosenOptionValue != null) {
-				return `£${a.chosenOptionValue} (${a.chosenOptionLabel})`;
+				return `${GBP(a.chosenOptionValue)} (${a.chosenOptionLabel})`;
 			}
 			if (a.options && a.options.length > 0) {
 				const cheapest = [...a.options].sort(
@@ -117,8 +117,8 @@ export default function AdminReviewSubmissionModal({
 				)[0];
 				if (cheapest) {
 					return cheapest.label
-						? `From £${cheapest.value} (${cheapest.label})`
-						: `From £${cheapest.value}`;
+						? `From ${GBP(cheapest.value)} (${cheapest.label})`
+						: `From ${GBP(cheapest.value)}`;
 				}
 			}
 			return "£—";
@@ -129,7 +129,7 @@ export default function AdminReviewSubmissionModal({
 		}
 
 		if (a.price != null && !Number.isNaN(a.price)) {
-			return a.suffix ? `£${a.price} ${a.suffix}` : `£${a.price}`;
+			return a.suffix ? `${GBP(a.price)} ${a.suffix}` : GBP(a.price);
 		}
 
 		return "£—";

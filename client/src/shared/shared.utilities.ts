@@ -110,6 +110,11 @@ export const pushAuthNotice = (code: "denied" | "failed") => {
 	localStorage.setItem("auth_notice", code);
 };
 
+/** Format a numeric price as GBP with two decimals, e.g. 30.5 -> "£30.50". */
+export function formatGBP(value: number | string): string {
+	return `£${Number(value).toFixed(2)}`;
+}
+
 export function firstSentence(input: string): string {
 	const clean = _.replace(_.trim(_.toString(input)), /\s+/g, " ");
 	if (!clean) return "";

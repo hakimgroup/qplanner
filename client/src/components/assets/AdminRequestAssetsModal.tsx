@@ -28,6 +28,7 @@ import { useUpsertCatalogCampaign } from "@/hooks/campaign.hooks";
 import { AssetItem, Assets } from "@/models/general.models";
 import { AdminModalSelection, Creatives } from "@/models/campaign.models";
 import { useIsMobile } from "@/shared/shared.hooks";
+import { formatGBP } from "@/shared/shared.utilities";
 
 type Props = {
 	opened: boolean;
@@ -366,7 +367,7 @@ function AssetCard({
 						it.suffix && it.suffix.trim().length > 0
 							? it.suffix
 							: "";
-					return `£${it.price} ${unit}`;
+					return `${formatGBP(it.price)} ${unit}`;
 				}
 				return "Price on request";
 			}
@@ -378,7 +379,7 @@ function AssetCard({
 					const cheapest = sorted[0];
 					const valueDisplay =
 						cheapest.value != null && !Number.isNaN(cheapest.value)
-							? `£${cheapest.value}`
+							? formatGBP(cheapest.value)
 							: "£—";
 					return cheapest.label
 						? `From ${valueDisplay} (${cheapest.label})`
@@ -395,9 +396,9 @@ function AssetCard({
 					!Number.isNaN(Number(it.price))
 				) {
 					if (it.suffix && it.suffix.trim().length > 0) {
-						return `£${it.price} ${it.suffix}`;
+						return `${formatGBP(it.price)} ${it.suffix}`;
 					}
-					return `£${it.price}`;
+					return formatGBP(it.price);
 				}
 				return "External / quoted";
 			}
@@ -407,7 +408,7 @@ function AssetCard({
 					it.price !== "" &&
 					!Number.isNaN(Number(it.price))
 				) {
-					return `£${it.price}${it.suffix ? ` ${it.suffix}` : ""}`;
+					return `${formatGBP(it.price)}${it.suffix ? ` ${it.suffix}` : ""}`;
 				}
 				return "Price on request";
 			}

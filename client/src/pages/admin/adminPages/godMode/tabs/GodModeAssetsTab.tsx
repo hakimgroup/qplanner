@@ -30,6 +30,7 @@ import {
 import GodModeEditAssetsModal from "../modals/GodModeEditAssetsModal";
 import GodModeEditCreativesModal from "../modals/GodModeEditCreativesModal";
 import { GodModeSelectionDetails } from "@/hooks/godMode.hooks";
+import { formatGBP } from "@/shared/shared.utilities";
 
 interface Props {
 	data: GodModeSelectionDetails;
@@ -512,7 +513,10 @@ function AssetRow({ item, tint = "gray" }: { item: any; tint?: string }) {
 			<Group gap={6} wrap="nowrap">
 				{item.price !== null && item.price !== undefined && (
 					<Badge variant="light" color="indigo" size="sm" radius="sm">
-						£{item.price}
+						{/* Some catalog prices are free text ("from £140") — show those as-is. */}
+						{Number.isNaN(Number(item.price))
+							? item.price
+							: formatGBP(item.price)}
 					</Badge>
 				)}
 				{item.userSelected && (

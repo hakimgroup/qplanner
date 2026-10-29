@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { AssetItem, AssetOption, Assets } from "@/models/general.models";
+import { formatGBP } from "@/shared/shared.utilities";
 
 export type EditableAsset = AssetItem & {
 	chosenOptionLabel?: string | null;
@@ -198,7 +199,7 @@ function describeAssetPrice(a: EditableAsset): string {
 		if (a.chosenOptionLabel && a.options && a.options.length > 0) {
 			const picked = a.options.find((o) => o.label === a.chosenOptionLabel);
 			if (picked && picked.value != null && !isNaN(picked.value)) {
-				return `£${picked.value} (${picked.label})`;
+				return `${formatGBP(picked.value)} (${picked.label})`;
 			}
 		}
 		if (a.options && a.options.length > 0) {
@@ -208,8 +209,8 @@ function describeAssetPrice(a: EditableAsset): string {
 			const cheapest = sorted[0];
 			if (cheapest) {
 				return cheapest.label
-					? `From £${cheapest.value} (${cheapest.label})`
-					: `From £${cheapest.value}`;
+					? `From ${formatGBP(cheapest.value)} (${cheapest.label})`
+					: `From ${formatGBP(cheapest.value)}`;
 			}
 		}
 		return "£—";
@@ -218,7 +219,9 @@ function describeAssetPrice(a: EditableAsset): string {
 	if (a.type === "free" && a.price === null) return "Free";
 
 	if (a.priceNum != null) {
-		return a.suffix ? `£${a.priceNum} ${a.suffix}` : `£${a.priceNum} each`;
+		return a.suffix
+			? `${formatGBP(a.priceNum)} ${a.suffix}`
+			: `${formatGBP(a.priceNum)} each`;
 	}
 	// Admin sometimes enters human-readable strings like "from £15" or "POA"
 	// in the price field. Show that as-is rather than the empty "£—" placeholder.
@@ -443,7 +446,7 @@ export default function AssetsPicker({
 								placeholder="Select an option"
 								data={asset.options.map((opt: AssetOption) => ({
 									value: opt.label,
-									label: `${opt.label} — £${opt.value}`,
+									label: `${opt.label} — ${formatGBP(opt.value)}`,
 								}))}
 								onChange={(val) => {
 									if (val) chooseOption(bucket, asset.name, val);
