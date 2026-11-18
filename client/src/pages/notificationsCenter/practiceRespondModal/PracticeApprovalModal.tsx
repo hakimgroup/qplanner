@@ -39,6 +39,7 @@ import {
 import { format, parseISO } from "date-fns";
 import { useState } from "react";
 import { useIsMobile } from "@/shared/shared.hooks";
+import { toExternalUrl } from "@/shared/shared.utilities";
 
 export type PracticeApprovalModalProps = {
 	opened: boolean;
@@ -484,10 +485,9 @@ export default function PracticeApprovalModal({
 											see them there.
 										</Text>
 										<Anchor
-											href={
-												ntf?.payload?.markup_link ??
-												undefined
-											}
+											href={toExternalUrl(
+												ntf?.payload?.markup_link,
+											)}
 											target="_blank"
 											rel="noopener noreferrer"
 											underline="never"

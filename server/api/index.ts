@@ -109,6 +109,16 @@ const supabase = createClient(
 	process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Stored markup/assets links are sometimes pasted without a scheme ("figma.com/...").
+// An href without one is treated as relative, so add https:// before it reaches an email.
+function toExternalUrl(raw?: string | null): string | undefined {
+	const v = (raw ?? "").trim();
+	if (!v) return undefined;
+	if (/^[a-z][a-z0-9+.-]*:/i.test(v)) return v;
+	if (v.startsWith("//")) return `https:${v}`;
+	return `https://${v}`;
+}
+
 function sendMail({ to, subject, html }: EmailBody) {
 	return resend.emails.send({
 		from: "HG Planner <team@planner.hakimgroup.io>",
@@ -747,8 +757,8 @@ app.post("/send-notification-email", async (req: Request, res: Response) => {
 					campaignCategory: payload.category || "Campaign",
 					fromDate: payload.from_date,
 					toDate: payload.to_date,
-					markupLink: payload.markup_link,
-					assetsLink: payload.assets_link,
+					markupLink: toExternalUrl(payload.markup_link),
+					assetsLink: toExternalUrl(payload.assets_link),
 					note: payload.note,
 					appUrl,
 					selectionId: notification.selection_id,
@@ -2834,7 +2844,7 @@ const feedbackRemindersHandler = async (
 				const serverForLinks = serverBase ?? appUrl;
 				const approveUrl = `${serverForLinks}/feedback/approve/${approveToken}`;
 				const reviseUrl = `${serverForLinks}/feedback/revise/${reviseToken}`;
-				const markupUrl = sel.markup_link ?? `${appUrl}/dashboard`;
+				const markupUrl = toExternalUrl(sel.markup_link) ?? `${appUrl}/dashboard`;
 
 				const html = await render(
 					FeedbackReminderEmail({
@@ -3352,8 +3362,8 @@ app.get("/preview-email/:logId", async (req: Request, res: Response): Promise<an
 							campaignCategory: payload.category ?? "Campaign",
 							fromDate: payload.from_date,
 							toDate: payload.to_date,
-							markupLink: payload.markup_link,
-							assetsLink: payload.assets_link,
+							markupLink: toExternalUrl(payload.markup_link),
+							assetsLink: toExternalUrl(payload.assets_link),
 							note: payload.note,
 							appUrl,
 							selectionId: payload.selection_id ?? null,

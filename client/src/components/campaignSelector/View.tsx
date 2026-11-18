@@ -43,6 +43,7 @@ import {
 	firstSentence,
 	formatDateRange,
 	getReferenceLinkLabel,
+	toExternalUrl,
 	updateState} from "@/shared/shared.utilities";
 import { toast } from "sonner";
 import {
@@ -134,9 +135,11 @@ function LifecycleDetails({ campaign: c }: { campaign: Campaign }) {
 	const requirements = merged.requirements as string | undefined;
 	// Reference links from payloads
 	const referenceLinks = (merged.reference_links ?? []) as string[];
-	// Links
-	const markupLink = merged.markup_link as string | undefined;
-	const assetsLink = merged.assets_link as string | undefined;
+	// Links — prefer the selection row (always current) over the notification
+	// payloads, which are snapshots taken at each transition and go stale if the
+	// link is corrected afterwards. toExternalUrl fixes links saved without https://.
+	const markupLink = toExternalUrl(c.markup_link || merged.markup_link);
+	const assetsLink = toExternalUrl(c.assets_link || merged.assets_link);
 
 	// Find label for the chosen creative from the creatives array
 	const chosenCreativeLabel = useMemo(() => {

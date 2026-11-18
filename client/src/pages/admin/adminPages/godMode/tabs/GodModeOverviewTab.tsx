@@ -25,6 +25,7 @@ import { GodModeSelectionDetails } from "@/hooks/godMode.hooks";
 import { format, parseISO } from "date-fns";
 import { startCase } from "lodash";
 import { statusColors } from "@/shared/shared.const";
+import { toExternalUrl } from "@/shared/shared.utilities";
 import GodModeEditSelectionModal from "../modals/GodModeEditSelectionModal";
 import GodModeEditBespokeModal from "../modals/GodModeEditBespokeModal";
 import BespokeBriefView from "@/components/assets/BespokeBriefView";
@@ -242,7 +243,7 @@ export default function GodModeOverviewTab({ data }: Props) {
 											Markup Link
 										</Text>
 										<a
-											href={sel.markup_link}
+											href={toExternalUrl(sel.markup_link)}
 											target="_blank"
 											rel="noopener noreferrer"
 											style={{
@@ -281,7 +282,7 @@ export default function GodModeOverviewTab({ data }: Props) {
 											Assets Link
 										</Text>
 										<a
-											href={sel.assets_link}
+											href={toExternalUrl(sel.assets_link)}
 											target="_blank"
 											rel="noopener noreferrer"
 											style={{

@@ -4,6 +4,7 @@ import { activityColors, statusColors } from "@/shared/shared.const";
 import {
 	currentStage,
 	formatAvailabilityForUI,
+	toExternalUrl,
 } from "@/shared/shared.utilities";
 import {
 	Badge,
@@ -148,7 +149,7 @@ const CampaignStatusDashboard = () => {
 				value ? (
 					<Button
 						component="a"
-						href={value}
+						href={toExternalUrl(value)}
 						target="_blank"
 						size="compact-xs"
 						variant="light"
@@ -176,7 +177,7 @@ const CampaignStatusDashboard = () => {
 				value ? (
 					<Button
 						component="a"
-						href={value}
+						href={toExternalUrl(value)}
 						target="_blank"
 						size="compact-xs"
 						variant="light"

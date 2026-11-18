@@ -115,6 +115,20 @@ export function formatGBP(value: number | string): string {
 	return `£${Number(value).toFixed(2)}`;
 }
 
+/**
+ * Make a stored external link (markup / assets) safe to use as an href.
+ * Links pasted without a scheme ("figma.com/design/...") are otherwise treated
+ * by the browser as a path on our own site (e.g. localhost:5173/figma.com/...).
+ * Returns undefined for empty input so callers can keep their `link && ...` guards.
+ */
+export function toExternalUrl(raw?: string | null): string | undefined {
+	const v = (raw ?? "").trim();
+	if (!v) return undefined;
+	if (/^[a-z][a-z0-9+.-]*:/i.test(v)) return v; // already has a scheme
+	if (v.startsWith("//")) return `https:${v}`;
+	return `https://${v}`;
+}
+
 export function firstSentence(input: string): string {
 	const clean = _.replace(_.trim(_.toString(input)), /\s+/g, " ");
 	if (!clean) return "";
