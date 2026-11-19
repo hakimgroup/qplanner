@@ -50,8 +50,8 @@ export const getAllCampaigns = async (practiceId?: string | null) => {
 
 	const { data, error } =
 		arg === undefined
-			? await supabase.rpc(RPCFunctions.GetCampaigns)
-			: await supabase.rpc(RPCFunctions.GetCampaigns, arg);
+			? await supabase.rpc(RPCFunctions.GetCampaignsV2)
+			: await supabase.rpc(RPCFunctions.GetCampaignsV2, arg);
 
 	if (error) throw new Error(error.message);
 

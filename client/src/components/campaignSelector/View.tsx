@@ -15,7 +15,8 @@ import {
 	Collapse,
 	ThemeIcon,
 	Anchor,
-	Paper} from "@mantine/core";
+	Paper,
+	SegmentedControl} from "@mantine/core";
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import {
 	IconShare3,
@@ -26,6 +27,7 @@ import {
 	IconX,
 	IconMinus,
 	IconCalendarCheck,
+	IconCalendarPlus,
 	IconPhoto,
 	IconArrowsMaximize,
 	IconBrush,
@@ -35,7 +37,15 @@ import {
 	IconPrinter,
 	IconCheck,
 	IconLink} from "@tabler/icons-react";
-import { useContext, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+	ADD_YEAR_GRADIENT,
+	BOOKING_LEAD_DAYS,
+	bookableWindow,
+	bookableYears,
+	defaultBookingYear,
+	formatRecurringWindow,
+} from "@/shared/planningYears";
 import CampaignDates from "../campaignDates/CampaignDates";
 import StyledButton from "../styledButton/StyledButton";
 import { Campaign } from "@/models/campaign.models";
@@ -529,35 +539,59 @@ const View = ({
 	};
 
 	// One week from today - minimum selectable date
-	const oneWeekFromNow = addDays(new Date(), 7);
+	const oneWeekFromNow = addDays(new Date(), BOOKING_LEAD_DAYS);
 
-	// Campaign availability bounds
-	const rawAvailFrom = c.availability?.from
-		? new Date(c.availability.from)
-		: null;
-	const availTo = c.availability?.to ? new Date(c.availability.to) : null;
+	// A catalog campaign can be booked once per year. Its availability window
+	// recurs every year, so the practice picks a year, then dates inside that
+	// year's window.
+	const isCatalog = !c.is_bespoke && !c.is_event;
+	const bookedYearsKey = (c.bookings ?? []).map((b) => b.year).join(",");
+	const openYears = useMemo(
+		() =>
+			isCatalog
+				? bookableYears(
+						c.availability,
+						(c.bookings ?? []).map((b) => b.year),
+					)
+				: [],
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[isCatalog, c.availability, bookedYearsKey],
+	);
+	const canAdd = isCatalog ? openYears.length > 0 : !c.selected;
 
-	// Effective minimum date is the later of (availability.from, one week from now)
-	const availFrom =
-		rawAvailFrom && isAfter(rawAvailFrom, oneWeekFromNow)
-			? rawAvailFrom
-			: oneWeekFromNow;
+	const rangeForYear = (year: number | null): DateRange => {
+		const w = year !== null ? bookableWindow(c.availability, year) : null;
+		const from = w?.from ?? oneWeekFromNow;
+		return { from, to: w?.to ?? addDays(addMonths(from, 1), -1) };
+	};
 
-	// Default start date: use effective min date (one week from now or availability.from, whichever is later)
-	const defaultFrom =
-		rawAvailFrom && isAfter(rawAvailFrom, oneWeekFromNow)
-			? rawAvailFrom
-			: oneWeekFromNow;
+	const [bookYear, setBookYear] = useState<number | null>(() =>
+		defaultBookingYear(c.availability, openYears),
+	);
+	const bookWindow =
+		bookYear !== null ? bookableWindow(c.availability, bookYear) : null;
 
-	// Default end date: extend to max availability if possible, otherwise 1 month from start
-	const defaultTo = availTo
-		? availTo
-		: addDays(addMonths(defaultFrom, 1), -1);
+	// Effective bounds for the picked year (never sooner than a week from today)
+	const availFrom = bookWindow?.from ?? oneWeekFromNow;
+	const availTo = bookWindow?.to ?? null;
 
 	const [campaign, setCampaign] = useState<{ dateRange: DateRange }>(() => ({
-		dateRange: {
-			from: defaultFrom,
-			to: defaultTo}}));
+		dateRange: rangeForYear(bookYear),
+	}));
+
+	const chooseYear = (year: number) => {
+		setBookYear(year);
+		setCampaign((prev) => ({ ...prev, dateRange: rangeForYear(year) }));
+	};
+
+	// Keep the picked year valid once bookings change (e.g. a year was just booked).
+	useEffect(() => {
+		if (bookYear !== null && openYears.includes(bookYear)) return;
+		const next = defaultBookingYear(c.availability, openYears);
+		setBookYear(next);
+		setCampaign((prev) => ({ ...prev, dateRange: rangeForYear(next) }));
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [openYears]);
 
 	// Submit modal opens after dates picked
 	const [submitModalOpen, setSubmitModalOpen] = useState(false);
@@ -816,7 +850,11 @@ const View = ({
 							size="sm"
 							fw={700}
 						>
-							{c?.is_event ? "Event Dates" : "Availability"}
+							{c?.is_event
+								? "Event Dates"
+								: c.selected
+									? "Scheduled For"
+									: "Availability"}
 						</Text>
 
 						<Text size="sm" fw={500}>
@@ -825,12 +863,33 @@ const View = ({
 										c.selection_from_date,
 										c.selection_to_date,
 									)
-								: formatDateRange(
-										c.availability?.from,
-										c.availability?.to,
-									)}
+								: `${formatRecurringWindow(c.availability)} (every year)`}
 						</Text>
 					</Stack>
+
+					{isCatalog && (c.bookings?.length ?? 0) > 0 && (
+						<Stack gap={5}>
+							<Text size="sm" fw={700} c="gray.9">
+								On your plan
+							</Text>
+							<Group gap={6}>
+								{c.bookings!.map((b) => (
+									<Badge
+										key={b.selection_id}
+										variant={
+											b.selection_id === c.selection_id
+												? "filled"
+												: "light"
+										}
+										color="blue.3"
+										radius="sm"
+									>
+										{b.year} · {startCase(b.status ?? "")}
+									</Badge>
+								))}
+							</Group>
+						</Stack>
+					)}
 
 					{validCreatives.length > 0 && (
 						<>
@@ -1084,14 +1143,19 @@ const View = ({
 						</>
 					)}
 
-					{!addOpened && !c.selected && (
+					{!addOpened && canAdd && (
 						<>
 							<GradientDivider />
 							<Button
 								fullWidth
 								radius={10}
 								color="blue.3"
-								leftSection={<IconPlus size={15} />}
+								{...(c.selected
+									? { variant: "gradient", gradient: ADD_YEAR_GRADIENT, fw: 700 }
+									: { variant: "filled" })}
+								leftSection={
+									c.selected ? <IconCalendarPlus size={16} stroke={3} /> : <IconPlus size={15} />
+								}
 								onClick={() => {
 									toggleAdd();
 									setTimeout(() => {
@@ -1100,7 +1164,11 @@ const View = ({
 								}}
 								loading={adding}
 							>
-								Add to Plan
+								{c.selected
+									? openYears.length === 1
+										? `Book for ${openYears[0]}`
+										: "Book for another year"
+									: "Add to Plan"}
 							</Button>
 						</>
 					)}
@@ -1114,8 +1182,29 @@ const View = ({
 									</Text>
 									<Text c="gray.7" size="sm">
 										Set the date range for "{c.name}"
+										{bookYear !== null && openYears.length <= 1
+											? ` in ${bookYear}`
+											: ""}
 									</Text>
 								</Stack>
+
+								{openYears.length > 1 && bookYear !== null && (
+									<Stack gap={6}>
+										<Text fw={500} size="sm">
+											Which year?
+										</Text>
+										<SegmentedControl
+											fullWidth
+											radius={10}
+											value={String(bookYear)}
+											onChange={(v) => chooseYear(Number(v))}
+											data={openYears.map((y) => ({
+												value: String(y),
+												label: String(y),
+											}))}
+										/>
+									</Stack>
+								)}
 
 								<CampaignDates
 									icon={<IconCalendar size={16} />}
@@ -1262,7 +1351,9 @@ const View = ({
 				description={c.description ?? null}
 				fromDate={campaign.dateRange.from}
 				toDate={campaign.dateRange.to}
-				assets={filterToAdminCuratedAssets(c.assets)}
+				// A new booking starts from the catalog's current assets, not
+				// another year's booking.
+				assets={filterToAdminCuratedAssets(c.catalog_assets ?? c.assets)}
 				creatives={validCreativesForAdd}
 				preselectAssets={false}
 				loading={adding}

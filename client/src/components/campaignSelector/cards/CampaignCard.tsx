@@ -15,6 +15,7 @@ import {
 import cl from "./campaignCard.module.scss";
 import {
 	IconCalendarCheck,
+	IconCalendarPlus,
 	IconCheck,
 	IconPencil,
 	IconPlus,
@@ -28,6 +29,11 @@ import Edit from "../Edit";
 import { Campaign } from "@/models/campaign.models";
 import { startCase, truncate } from "lodash";
 import { formatAvailabilityForUI } from "@/shared/shared.utilities";
+import {
+	ADD_YEAR_GRADIENT,
+	bookableYears,
+	formatRecurringWindow,
+} from "@/shared/planningYears";
 import { BadgeList } from "@/components/badgeList/BadgeList";
 import { useContext, useEffect, useState } from "react";
 import Status from "@/components/status/Status";
@@ -54,6 +60,12 @@ const CampaignCard = (c: Campaign) => {
 	const isSelections = filters.userSelectedTab === UserTabModes.Selected;
 	const isDraft = c.status === SelectionStatus.Draft;
 	const validCreatives = c.creatives?.filter((cr) => cr.url?.trim()) ?? [];
+
+	// A catalog campaign can be booked once per year: offer the years still open.
+	const isCatalog = !c.is_bespoke && !c.is_event;
+	const bookedYears = (c.bookings ?? []).map((b) => b.year);
+	const openYears = isCatalog ? bookableYears(c.availability, bookedYears) : [];
+	const addLabel = openYears.length === 1 ? `Add ${openYears[0]}` : "Add";
 
 	const { mutate: submitDraft, isPending: submittingDraft } =
 		useSubmitDraftSelection();
@@ -91,7 +103,8 @@ const CampaignCard = (c: Campaign) => {
 	// Auto-open this card's drawer if the URL contains ?campaign=<this id>
 	// (catalog campaigns only — bespoke campaigns/events are not shareable)
 	useEffect(() => {
-		if (c.is_bespoke || c.is_event) return;
+		// Only the Browse card (one per campaign) answers, not each booking.
+		if (c.is_bespoke || c.is_event || c.is_primary === false) return;
 		const target = searchParams.get("campaign");
 		if (target && target === c.id) {
 			setViewMode("view");
@@ -200,6 +213,13 @@ const CampaignCard = (c: Campaign) => {
 									}
 								/>
 							)}
+							{!isSelections && bookedYears.length > 0 && (
+								<Tooltip label="Years this campaign is on your plan" withArrow>
+									<Badge variant="light" color="gray" radius="sm">
+										{bookedYears.join(" · ")}
+									</Badge>
+								</Tooltip>
+							)}
 							{!c.is_bespoke && !c.is_event && (
 								<Tooltip
 									label={copied ? "Copied!" : "Share campaign"}
@@ -243,14 +263,12 @@ const CampaignCard = (c: Campaign) => {
 								: "Availability"}
 						</Text>
 						<Text size="xs" c={"gray.6"} fw={600}>
-							{formatAvailabilityForUI(
-								c.selected
-									? {
-											from: c.selection_from_date,
-											to: c.selection_to_date,
-									  }
-									: c.availability
-							)}
+							{c.selected
+								? formatAvailabilityForUI({
+										from: c.selection_from_date,
+										to: c.selection_to_date,
+								  })
+								: formatRecurringWindow(c.availability)}
 						</Text>
 					</Stack>
 
@@ -333,8 +351,22 @@ const CampaignCard = (c: Campaign) => {
 									>
 										Edit
 									</Button>
+								) : !isSelections && openYears.length > 0 ? (
+									<Button
+										variant="gradient"
+										gradient={ADD_YEAR_GRADIENT}
+										fw={700}
+										leftSection={<IconCalendarPlus size={15} stroke={3} />}
+										onClick={(e) => {
+											e.stopPropagation();
+											setViewMode("add");
+											open();
+										}}
+									>
+										{addLabel}
+									</Button>
 								) : null
-							) : (
+							) : openYears.length > 0 || !isCatalog ? (
 								<Button
 									leftSection={<IconPlus size={14} />}
 									onClick={(e) => {
@@ -345,7 +377,7 @@ const CampaignCard = (c: Campaign) => {
 								>
 									Add
 								</Button>
-							)}
+							) : null}
 						</Flex>
 					)}
 				</Stack>

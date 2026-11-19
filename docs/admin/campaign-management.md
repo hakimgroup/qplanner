@@ -32,7 +32,7 @@ Each row in the admin campaigns table has a **Visible** toggle. Flipping it to o
 - Practices that have already selected it keep seeing it in their plan with the full lifecycle continuing normally.
 - Admin views (this page, God Mode) keep showing it with the toggle in the off position.
 
-**Auto-expiry**: campaigns also disappear from practice-facing surfaces automatically when `availability.to` parses as an ISO date in the past. Month-coded availability (e.g., `JAN`, `FEB`) recurs every year and never expires. No flag flip is needed — practices just stop seeing them.
+**Availability recurs every year** (Nov 2026): a campaign's availability window is offered as the same dates in every open planning year, so a campaign doesn't drop out of the catalog when this year's window ends. Practices can book it once per year (see *Booking a campaign once per year* in the selection lifecycle). To retire a campaign, hide it. The old ISO-date auto-expiry check in `get_campaigns` only matches plain `YYYY-MM-DD` values, and the admin form saves full timestamps, so in practice it never fired.
 
 ::: tip Use hide instead of delete
 Catalog rows can never be safely deleted because existing selections reference them by `campaign_id`. Hiding is the supported way to "remove" a campaign from circulation while keeping the historical data intact.

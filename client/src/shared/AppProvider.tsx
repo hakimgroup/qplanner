@@ -12,6 +12,12 @@ import { useSelections } from "@/hooks/selection.hooks";
 import { usePractice } from "./PracticeProvider";
 import { UserTabModes } from "@/models/general.models";
 import { useFilterOptions } from "@/hooks/general.hooks";
+import { CampaignBooking } from "@/models/campaign.models";
+import {
+  bookableYears,
+  bookingYear,
+  windowOverlapsRange,
+} from "./planningYears";
 
 type Availability = { from: string; to: string } | null;
 
@@ -83,8 +89,39 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState(appStateDefault);
 
   const campaignsQuery = useAllCampaigns(practiceParam);
-  const rawCampaigns = (campaignsQuery.data ?? EMPTY_ARR) as any[];
+  const fetchedCampaigns = (campaignsQuery.data ?? EMPTY_ARR) as any[];
   const isFetching = campaignsQuery.isFetching;
+
+  // get_campaigns_v2 returns one row per booking (a campaign can be booked once
+  // per year). Attach every booking of the same catalog campaign to each of its
+  // rows, so cards and the drawer know which years are already taken.
+  const rawCampaigns = useMemo(() => {
+    const byCampaign = new Map<string, CampaignBooking[]>();
+    for (const c of fetchedCampaigns) {
+      if (!c?.selected || c?.is_bespoke || !c?.selection_id || !c?.id) continue;
+      const year = bookingYear(c.selection_from_date);
+      if (year === null) continue;
+      const list = byCampaign.get(c.id) ?? [];
+      list.push({
+        selection_id: c.selection_id,
+        year,
+        status: c.status,
+        from: c.selection_from_date,
+        to: c.selection_to_date,
+        practice_id: c.selection_practice_id,
+      });
+      byCampaign.set(c.id, list);
+    }
+    if (byCampaign.size === 0) return fetchedCampaigns;
+    return fetchedCampaigns.map((c) =>
+      !c?.is_bespoke && byCampaign.has(c?.id)
+        ? {
+            ...c,
+            bookings: [...byCampaign.get(c.id)!].sort((a, b) => a.year - b.year),
+          }
+        : c
+    );
+  }, [fetchedCampaigns]);
 
   // === Keep app-level filtersOptions in sync with RPC ===
   useEffect(() => {
@@ -152,15 +189,26 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     return rawCampaigns.filter((c: any) => {
       if (isSelectedTab && !c.selected) return false;
+      // Browse shows each catalog campaign once; My Plan shows every booking.
+      if (!isSelectedTab && c.is_primary === false) return false;
 
-      if (
-        !overlapsWithSelected(
-          c?.availability ?? null,
-          dateRange?.from,
-          dateRange?.to
-        )
-      )
-        return false;
+      // Bookings are filtered by their own dates; catalog campaigns by their
+      // availability window, which recurs every year.
+      const useBookingDates = c.selected && (isSelectedTab || c.is_bespoke);
+      const inRange = useBookingDates
+        ? overlapsWithSelected(
+            c.selection_from_date && c.selection_to_date
+              ? { from: c.selection_from_date, to: c.selection_to_date }
+              : null,
+            dateRange?.from,
+            dateRange?.to
+          )
+        : windowOverlapsRange(
+            c?.availability ?? null,
+            toDate(dateRange?.from),
+            toDate(dateRange?.to)
+          );
+      if (!inRange) return false;
 
       // Normalize the campaign categories into tokens
       const catTokens = String(c?.category ?? "")
@@ -182,8 +230,17 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       if (!includesAll(c?.topics as string[] | undefined, topics ?? []))
         return false;
 
-      if (!isSelectedTab && !unitedView && hideSelected && c.selected)
-        return false;
+      // "Hide placed items": hide a catalog campaign only once it can't be
+      // booked for any other open year.
+      if (!isSelectedTab && !unitedView && hideSelected && c.selected) {
+        const fullyBooked =
+          c.is_bespoke ||
+          bookableYears(
+            c.availability,
+            (c.bookings ?? []).map((b: CampaignBooking) => b.year)
+          ).length === 0;
+        if (fullyBooked) return false;
+      }
 
       return true;
     });

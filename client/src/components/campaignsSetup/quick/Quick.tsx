@@ -11,7 +11,8 @@ import {
 	Stack,
 	Text,
 	useMantineTheme,
-	Highlight} from "@mantine/core";
+	Highlight,
+	SegmentedControl} from "@mantine/core";
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -27,6 +28,7 @@ import { upperFirst } from "lodash";
 import { usePractice } from "@/shared/PracticeProvider";
 import { useBulkAddCampaignsWithAssets } from "@/hooks/campaign.hooks";
 import { SelectionsSource } from "@/shared/shared.models";
+import { bookableWindow, planningYears } from "@/shared/planningYears";
 import { Campaign } from "@/models/campaign.models";
 import { toast } from "sonner";
 import { useTiers } from "@/shared/TierProvider";
@@ -45,10 +47,27 @@ const Quick = () => {
 	const isMobile = useIsMobile();
 	const { state, setState } = useContext(AppContext);
 	const { activePracticeName } = usePractice();
-	const { goodIds, betterIds, bestIds, loading, refresh } = useTiers();
+	const { goodIds, betterIds, bestIds, availabilityById, loading, refresh } =
+		useTiers();
 	const [opened, { open, close }] = useDisclosure(false);
 	const [tier, setTier] = useState<Tiers>(null);
-	const [selections, setSelections] = useState<string[]>(null);
+
+	// Quick Populate plans one year at a time; default to the latest open year.
+	const years = planningYears();
+	const [planYear, setPlanYear] = useState<number>(years[years.length - 1]);
+
+	// Only campaigns that can still run in the planned year.
+	const tierIds = useMemo(() => {
+		const forYear = (ids: string[]) =>
+			ids.filter(
+				(id) => bookableWindow(availabilityById[id], planYear) !== null
+			);
+		return {
+			[Tiers.Good]: forYear(goodIds),
+			[Tiers.Better]: forYear(betterIds),
+			[Tiers.Best]: forYear(bestIds),
+		} as const;
+	}, [goodIds, betterIds, bestIds, availabilityById, planYear]);
 
 	//APIs
 	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaignsWithAssets();
@@ -76,11 +95,11 @@ const Quick = () => {
 			};
 		};
 		return {
-			[Tiers.Good]: compute(goodIds),
-			[Tiers.Better]: compute(betterIds),
-			[Tiers.Best]: compute(bestIds),
+			[Tiers.Good]: compute(tierIds[Tiers.Good]),
+			[Tiers.Better]: compute(tierIds[Tiers.Better]),
+			[Tiers.Best]: compute(tierIds[Tiers.Best]),
 		} as const;
-	}, [state?.allCampaigns?.data, goodIds, betterIds, bestIds]);
+	}, [state?.allCampaigns?.data, tierIds]);
 
 	const pluralize = (n: number, word: string) =>
 		`${n} ${word}${n === 1 ? "" : "s"}`;
@@ -116,7 +135,7 @@ const Quick = () => {
 					tierCounts[Tiers.Good].brandActivations
 				),
 			],
-			includedCampaigns: goodIds,
+			includedCampaigns: tierIds[Tiers.Good],
 			snapshot: {
 				info: "Essential foundations to stay visible all year — quarterly campaigns, core assets, light community activity.",
 				budget: "£1,500 (flex up/down based on asset and activation scope)."}},
@@ -137,7 +156,7 @@ const Quick = () => {
 					tierCounts[Tiers.Better].brandActivations
 				),
 			],
-			includedCampaigns: betterIds,
+			includedCampaigns: tierIds[Tiers.Better],
 			snapshot: {
 				info: "Balanced calendar for steady growth — more campaigns, stronger windows/POS, and one or two standout activations.",
 				budget: "£2,500 (flex with bespoke assets or local media)."}},
@@ -158,26 +177,23 @@ const Quick = () => {
 					tierCounts[Tiers.Best].brandActivations
 				),
 			],
-			includedCampaigns: bestIds,
+			includedCampaigns: tierIds[Tiers.Best],
 			snapshot: {
 				info: "Always-on, growth-focused presence — multiple campaigns per quarter, premium creative, events and targeted media.",
 				budget: "£3,750+ (flex for event scale, production and paid activity)."}},
 	];
 
 	const handleConfirm = () => {
-		if (!selections?.length) return;
-		const catalog = (state?.allCampaigns?.data ?? []) as Campaign[];
-		const idSet = new Set(selections.map(String));
-		const campaigns = catalog.filter((c) => idSet.has(String(c.id)));
-
-		if (!campaigns.length) {
-			toast.error("Could not find campaign data for selected tier");
+		const campaignIds = tier ? [...tierIds[tier]] : [];
+		if (!campaignIds.length) {
+			toast.error(`No campaigns in this tier can still run in ${planYear}`);
 			return;
 		}
 
 		bulkAdd(
 			{
-				campaigns,
+				campaignIds,
+				year: planYear,
 				from: null,
 				to: null,
 				source: SelectionsSource.Quick,
@@ -231,10 +247,28 @@ const Quick = () => {
 								{activePracticeName}.
 							</Text>{" "}
 							<Text span fw={700} c="gray.9">
-								Selecting a tier will pre-populate your 2025
-								calendar; you can edit or remove items anytime.
+								Selecting a tier adds its campaigns to your{" "}
+								{planYear} plan as drafts; you can edit or remove
+								items anytime.
 							</Text>
 						</Text>
+						{years.length > 1 && (
+							<Flex align="center" gap={10} mt={10}>
+								<Text size="sm" fw={600}>
+									Plan for
+								</Text>
+								<SegmentedControl
+									size="xs"
+									radius={10}
+									value={String(planYear)}
+									onChange={(v) => setPlanYear(Number(v))}
+									data={years.map((y) => ({
+										value: String(y),
+										label: String(y),
+									}))}
+								/>
+							</Flex>
+						)}
 					</Stack>
 				}
 				centered
@@ -254,7 +288,6 @@ const Quick = () => {
 								)}
 								onClick={() => {
 									setTier(t.name);
-									setSelections(t.includedCampaigns);
 								}}
 							>
 								<Flex

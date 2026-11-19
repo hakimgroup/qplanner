@@ -157,7 +157,12 @@ const Edit = ({ opened = false, closeModal, selection: s }: EditProps) => {
       },
       {
         onError: (e: any) =>
-          toast.error(e?.message ?? "Could not save changes"),
+          toast.error(
+            // A campaign can be booked once per year (unique index).
+            e?.code === "23505"
+              ? `${s.name ?? "This campaign"} is already on your plan for ${(from as Date).getFullYear()}. Choose dates in another year.`
+              : (e?.message ?? "Could not save changes"),
+          ),
       }
     );
   };

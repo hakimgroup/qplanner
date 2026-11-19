@@ -3,11 +3,14 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/api/supabase";
 import { useAuth } from "@/shared/AuthProvider";
 import { DatabaseTables } from "@/shared/shared.models";
+import { Availability } from "@/shared/planningYears";
 
 type TierContextModel = {
 	goodIds: string[];
 	betterIds: string[];
 	bestIds: string[];
+	/** Each tier campaign's availability window (recurs every year). */
+	availabilityById: Record<string, Availability>;
 	loading: boolean;
 	refresh: () => void;
 };
@@ -16,6 +19,7 @@ const TierContext = createContext<TierContextModel>({
 	goodIds: [],
 	betterIds: [],
 	bestIds: [],
+	availabilityById: {},
 	loading: false,
 	refresh: () => {},
 });
@@ -29,15 +33,17 @@ export const TierProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [goodIds, setGood] = useState<string[]>([]);
 	const [betterIds, setBetter] = useState<string[]>([]);
 	const [bestIds, setBest] = useState<string[]>([]);
+	const [availabilityById, setAvailabilityById] = useState<
+		Record<string, Availability>
+	>({});
 	const [loading, setLoading] = useState<boolean>(false);
 
 	const fetchTiers = async () => {
 		if (!user) return;
 		setLoading(true);
 
-		// Fetch tier rows. We filter hidden + ISO-date-expired client-side
-		// so a campaign that's been hidden or rolled past its 'to' date
-		// stops appearing in Quick Populate batches silently.
+		// Fetch tier rows (hidden ones excluded). Availability windows recur
+		// every year, so Quick Populate filters by the year being planned.
 		const { data, error } = await supabase
 			.from(DatabaseTables.CampaignsCatalog)
 			.select("id, tiers, hidden, availability")
@@ -45,19 +51,8 @@ export const TierProvider: React.FC<{ children: React.ReactNode }> = ({
 			.eq("hidden", false);
 
 		if (!error && Array.isArray(data)) {
-			const today = new Date();
-			today.setHours(0, 0, 0, 0);
-
-			const isExpired = (availability: any): boolean => {
-				const to = availability?.to;
-				if (typeof to !== "string") return false;
-				// Month codes (JAN, FEB, ...) recur every year and never expire.
-				if (!/^\d{4}-\d{2}-\d{2}$/.test(to)) return false;
-				const toDate = new Date(to);
-				return toDate < today;
-			};
-
 			const good = new Set<string>();
+			const windows: Record<string, Availability> = {};
 			const better = new Set<string>();
 			const best = new Set<string>();
 
@@ -67,7 +62,7 @@ export const TierProvider: React.FC<{ children: React.ReactNode }> = ({
 				hidden: boolean;
 				availability: { from?: string; to?: string } | null;
 			}>) {
-				if (isExpired(row.availability)) continue;
+				windows[row.id] = row.availability;
 
 				const tArr = Array.isArray(row.tiers)
 					? row.tiers.map((t) => t?.toLowerCase?.() ?? t)
@@ -81,6 +76,7 @@ export const TierProvider: React.FC<{ children: React.ReactNode }> = ({
 			setGood([...good]);
 			setBetter([...better]);
 			setBest([...best]);
+			setAvailabilityById(windows);
 		}
 
 		setLoading(false);
@@ -115,10 +111,11 @@ export const TierProvider: React.FC<{ children: React.ReactNode }> = ({
 			goodIds,
 			betterIds,
 			bestIds,
+			availabilityById,
 			loading,
 			refresh: fetchTiers,
 		}),
-		[goodIds, betterIds, bestIds, loading]
+		[goodIds, betterIds, bestIds, availabilityById, loading]
 	);
 
 	return (

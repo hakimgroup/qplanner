@@ -13,7 +13,8 @@ import {
 	Badge,
 	Group,
 	Button,
-	Box} from "@mantine/core";
+	Box,
+	SegmentedControl} from "@mantine/core";
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -26,6 +27,7 @@ import { useState } from "react";
 import GuidedResult from "./GuidedResult";
 import { useGuidedCampaigns } from "@/hooks/campaign.hooks";
 import { useIsMobile } from "@/shared/shared.hooks";
+import { planningYears } from "@/shared/planningYears";
 
 const StyledSlider = ({
 	i = 0,
@@ -79,7 +81,10 @@ const Guided = () => {
 	const [resultsOpened, { open: openResults, close: closeResults }] =
 		useDisclosure(false);
 
+	// Guided plans one year at a time; default to the latest open year.
+	const years = planningYears();
 	const [selections, setSelections] = useState({
+		year: years[years.length - 1],
 		clinical: 50,
 		frame: 50,
 		lens: 50,
@@ -200,6 +205,7 @@ const Guided = () => {
 				{resultsOpened && (
 					<GuidedResult
 						data={data}
+						year={selections.year}
 						goBack={() => {
 							closeResults();
 						}}
@@ -212,6 +218,26 @@ const Guided = () => {
 
 				{!resultsOpened && (
 					<>
+						{years.length > 1 && (
+							<Stack gap={6} mb={20}>
+								<Text fw={500}>Which year are you planning?</Text>
+								<SegmentedControl
+									radius={10}
+									value={String(selections.year)}
+									onChange={(v) =>
+										setSelections((prev) => ({
+											...prev,
+											year: Number(v),
+										}))
+									}
+									data={years.map((y) => ({
+										value: String(y),
+										label: String(y),
+									}))}
+								/>
+							</Stack>
+						)}
+
 						{selectionRanges.map((tp, i) => (
 							<StyledSlider
 								i={i}

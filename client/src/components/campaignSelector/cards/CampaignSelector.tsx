@@ -158,7 +158,7 @@ const CampaignSelectorCards = () => {
 				{!loading && viewCampaigns.length > 0 && (
 					<>
 						{viewCampaigns.map((c: any) => (
-							<Grid.Col span={spanCol} key={c.id}>
+							<Grid.Col span={spanCol} key={c.selection_id ?? c.id}>
 								<CampaignCard {...c} />
 							</Grid.Col>
 						))}

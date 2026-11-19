@@ -6,8 +6,8 @@
 
 | From             | To               | Triggered By                  | RPC / Mechanism                               |
 | ---------------- | ---------------- | ----------------------------- | --------------------------------------------- |
-| —                | `draft`          | Quick Populate (tier-based)   | `add_campaigns_bulk` with `p_status='draft'`  |
-| —                | `draft`          | Guided Recommendations         | `add_campaigns_bulk` with `p_status='draft'`  |
+| —                | `draft`          | Quick Populate (tier-based)   | `add_campaigns_bulk_v2` with the planning year |
+| —                | `draft`          | Guided Recommendations         | `add_campaigns_bulk_v2` with the planning year |
 | —                | `draft`          | Copy practice campaigns (catalog rows without a chosen creative) | `copy_practice_campaigns_v2` |
 | `draft`          | `inProgress`     | Practice clicks "Send to Design Team" | `submit_draft_selection`              |
 | —                | `inProgress`     | Practice adds a catalog campaign with asset choices | `add_campaign_with_assets`                    |

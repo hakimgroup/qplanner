@@ -23,14 +23,17 @@ import { updateState } from "@/shared/shared.utilities";
 import View from "@/components/campaignSelector/View";
 import { isEmpty } from "lodash";
 import { formatAvailabilityForUI } from "@/shared/shared.utilities";
+import { windowForYear } from "@/shared/planningYears";
 
 interface Props {
 	data: Campaign[];
+	/** The planning year the recommendations are for. */
+	year: number;
 	closeModal: () => void;
 	goBack: () => void;
 }
 
-const GuidedResult = ({ data, goBack, closeModal }: Props) => {
+const GuidedResult = ({ data, year, goBack, closeModal }: Props) => {
 	const { setState } = useContext(AppContext);
 	const { mutate: bulkAdd, isPending: adding } = useBulkAddCampaignsWithAssets();
 	const [dt, setDt] = useState(data);
@@ -40,6 +43,7 @@ const GuidedResult = ({ data, goBack, closeModal }: Props) => {
 		bulkAdd(
 			{
 				campaigns: dt,
+				year,
 				from: null,
 				to: null,
 				source: SelectionsSource.Guided,
@@ -124,7 +128,9 @@ const GuidedResult = ({ data, goBack, closeModal }: Props) => {
 								>
 									<Stack align="flex-end" gap={10}>
 										<Text size="xs" c="gray.6" fw={500}>
-											{formatAvailabilityForUI(d.availability)}
+											{formatAvailabilityForUI(
+												windowForYear(d.availability, year) ?? undefined
+											)}
 										</Text>
 
 										<Badge

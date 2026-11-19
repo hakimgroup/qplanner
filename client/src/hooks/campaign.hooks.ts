@@ -471,53 +471,71 @@ export function useBulkAddCampaigns() {
 }
 
 export function useBulkAddCampaignsWithAssets() {
-  // Kept as a thin alias for back-compat with previous call sites.
-  // Forwards to the existing legacy useBulkAddCampaigns hook with status='draft'
-  // so Quick/Guided populate the practice's plan as drafts.
+  // Quick Populate / Guided: books each campaign as a draft for its window in
+  // the chosen planning year (add_campaigns_bulk_v2). Campaigns already booked
+  // that year, or whose window has passed, are skipped by the server.
   const qc = useQueryClient();
   const { activePracticeId } = usePractice();
   const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (input: {
-      campaigns: Campaign[];
+      campaigns?: Campaign[];
+      campaignIds?: string[];
+      year: number;
       from?: Date | string | null;
       to?: Date | string | null;
       source?: string | null;
     }) => {
-      const { campaigns, from, to, source } = input;
+      const { campaigns, year, from, to, source } = input;
       if (!activePracticeId) throw new Error("No active practice selected.");
-      if (!Array.isArray(campaigns) || campaigns.length === 0) {
+
+      const campaignIds = [
+        ...new Set(
+          (input.campaignIds ?? (campaigns ?? []).map((c) => c.id)).filter(
+            (id): id is string => Boolean(id),
+          ),
+        ),
+      ];
+      if (campaignIds.length === 0) {
         throw new Error("No campaigns selected.");
       }
 
-      const campaignIds = campaigns
-        .map((c) => c.id)
-        .filter((id): id is string => Boolean(id));
-
-      const { error } = await supabase.rpc(RPCFunctions.AddCampaignsBulk, {
+      const { data, error } = await supabase.rpc(RPCFunctions.AddCampaignsBulkV2, {
         p_practice: activePracticeId,
         p_campaign_ids: campaignIds,
-        p_from_date: from ?? null,
-        p_to_date: to ?? null,
+        p_year: year,
         p_status: "draft",
         p_notes: null,
         p_source: source ?? null,
       });
 
       if (error) throw error;
+      const succeeded = Array.isArray(data) ? data.length : 0;
       return {
-        succeeded: campaignIds.length,
-        failed: 0,
-        total: campaigns.length,
+        succeeded,
+        skipped: campaignIds.length - succeeded,
+        total: campaignIds.length,
+        year,
         from,
         to,
       };
     },
-    onSuccess: async ({ succeeded, total, from, to }) => {
-      toast.success(
-        `${succeeded} campaign${succeeded === 1 ? "" : "s"} added to your plan as draft${succeeded === 1 ? "" : "s"}`,
-      );
+    onSuccess: async ({ succeeded, skipped, total, year, from, to }) => {
+      const skippedNote =
+        skipped > 0
+          ? ` ${skipped} skipped: already on your ${year} plan or no longer available in ${year}.`
+          : "";
+      if (succeeded > 0) {
+        toast.success(
+          `${succeeded} campaign${succeeded === 1 ? "" : "s"} added to your ${year} plan as draft${succeeded === 1 ? "" : "s"}.${skippedNote}`,
+        );
+      } else {
+        toast.info(
+          `Nothing new to add: these campaigns are already on your ${year} plan or no longer available in ${year}.`,
+        );
+        return;
+      }
 
       qc.invalidateQueries({
         queryKey: [DatabaseTables.CampaignsCatalog],
@@ -561,8 +579,9 @@ export function useBulkAddCampaignsWithAssets() {
 function keyGuided(params?: GuidedParams, practiceId?: string | null) {
   // Keep the key stable—order matters
   return [
-    RPCFunctions.GetGuidedCampaigns,
+    RPCFunctions.GetGuidedCampaignsV2,
     practiceId ?? null,
+    params?.year ?? null,
     params?.clinical ?? null,
     params?.frame ?? null,
     params?.lens ?? null,
@@ -600,7 +619,7 @@ export function useGuidedCampaigns<TData = Campaign[]>(
       if (!params) return [];
 
       const { data, error } = await supabase.rpc(
-        RPCFunctions.GetGuidedCampaigns,
+        RPCFunctions.GetGuidedCampaignsV2,
         {
           p_clinical: params.clinical,
           p_frame: params.frame,
@@ -612,6 +631,7 @@ export function useGuidedCampaigns<TData = Campaign[]>(
           p_event_ready: params.eventReady,
           p_activity: Math.max(0, Math.min(100, Math.round(params.activity))),
           p_practice: activePracticeId ?? null,
+          p_year: params.year ?? null,
         }
       );
 

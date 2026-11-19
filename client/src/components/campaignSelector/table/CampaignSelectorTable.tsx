@@ -11,7 +11,12 @@ import {
 	Badge,
 	Group,
 } from "@mantine/core";
-import { IconEdit, IconPlus, IconSearch } from "@tabler/icons-react";
+import {
+	IconCalendarPlus,
+	IconEdit,
+	IconPlus,
+	IconSearch,
+} from "@tabler/icons-react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import filtersData from "@/filters.json";
@@ -23,6 +28,13 @@ import Table from "@/components/table/Table";
 import Bespoke from "@/components/campaignsSetup/bespoke/Bespoke";
 import Edit from "../Edit";
 import View from "../View";
+import {
+	ADD_YEAR_GRADIENT,
+	bookableYears,
+	formatRecurringWindow,
+} from "@/shared/planningYears";
+import { CampaignBooking } from "@/models/campaign.models";
+import { SelectionStatus } from "@/shared/shared.models";
 import {
 	filterCampaignsByQuery,
 	formatAvailabilityForUI,
@@ -163,6 +175,9 @@ const CampaignSelectorTable = () => {
 			sortable: false,
 			filter: false,
 			valueGetter: (p) => {
+				if (!p?.data?.selected && !isSelections) {
+					return formatRecurringWindow(p?.data?.availability);
+				}
 				const from = p?.data?.availableDates?.from ?? null;
 				const to = p?.data?.availableDates?.to ?? null;
 				return formatAvailabilityForUI({
@@ -207,8 +222,23 @@ const CampaignSelectorTable = () => {
 			sortable: false,
 			filter: false,
 			cellRenderer: ({ data }: any) => {
-				const id = data?.id ?? null;
+				// One row per booking: key the drawers by booking, not campaign.
+				const id = data?.rowKey ?? null;
 				if (!id) return null;
+				const isCatalogRow = !data?.is_bespoke && !data?.is_event;
+				const openYears = isCatalogRow
+					? bookableYears(
+							data?.availability,
+							(data?.bookings ?? []).map((b: CampaignBooking) => b.year),
+						)
+					: [];
+				const showAddYear =
+					!isSelections &&
+					data.selected &&
+					openYears.length > 0 &&
+					data.status !== SelectionStatus.OnPlan &&
+					data.status !== SelectionStatus.Draft;
+				const showAdd = !data.selected && (!isCatalogRow || openYears.length > 0);
 				return (
 					<Flex justify="flex-end" align="center" gap={8} w="inherit">
 						<Button
@@ -221,7 +251,19 @@ const CampaignSelectorTable = () => {
 						>
 							View
 						</Button>
-						{isSelections || data.selected ? (
+						{showAddYear ? (
+							<Button
+								size="xs"
+								radius={10}
+								variant="gradient"
+								gradient={ADD_YEAR_GRADIENT}
+								fw={700}
+								leftSection={<IconCalendarPlus size={14} stroke={3} />}
+								onClick={() => setMode({ type: "add", id })}
+							>
+								{openYears.length === 1 ? `Add ${openYears[0]}` : "Add"}
+							</Button>
+						) : isSelections || data.selected ? (
 							<Button
 								size="xs"
 								radius={10}
@@ -235,7 +277,7 @@ const CampaignSelectorTable = () => {
 							>
 								Edit
 							</Button>
-						) : (
+						) : showAdd ? (
 							<Button
 								size="xs"
 								radius={10}
@@ -245,7 +287,7 @@ const CampaignSelectorTable = () => {
 							>
 								Add
 							</Button>
-						)}
+						) : null}
 						<Edit
 							selection={data}
 							opened={mode.type === "edit" && mode.id === id}
@@ -288,6 +330,8 @@ const CampaignSelectorTable = () => {
 
 				// keep the fields your column defs expect
 				id: c?.id ?? String(Math.random()),
+				// Unique per row: a campaign can have one booking per year.
+				rowKey: c?.selection_id ?? c?.id ?? String(Math.random()),
 				campaign: c?.name ?? "—",
 				description: c?.description ?? "",
 				section: c?.category ?? "—",
@@ -394,6 +438,7 @@ const CampaignSelectorTable = () => {
 				loading={!!allCampaigns?.loading}
 				rows={Array.isArray(viewRows) ? viewRows : []}
 				cols={colDefs}
+				rowIdField="rowKey"
 				enableSelection={false}
 				height={550}
 				onSelect={(r) => setSelectedRows(r.map((cp) => cp.id))}

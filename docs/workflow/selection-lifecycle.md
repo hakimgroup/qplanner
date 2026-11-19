@@ -27,14 +27,35 @@ Drafts are practice-only — admins do not see them. Pre-cutover selections cont
 | Bespoke campaign creation | `inProgress` | `create_bespoke_selection_v2` |
 | Bespoke event creation | `inProgress` | `create_bespoke_event_v2` |
 | Copy practice campaigns (source has chosen creative) | `inProgress` | `copy_practice_campaigns_v2` |
-| Quick Populate (tier-based) | `draft` | `add_campaigns_bulk` with `p_status='draft'` |
-| Guided Recommendations | `draft` | `add_campaigns_bulk` with `p_status='draft'` |
+| Quick Populate (tier-based) | `draft` | `add_campaigns_bulk_v2` with the planning year |
+| Guided Recommendations | `draft` | `add_campaigns_bulk_v2` with the planning year |
 | Copy practice campaigns (source has no chosen creative) | `draft` | `copy_practice_campaigns_v2` |
 | Practice clicks "Send to Design Team" on a draft | `draft → inProgress` | `submit_draft_selection` |
 
 For `inProgress` entry points: payload includes chosen creative, assets, dates, etc., and notifies admins (`audience = 'admins'`); writes a `selection_status_history` row with `from_status = NULL`. For bespoke flows the chosen creative is the default Hakim brand creative (auto-applied server-side); the design team reaches out with options later.
 
 For `draft` entry points: no admin notification, no email. The selection sits in the practice's plan with a "Send to Design Team" CTA. When clicked, the practice picks a creative + configures asset choices via the same `SubmitChoicesModal` used elsewhere, and the RPC transitions the selection to `inProgress` (firing the standard `inProgress` notification + email).
+
+## Booking a campaign once per year (Nov 2026)
+
+A practice can book each catalog campaign **once per year**: the year of the booking's start date. Christmas can be on the plan for 2026 and again for 2027, but not twice in 2027. Bespoke campaigns and events are unaffected.
+
+- **Enforced by** the unique index `selections_practice_campaign_year_unique` on `(practice_id, campaign_id, year of from_date)`. `add_campaign_with_assets` returns *"campaign already booked for this practice in 2027"* for a second booking in the same year, and Quick Populate / Guided skip campaigns already booked that year.
+- **Availability windows recur every year.** A campaign's `availability` is stored with one set of dates (e.g. 1–25 Dec 2026) and is offered as the same window in every open year. Cards show it without a year ("Dec 01 - Dec 25", or "All year").
+- **Open years** run from the current year to `LAST_PLANNING_YEAR` in `client/src/shared/planningYears.ts` (2027 at launch). Bump it to open the next year.
+- **Lead time:** a catalog booking can't start sooner than a week from today, so this year's window is offered only while it can still be booked.
+
+What practices see:
+
+| Surface | Behaviour |
+| --- | --- |
+| Browse cards / table | One card per campaign. A badge lists the years already booked. **Add 2027** appears on a booked campaign while another year is open. |
+| Campaign drawer | *On your plan* lists each year's booking. **Book for 2027** (or a year picker when several years are open) limits the dates to that year's window. The new booking starts from the catalog's current assets. |
+| My Plan (cards / table) | Every booking is its own card or row. |
+| Calendar | A year switch. Bookings that cross New Year are clipped to the year shown. |
+| Quick Populate / Guided | A *Plan for* year (defaults to the latest open year). Tier counts and recommendations only include campaigns whose window can still run that year. |
+
+Data: `get_campaigns_v2` returns one row per booking (plus `is_primary` for Browse and `catalog_assets`). See `supabase/supabase_bookings_per_year.sql`.
 
 ## Step-by-Step
 

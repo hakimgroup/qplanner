@@ -80,6 +80,25 @@ export interface Campaign {
   focus?: string;
   duration?: string;
   bespoke_campaign_id?: string;
+  /** The catalog's asset template (get_campaigns_v2). On a booked row `assets` are that booking's own. */
+  catalog_assets?: Assets | null;
+  /**
+   * get_campaigns_v2 returns one row per booking. Browse shows one row per
+   * catalog campaign: the main booking, or the unbooked row.
+   */
+  is_primary?: boolean;
+  /** Added in AppProvider: every booking of this catalog campaign in the current view. */
+  bookings?: CampaignBooking[];
+}
+
+/** One booking of a catalog campaign. Bookings are unique per campaign per year. */
+export interface CampaignBooking {
+  selection_id: string;
+  year: number;
+  status?: SelectionStatus;
+  from?: string;
+  to?: string;
+  practice_id?: string;
 }
 
 export type CreateBespokeInput = {
@@ -153,6 +172,7 @@ export type GuidedParams = {
   supplierBrand: boolean; // maps to category = 'Brand Activations'
   eventReady: boolean; // maps to custom_events = true
   activity: number; // 0..100 (maps to 2..20 in RPC)
+  year?: number; // planning year: excludes only campaigns already booked that year
 };
 
 export interface AdminModalSelection {

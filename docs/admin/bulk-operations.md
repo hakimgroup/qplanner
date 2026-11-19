@@ -7,7 +7,9 @@ Practices can populate their plan with multiple campaigns at once via:
 - **Guided Recommendations** — answer a short questionnaire; the system recommends a campaign mix.
 
 ### Behaviour
-Both surfaces call `add_campaigns_bulk` with `p_status='draft'`. Selections land in the practice's plan as drafts — **no admin notification, no email, no Trello card**. The practice then opens each draft individually, configures it (creative + asset choices) via `SubmitChoicesModal`, and clicks "Send to Design Team" to transition the selection to `inProgress`.
+Both surfaces ask which year is being planned (*Plan for*, defaulting to the latest open year) and call `add_campaigns_bulk_v2` with that year and `p_status='draft'`. Each campaign is booked for its availability window in that year, starting no sooner than a week from today. Campaigns already booked that year, or whose window has passed, are skipped, and the toast says how many were added and skipped.
+
+Selections land in the practice's plan as drafts — **no admin notification, no email, no Trello card**. The practice then opens each draft individually, configures it (creative + asset choices) via `SubmitChoicesModal`, and clicks "Send to Design Team" to transition the selection to `inProgress`.
 
 This separates planning from production: a tier batch of 10 draft selections doesn't generate any noise until the practice deliberately submits them.
 
@@ -82,6 +84,8 @@ Clone one practice's campaign selections to another. Available from the **Calend
 
 ### Behaviour (post-cutover)
 The hook calls `copy_practice_campaigns_v2`. **Only catalog campaigns are copied** — bespoke campaigns and events are inherently per-practice (custom briefs) and are intentionally excluded. The UI shows a notice explaining this when the practice opens the copy panel.
+
+A source booking is skipped only when the target practice already has the same campaign booked **in the same year**.
 
 Per copied catalog row:
 

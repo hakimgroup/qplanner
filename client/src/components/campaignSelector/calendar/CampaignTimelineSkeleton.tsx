@@ -10,7 +10,8 @@ import {
 	Card,
 	rgba,
 	Stack,
-	Spoiler} from "@mantine/core";
+	Spoiler,
+	SegmentedControl} from "@mantine/core";
 import GradientDivider from "@/components/gradientDivider/GradientDivider";
 import { IconCircleFilled, IconGridDots } from "@tabler/icons-react";
 import { Fragment, useContext, useMemo, useState } from "react";
@@ -23,6 +24,7 @@ import { isEmpty } from "lodash";
 import { status } from "@/filters.json";
 import Event from "@/components/campaignsSetup/event/Event";
 import { useIsMobile } from "@/shared/shared.hooks";
+import { bookingYear, planningYears } from "@/shared/planningYears";
 
 /** =========================
  *  CONFIG & TYPES
@@ -125,11 +127,17 @@ function getQuarterWidthsFromMonths(monthFractions: number[]) {
  *  LANE LAYOUT (OVERLAP STACKING)
  *  ========================= */
 type Interval = {
-	id: Campaign["id"];
+	id: string;
 	startMs: number;
 	endMsIncl: number;
 	campaign: Campaign;
 };
+
+/** One bar per booking: a catalog campaign can be booked once per year. */
+const barKey = (c: Campaign) => String(c.selection_id ?? c.id);
+
+/** The booking as stored, before the calendar clipped it to a year or half. */
+type Bar = Campaign & { __booking?: Campaign };
 
 function toIntervals(campaigns: Campaign[]): Interval[] {
 	return campaigns
@@ -137,7 +145,7 @@ function toIntervals(campaigns: Campaign[]): Interval[] {
 			const s = new Date(c.selection_from_date);
 			const e = new Date(c.selection_to_date);
 			return {
-				id: c.id,
+				id: barKey(c),
 				startMs: s.getTime(),
 				endMsIncl: msInclusive(e).getTime(),
 				campaign: c};
@@ -148,7 +156,7 @@ function toIntervals(campaigns: Campaign[]): Interval[] {
 function layoutLanes(campaigns: Campaign[]) {
 	const intervals = toIntervals(campaigns);
 	const lanes: Interval[][] = [];
-	const laneIndexById = new Map<Campaign["id"], number>();
+	const laneIndexById = new Map<string, number>();
 
 	for (const it of intervals) {
 		let placed = false;
@@ -284,7 +292,7 @@ function CampaignRow({
 	minBlockWidth?: number;
 	labelWidth?: number;
 }) {
-	const [cp, setCp] = useState<Campaign>(null);
+	const [cp, setCp] = useState<Bar>(null);
 	const { laneIndexById, lanes } = layoutLanes(group.campaigns);
 	const laneCount = lanes.length;
 	const containerHeight =
@@ -333,11 +341,11 @@ function CampaignRow({
 					>
 						{group.campaigns.map((c) => {
 							const pos = calcPos(c);
-							const lane = laneIndexById.get(c.id) ?? 0;
+							const lane = laneIndexById.get(barKey(c)) ?? 0;
 							const top = 8 + lane * (laneHeight + laneGap);
 
 							return (
-								<Fragment key={c.id}>
+								<Fragment key={barKey(c)}>
 									<Box
 										pos="absolute"
 										style={{
@@ -363,7 +371,7 @@ function CampaignRow({
 												c.status
 											)}`,
 											cursor: "pointer"}}
-										title={`${c.name} (${c.selection_from_date}–${c.selection_to_date})`}
+										title={`${c.name} (${(c as Bar).__booking?.selection_from_date ?? c.selection_from_date}–${(c as Bar).__booking?.selection_to_date ?? c.selection_to_date})`}
 										onClick={() => setCp(c)}
 									>
 										<IconGridDots size={10} color="white" />
@@ -380,9 +388,9 @@ function CampaignRow({
 
 									{!isEmpty(cp) && (
 										<Edit
-											selection={cp}
+											selection={cp.__booking ?? cp}
 											opened={
-												!isEmpty(cp) && cp.id === c.id
+												!isEmpty(cp) && barKey(cp) === barKey(c)
 											}
 											closeModal={() => setCp(null)}
 										/>
@@ -406,11 +414,24 @@ export default function CampaignTimeline({
 }) {
 	const isMobile = useIsMobile();
 	const labelWidth = isMobile ? LABEL_COL_WIDTH_MOBILE : LABEL_COL_WIDTH;
-	const calendarYear = 2026;
-
 	const {
 		state: {
 			allCampaigns: { data }}} = useContext(AppContext);
+
+	// Years to offer: every open planning year plus any year with a booking.
+	const yearOptions = useMemo(() => {
+		const years = new Set<number>(planningYears());
+		for (const c of data || []) {
+			const y = bookingYear(c.selection_from_date);
+			const y2 = bookingYear(c.selection_to_date);
+			if (y !== null) years.add(y);
+			if (y2 !== null) years.add(y2);
+		}
+		return [...years].sort((a, b) => a - b);
+	}, [data]);
+	const [calendarYear, setCalendarYear] = useState<number>(() =>
+		new Date().getFullYear()
+	);
 
 	// We’ll use the current practice/unitedView to decide grouping.
 	const { unitedView, activePracticeId, practices } = usePractice() as {
@@ -428,18 +449,39 @@ export default function CampaignTimeline({
 	const { h1Groups, h2Groups } = useMemo(() => {
 		const byPractice: Record<string, Campaign[]> = {};
 
+		const yearStart = `${calendarYear}-01-01`;
+		const yearEnd = `${calendarYear}-12-31`;
+
 		// Filter by context: single practice vs united (all practices current user can see are already represented in campaigns)
-		const filtered = (data || []).filter((c) => {
-			if (
-				!c.selection_from_date ||
-				!c.selection_to_date ||
-				!c.selection_practice_id
-			)
-				return false;
-			if (unitedView) return true;
-			if (!activePracticeId) return false;
-			return String(c.selection_practice_id) === String(activePracticeId);
-		});
+		const filtered = (data || [])
+			.filter((c) => {
+				if (
+					!c.selection_from_date ||
+					!c.selection_to_date ||
+					!c.selection_practice_id
+				)
+					return false;
+				// Only bookings that touch the selected year
+				if (c.selection_to_date < yearStart || c.selection_from_date > yearEnd)
+					return false;
+				if (unitedView) return true;
+				if (!activePracticeId) return false;
+				return String(c.selection_practice_id) === String(activePracticeId);
+			})
+			// Clip bookings that cross New Year to the selected year, keeping
+			// the stored booking for the Edit modal.
+			.map((c): Bar =>
+				c.selection_from_date < yearStart || c.selection_to_date > yearEnd
+					? {
+							...c,
+							__booking: c,
+							selection_from_date:
+								c.selection_from_date < yearStart ? yearStart : c.selection_from_date,
+							selection_to_date:
+								c.selection_to_date > yearEnd ? yearEnd : c.selection_to_date,
+					  }
+					: c
+			);
 
 		// Transform into Campaign items grouped by practice
 		for (const c of filtered) {
@@ -480,9 +522,11 @@ export default function CampaignTimeline({
 					gH2.campaigns.push(it);
 				} else {
 					// spans across: split at July 1
-					const left: Campaign = { ...it, selection_to_date: h1End };
-					const right: Campaign = {
+					const booking = (it as Bar).__booking ?? it;
+					const left: Bar = { ...it, __booking: booking, selection_to_date: h1End };
+					const right: Bar = {
 						...it,
+						__booking: booking,
 						selection_from_date: h2Start};
 					gH1.campaigns.push(left);
 					gH2.campaigns.push(right);
@@ -494,12 +538,12 @@ export default function CampaignTimeline({
 		});
 
 		return { h1Groups: groupsH1, h2Groups: groupsH2 };
-	}, [data, unitedView, activePracticeId, practices]);
+	}, [data, unitedView, activePracticeId, practices, calendarYear]);
 
-	// derive total planned for header badge
-	const plannedCount =
-		h1Groups.reduce((n, g) => n + g.campaigns.length, 0) +
-		h2Groups.reduce((n, g) => n + g.campaigns.length, 0);
+	// Bookings planned in the year (a booking split across halves counts once)
+	const plannedCount = new Set(
+		[...h1Groups, ...h2Groups].flatMap((g) => g.campaigns.map(barKey))
+	).size;
 
 	return (
 		<Box style={{ overflowX: "auto" }}>
@@ -520,6 +564,18 @@ export default function CampaignTimeline({
 				</Text>
 
 				<Flex align="center" gap={10} wrap="wrap">
+					{yearOptions.length > 1 && (
+						<SegmentedControl
+							radius={10}
+							size="sm"
+							value={String(calendarYear)}
+							onChange={(v) => setCalendarYear(Number(v))}
+							data={yearOptions.map((y) => ({
+								value: String(y),
+								label: String(y),
+							}))}
+						/>
+					)}
 					<Badge variant="outline" color="gray.1">
 						<Text size="xs" fw={500} c={"gray.9"}>
 							{plannedCount} campaigns planned
