@@ -41,7 +41,13 @@ export type CampaignId =
 	| "festive-retail-moments"
 	| "festive-in-practice"
 	| "festive-gifting"
-	| "festive-local-pr";
+	| "festive-local-pr"
+	// The Q1 2027 Focus Toolkit. Groups again, like Festive: each id is a page
+	// holding one or two activities, and the route names its own destination.
+	| "q1-get-ready"
+	| "q1-seasonal-campaigns"
+	| "q1-half-term"
+	| "q1-brand-activations";
 
 export const MARKETING = "marketing@hakimgroup.co.uk";
 
@@ -134,6 +140,45 @@ export const FESTIVE_ORDER = {
 	window: FESTIVE,
 } as const;
 
+/**
+ * Q1 2027 Focus Toolkit destinations, keyed by the route that orders them.
+ *
+ * Every one of these is the planner itself, not a campaign card, and that is
+ * deliberate. The Q1 brief links "Planner" on all twelve content slides to the
+ * same URL — `?campaign=729bef72-…`, which is the Q4 Festive card, carried over
+ * from the festive deck. Wiring Q1 buttons to it would open a Christmas campaign
+ * from a half term page. The catalogue held no cards named for the Q1 platforms,
+ * half term, the family voucher or independent brands when this was written
+ * (23 November 2026), so each resolves to the dashboard until its card exists.
+ *
+ * Replace each `PLANNER_HOME` with `planner("<uuid>")` as the cards are created.
+ * That is the only edit needed; the pages read from here.
+ */
+export const Q1_ORDER = {
+	planner: PLANNER_HOME,
+	platformA: PLANNER_HOME,
+	platformB: PLANNER_HOME,
+	myopia: PLANNER_HOME,
+	familyVoucher: PLANNER_HOME,
+	independentBrands: PLANNER_HOME,
+} as const;
+
+/** The evergreen family voucher assets, as linked from the Q1 brief. A SharePoint
+ *  folder on the Growth & Marketing site, so it opens for anyone signed in to
+ *  the Hakim tenant with access to that site. */
+export const FAMILY_VOUCHER_ASSETS =
+	"https://hakimgroupcouk.sharepoint.com/:f:/s/Growth-Marketing2/IgAotqaSI5FXSJ2lbQwy1D4DASmu-hJ0PkPSwSNRCS7wqIw?e=aWy2RZ";
+
+/** Booking the 2027 marketing call. The brief gives the booking link as "TBC"
+ *  and the marketing team as the contact, so until there is a booking page this
+ *  is a message to them with the subject filled in. Swap for the URL when it
+ *  exists — every "Book your marketing call" button reads from here. */
+export const BOOK_MARKETING_CALL = ask("Book my 2027 marketing call");
+
+/** Asking marketing about a bespoke myopia offer ahead of half term — the brief
+ *  sends practices to their Marketing Executive for it. */
+export const BESPOKE_MYOPIA_OFFER = ask("Bespoke myopia offer - February half term");
+
 /** The Give the Gift of Sight press release, as the Word template HQ fills in
  *  for each practice. Served from this site so practices can read what will go
  *  out with their name on it before they commit to the form. */
@@ -157,6 +202,11 @@ const CAMPAIGN: Record<CampaignId, string> = {
 	// The only toolkit group whose destination is not the planner at all: the PR
 	// team collects the details itself, on a deadline.
 	"festive-local-pr": GIFT_OF_SIGHT,
+	// Q1 groups. See Q1_ORDER: no campaign cards yet, so the planner itself.
+	"q1-get-ready": PLANNER_HOME,
+	"q1-seasonal-campaigns": PLANNER_HOME,
+	"q1-half-term": PLANNER_HOME,
+	"q1-brand-activations": PLANNER_HOME,
 };
 
 /** Supplier add-ons: a sign-up form where the supplier has one, otherwise a
@@ -233,6 +283,17 @@ const BRANDS: Record<CampaignId, Record<string, string>> = {
 		// Alcon and Bausch + Lomb were removed in the same amends: neither has been
 		// confirmed as happening. Taken out of the data rather than left as `tbc`,
 		// matching how Festive Windows handled its unconfirmed brands.
+	},
+	"q1-get-ready": {},
+	"q1-seasonal-campaigns": {},
+	"q1-half-term": {},
+	"q1-brand-activations": {
+		// Register-your-interest forms for the three Q1 brand windows, from the
+		// Q1 brief. Designs and timelines were still to be confirmed when these
+		// went up, so the forms collect interest rather than an order.
+		gotti: "https://form.jotform.com/TheHakimGroup/gotti-q1-window-campaigns",
+		"design-eyewear": "https://form.jotform.com/TheHakimGroup/_DEGQ1_WINDOW_CAMPAIGNS",
+		orgreen: "https://form.jotform.com/TheHakimGroup/orgreen-q1-window-campaigns",
 	},
 };
 

@@ -21,9 +21,13 @@ import { isPlaceholder } from "./types";
 import type { Brand } from "./types";
 
 export function SupplierSection({
+	title = "Supplier support",
 	lead,
 	foot,
 }: {
+	/** The section heading. "Supplier support" suits add-ons to a campaign; a page
+	 *  whose rows are the campaigns themselves — Q1's brand windows — names them. */
+	title?: string;
 	lead?: React.ReactNode;
 	/** The closing line. The default talks about ordering "the campaign", which is
 	 *  wrong on a page where the thing being ordered is an event. */
@@ -75,7 +79,7 @@ export function SupplierSection({
 			<div className="wrap">
 				<div className="section-head reveal">
 					<div>
-						<h2 className="display section-head__title">Supplier support</h2>
+						<h2 className="display section-head__title">{title}</h2>
 						<p className="lead">
 							{lead ??
 								"Brand assets are an add-on to this campaign, funded by the supplier, who provides the artwork, the training and the offer itself. Open one to see what it includes and how to take it up."}

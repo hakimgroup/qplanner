@@ -46,6 +46,7 @@ import {
 	useTypography,
 } from "../uypp-q4";
 import { FeedbackSection } from "../FeedbackSection";
+import { ToolkitCard } from "../FestiveBits";
 import { HUB } from "../CampaignShell";
 import { MARKETING_LINK } from "../links";
 import { TOOLKIT_FOOT, TOOLKIT_PAGES, TOOLKIT_PREMISE } from "../festive";
@@ -66,37 +67,6 @@ export const meta: LandingPageMeta = {
  *  never lights up. `#plan` is here without a chip on purpose: it stops the
  *  Gifting chip staying lit once you have scrolled past it. */
 const SPY_IDS = ["drivers", "reasons", "gifting", "plan"];
-
-/** One toolkit page, as a card. Same shape as the Q4 hub's campaign cards, minus
- *  the crossfading imagery — there is no imagery yet. */
-function ToolkitCard({ page }: { page: ToolkitPage }) {
-	return (
-		<Link className="card reveal" to={`/landing/${page.slug}`}>
-			<div className="card__tab">
-				<span className="card__month">{page.when}</span>
-			</div>
-			<div className="card__media">
-				{page.image ? (
-					<img src={img(page.image)} alt="" loading="lazy" />
-				) : (
-					<div className="ph-block">
-						<span>Artwork to come</span>
-					</div>
-				)}
-			</div>
-			<div className="card__body">
-				<h3 className="card__title">{page.name}</h3>
-				<p>{page.blurb}</p>
-				<p className="card__meta">
-					<span>{page.count}</span>
-				</p>
-				<span className="card__cta">
-					View assets <span aria-hidden="true">→</span>
-				</span>
-			</div>
-		</Link>
-	);
-}
 
 const layer = (name: ToolkitPage["layer"]) =>
 	TOOLKIT_PAGES.filter((p) => p.layer === name);
