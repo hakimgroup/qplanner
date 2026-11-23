@@ -533,4 +533,45 @@
 	@media (max-width:900px){
 	  .stats { grid-template-columns:1fr; }
 	}
+
+	/* ===================== Q1 2027 FOCUS TOOLKIT =====================
+	   Used only by the Q1 hub (`_uypp-q1/pages/q1-campaigns.tsx`). None of these
+	   class names appears in the Q4 or festive hubs' markup, so nothing here can
+	   reach them even though the scope is shared. */
+
+	/* ---- The two platforms ----
+	   The seasonal campaigns have no artwork yet, so each platform is presented as
+	   what it actually is at this point: a claim, a line, and what it carries. Two
+	   cards on the dark band, each keyed to its own colour through --platform, so
+	   A and B are told apart before either is read. */
+	.platforms { display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(18px,2.5vw,28px); }
+	.platform { display:flex; flex-direction:column; background:var(--bg); color:var(--ink);
+	  border-radius:var(--radius); border-top:5px solid var(--platform, var(--accent));
+	  padding:clamp(24px,3.2vw,40px);
+	  transition:transform .35s var(--ease), box-shadow .35s var(--ease); }
+	.platform:hover { transform:translateY(-5px); box-shadow:0 28px 56px -26px rgba(0,0,0,.6); }
+	.platform__label { font-family:var(--display); font-weight:500; letter-spacing:.14em;
+	  text-transform:uppercase; font-size:1rem; color:var(--muted); margin:0 0 .7em; }
+	.platform__claim { font-family:var(--display); font-weight:700; text-transform:uppercase;
+	  line-height:.95; font-size:clamp(2rem,3.4vw,2.9rem); margin:0 0 .45em;
+	  color:var(--platform, var(--deck)); text-wrap:balance; }
+	.platform__line { color:#3a3640; margin:0 0 1.2em; }
+	.platform .qlist { margin-bottom:1.5em; }
+	/* These items run to two lines, where the calendar's are one: pin the marker
+	   to the first line rather than centring it against the pair. */
+	.platform .qlist li { align-items:flex-start; }
+	.platform .qlist li::before { margin-top:.55em; background:var(--platform, var(--accent)); }
+	/* Pushed to the foot, so the two links line up whatever the lists above do. */
+	.platform__link { margin-top:auto; }
+	.platforms__note { color:rgba(255,255,255,.74); margin:clamp(20px,2.6vw,32px) 0 0; }
+	@media (max-width:760px){
+	  .platforms { grid-template-columns:1fr; }
+	}
+
+	/* ---- Two buttons side by side inside a panel ----
+	   .panel .btn only sets a top margin, which is right for one button and leaves
+	   two touching. */
+	.btnrow { display:flex; flex-wrap:wrap; gap:12px; margin-top:.9em; }
+	.btnrow .btn { margin-top:0; }
+	.panel__signoff { margin:1.4em 0 0; color:var(--muted); font-size:1.02rem; }
 }

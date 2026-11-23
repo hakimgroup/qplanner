@@ -59,19 +59,53 @@ export interface ToolkitPage {
 	when: string;
 	/** One line on the card. */
 	blurb: string;
-	/** Which hub section it appears under. */
-	layer: "drivers" | "reasons" | "gifting";
+	/** Which hub section it appears under. Festive uses "drivers", "reasons" and
+	 *  "gifting"; another toolkit is free to name its own, or to use one. */
+	layer: string;
 	/** How many separate activities the page covers, shown under the blurb. */
 	count: string;
 	/**
-	 * Festive photography for the card, the cross-links and the page's own hero —
-	 * a filename under `landing-assets/uypp-q4/img`, passed through `img()`.
+	 * Photography for the card, the cross-links and the page's own hero — a
+	 * filename under `landing-assets/uypp-q4/img`, passed through `img()`, or a
+	 * root-relative path (`/landing-assets/…`) for a toolkit that keeps its
+	 * assets elsewhere.
 	 *
-	 * Only where a shot genuinely shows what the page is about. Events and local
-	 * PR have none yet and keep the striped placeholder, which is more honest than
-	 * borrowing a window display to illustrate a press release.
+	 * Only where a shot genuinely shows what the page is about. A page with none
+	 * keeps the striped placeholder, which is more honest than borrowing a window
+	 * display to illustrate a press release.
 	 */
 	image?: string;
+	/** The card's link text. Defaults to "View assets". */
+	cta?: string;
+}
+
+/**
+ * Everything that makes one toolkit a different toolkit from another.
+ *
+ * The Festive Focus Toolkit was the first, and its hub, nav, footer and premise
+ * were constants the shared page shell imported directly. The Q1 2027 Focus
+ * Toolkit is the second, with the same page shape and a different index — so the
+ * constants became one object the shell is handed, and Festive is the default.
+ * A third toolkit is a new object, not a third copy of the shell.
+ */
+export interface ToolkitConfig {
+	/** As it reads in the hero eyebrow and the back link: "Festive Focus Toolkit". */
+	name: string;
+	/** The toolkit's own index. Every page in it links back here. */
+	hub: string;
+	/** The sticky nav on every sub-page. */
+	nav: NavLink[];
+	/** The footer line. */
+	foot: string;
+	/** The closing line under the cross-links — why these pages are one toolkit. */
+	premise: string;
+	/** One line under "The rest of the toolkit". */
+	crosslinksLead: string;
+	/** Every page, in hub order. */
+	pages: ToolkitPage[];
+	/** Replaces the closing feedback bar's standard wording, where that wording
+	 *  is about a different quarter. */
+	feedbackLead?: string;
 }
 
 export const TOOLKIT_PAGES: ToolkitPage[] = [
@@ -134,3 +168,16 @@ export const TOOLKIT_PAGES: ToolkitPage[] = [
 /** Look a page up by slug, for the cross-links. */
 export const toolkitPage = (slug: string) =>
 	TOOLKIT_PAGES.find((p) => p.slug === slug);
+
+/** The Festive Focus Toolkit, as the shared shell consumes it. The default
+ *  wherever a `toolkit` is optional, so the festive pages pass nothing. */
+export const FESTIVE_TOOLKIT: ToolkitConfig = {
+	name: "Festive Focus Toolkit",
+	hub: TOOLKIT_HUB,
+	nav: TOOLKIT_NAV,
+	foot: TOOLKIT_FOOT,
+	premise: TOOLKIT_PREMISE,
+	crosslinksLead:
+		"These are meant to stack. Most practices will run something from each of the three layers rather than picking one.",
+	pages: TOOLKIT_PAGES,
+};

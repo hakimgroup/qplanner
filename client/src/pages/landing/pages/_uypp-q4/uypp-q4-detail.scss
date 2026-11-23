@@ -501,6 +501,13 @@
 	.panel ul { margin:.2em 0 0; padding-left:1.1em; color:#3a3640; }
 	.panel li { margin-bottom:6px; }
 	.panel--flag { border-left:3px solid var(--deck); }
+	/* An email address cannot wrap, and on a phone it is wider than the panel it
+	   sits in. The mobile grid is a single 1fr track, which will not shrink below
+	   its content's minimum width — so one address widened every panel in its
+	   grid, and the page scrolled sideways: 39px on the festive gifting page, 6px
+	   on Q1's brand activations. `anywhere` lets the address break, and unlike
+	   `break-word` it counts towards the minimum width, so the track stays put. */
+	.panel { overflow-wrap:anywhere; }
 
 	/* ===================== PLACEHOLDER BLOCKS ===================== */
 	.ph-block { position:relative; border-radius:var(--radius); overflow:hidden; display:grid; place-items:center;
@@ -559,6 +566,18 @@
 	}
 	.gift-tactics li::before { content:""; position:absolute; left:0; top:.55em;
 	  width:12px; height:12px; border-radius:3px; background:var(--accent); }
+
+	/* ===================== Q1 2027 FOCUS TOOLKIT =====================
+	   Two rules, for a panel that carries a button or a second heading — which no
+	   Q4 or festive panel does, so neither class appears in their markup. */
+	.panel__actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:1.2em; }
+	.panel__title--sub { margin-top:1.3em; }
+	/* A wide panel that follows a grid rather than preceding one: .panel--wide
+	   only carries a bottom margin. */
+	.panel--after { margin-top:clamp(18px,2.5vw,28px); margin-bottom:0; }
+	/* The platform's claim, above the list of what it carries. .whofor__body has
+	   no margin at all, which set the claim tight against the first bullet. */
+	.whofor__claim { font-weight:600; font-size:1.15rem; margin:0 0 1em; }
 
 	/* ===================== SPLIT ===================== */
 	.split { display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,3.6vw,52px); align-items:center; }

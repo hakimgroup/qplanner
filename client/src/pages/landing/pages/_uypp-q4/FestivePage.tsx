@@ -1,5 +1,7 @@
 /**
- * The shape of a Festive Focus Toolkit sub-page.
+ * The shape of a toolkit sub-page. Written for the Festive Focus Toolkit and
+ * named for it; the Q1 2027 Focus Toolkit uses it too, by passing its own
+ * `toolkit` and importing it as `ToolkitSubPage`.
  *
  * Six pages that are genuinely the same page with different content: hero, the
  * hook that states what the group is for, why it works, the activities in it, the
@@ -24,7 +26,8 @@ import { ArtworkSection } from "./ArtworkSection";
 import { OrderSection } from "./OrderSection";
 import { FeedbackSection } from "./FeedbackSection";
 import { ToolkitCrosslinks, ToolkitHero } from "./FestiveBits";
-import { TOOLKIT_FOOT, TOOLKIT_HUB, TOOLKIT_NAV } from "./festive";
+import { FESTIVE_TOOLKIT } from "./festive";
+import type { ToolkitConfig } from "./festive";
 import type { Campaign } from "./types";
 import type { CampaignId } from "./links";
 
@@ -51,6 +54,7 @@ export function FestivePage({
 	orderNote,
 	orderFootText,
 	orderCardAction,
+	toolkit = FESTIVE_TOOLKIT,
 	children,
 }: {
 	id: CampaignId;
@@ -86,6 +90,9 @@ export function FestivePage({
 	orderFootText?: ReactNode;
 	/** See OrderSection's `cardAction`. */
 	orderCardAction?: { label: string; href: string };
+	/** Which toolkit this page belongs to — its hub, nav, footer, sibling pages
+	 *  and wording. Festive by default. See ToolkitConfig. */
+	toolkit?: ToolkitConfig;
 	children?: ReactNode;
 }) {
 	return (
@@ -93,11 +100,17 @@ export function FestivePage({
 			id={id}
 			title={docTitle}
 			campaign={campaign}
-			hub={TOOLKIT_HUB}
-			nav={TOOLKIT_NAV}
-			footNote={TOOLKIT_FOOT}
+			hub={toolkit.hub}
+			nav={toolkit.nav}
+			footNote={toolkit.foot}
 		>
-			<ToolkitHero title={heroTitle} pills={pills} image={heroImage} alt={heroAlt} />
+			<ToolkitHero
+				title={heroTitle}
+				pills={pills}
+				image={heroImage}
+				alt={heroAlt}
+				toolkit={toolkit}
+			/>
 
 			{/* The hook: the problem in display type, the turn in bold, then what this
 			    group of the toolkit does about it. Three levels of type, centred, no
@@ -142,9 +155,13 @@ export function FestivePage({
 				cardAction={orderCardAction}
 			/>
 
-			<ToolkitCrosslinks exclude={slug} />
+			<ToolkitCrosslinks exclude={slug} toolkit={toolkit} />
 
-			<FeedbackSection />
+			<FeedbackSection lead={toolkit.feedbackLead} />
 		</CampaignShell>
 	);
 }
+
+/** The same component under a name that does not say Festive, for the toolkits
+ *  that came after it. */
+export const ToolkitSubPage = FestivePage;

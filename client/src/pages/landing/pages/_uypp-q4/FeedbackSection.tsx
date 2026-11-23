@@ -12,7 +12,7 @@
  */
 import { FEEDBACK_FORM } from "./links";
 
-export function FeedbackSection({ id }: { id?: string }) {
+export function FeedbackSection({ id, lead }: { id?: string; lead?: string }) {
 	return (
 		<section className="cta" id={id}>
 			<div className="wrap cta__inner reveal">
@@ -20,7 +20,10 @@ export function FeedbackSection({ id }: { id?: string }) {
 					Let us know what you think
 				</h2>
 				<p>
-					We've changed how Unlock Your Practice Potential works this quarter. We'd like to know what's working, what isn't, and how it could be better.
+					{/* The standard wording is about Q4, when the format changed. A toolkit
+					    from another quarter passes its own. */}
+					{lead ??
+						"We've changed how Unlock Your Practice Potential works this quarter. We'd like to know what's working, what isn't, and how it could be better."}
 				</p>
 				<a
 					className="btn"
